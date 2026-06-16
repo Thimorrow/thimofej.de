@@ -28,7 +28,7 @@ export default function Home() {
         {/* Readability scrim so the identity text stays legible over the cloud. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-void via-void/90 to-transparent"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-void/85 via-void/35 to-transparent"
         />
         <HeroIntro />
       </section>

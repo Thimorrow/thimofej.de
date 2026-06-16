@@ -11,8 +11,20 @@ import { PostFX } from "./PostFX";
 
 const LOW_END =
   typeof navigator !== "undefined" && (navigator.hardwareConcurrency ?? 8) <= 4;
-const COUNT = LOW_END ? 18000 : 100000; // full count, only during the intro
-const SCROLL_COUNT = LOW_END ? 9000 : 38000; // reduced for the scroll phase
+const COUNT = LOW_END ? 34000 : 170000; // full static world, only during the intro
+
+// The particles form ONE static 3D world: every particle belongs to exactly one
+// scene and stays fixed in space — the camera is the only thing that moves, it
+// zooms straight through. Partitioned by index (the hero TZ group FIRST so the
+// scroll phase can render just those via drawRange). Nothing morphs during the
+// flight; far scenes fade in only as the camera nears them (aReveal), and the
+// far-scene particles are dropped at the end (off-screen behind the camera).
+const N_TZ = Math.floor(COUNT * 0.24);
+const N_SOLAR = Math.floor(COUNT * 0.18);
+const N_SATURN = Math.floor(COUNT * 0.12);
+const N_CITY = Math.floor(COUNT * 0.24);
+// room = the remainder (~0.22)
+const SCROLL_COUNT = N_TZ; // scroll phase renders exactly the hero-TZ particles
 
 // One sample on the "TZ" initials inside a roughly unit box (x ~ ±1.5, y ~ ±0.95).
 function tzPoint(rnd: () => number): [number, number, number] {
@@ -48,24 +60,21 @@ function spherePoint(rnd: () => number, R: number, shell = false): [number, numb
   return [r * Math.sin(v) * Math.cos(u), r * Math.cos(v), r * Math.sin(v) * Math.sin(u)];
 }
 
-// Scroll forms (TZ -> cube -> torus -> cross -> sphere -> sphere) PLUS four
-// full-cloud intro scenes (every particle appears in every scene, so each scene
-// is dense and only one is visible at a time): solar system -> planet -> city ->
-// house (window + table + TZ). aColor carries a cosmic colour for the intro.
+// Builds the static world. `position` is each particle's fixed place; `aReveal`
+// is the `u` at which its scene fades in. The hero TZ group additionally carries
+// the scroll-phase forms (cube/torus/cross/two spheres); every other particle's
+// scroll forms equal its own position (never rendered in scroll, kept inert).
 function buildGeo() {
   const rnd = Math.random;
-  const a0 = new Float32Array(COUNT * 3); // TZ (hero)
-  const cube = new Float32Array(COUNT * 3);
-  const helix = new Float32Array(COUNT * 3);
-  const cross = new Float32Array(COUNT * 3);
-  const plane = new Float32Array(COUNT * 3);
-  const ring = new Float32Array(COUNT * 3);
-  const solar = new Float32Array(COUNT * 3);
-  const planet = new Float32Array(COUNT * 3);
-  const city = new Float32Array(COUNT * 3);
-  const house = new Float32Array(COUNT * 3);
+  const pos = new Float32Array(COUNT * 3);
+  const f1 = new Float32Array(COUNT * 3); // cube (Work)
+  const f2 = new Float32Array(COUNT * 3); // torus (Life)
+  const f3 = new Float32Array(COUNT * 3); // cross (Likes)
+  const f4 = new Float32Array(COUNT * 3); // sphere (Writing)
+  const f5 = new Float32Array(COUNT * 3); // sphere (Contact)
   const colors = new Float32Array(COUNT * 3);
   const seed = new Float32Array(COUNT);
+  const reveal = new Float32Array(COUNT);
 
   const planetPal = [
     [0.42, 0.6, 1.0],
@@ -73,188 +82,281 @@ function buildGeo() {
     [0.35, 0.95, 0.85],
     [0.86, 0.72, 0.46],
   ];
+  const set = (arr: Float32Array, i: number, x: number, y: number, z: number) => {
+    arr[i * 3] = x;
+    arr[i * 3 + 1] = y;
+    arr[i * 3 + 2] = z;
+  };
+  // deterministic 0..1 hash, for stable per-building / per-window properties
+  const phash = (a: number, b: number, c: number) => {
+    const s = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453;
+    return s - Math.floor(s);
+  };
+
+  // partition boundaries
+  const A = N_TZ;
+  const B = A + N_SOLAR;
+  const C = B + N_SATURN;
+  const D = C + N_CITY;
 
   for (let i = 0; i < COUNT; i++) {
-    const r = i / COUNT;
+    let x = 0;
+    let y = 0;
+    let z = 0;
+    let cr = 1;
+    let cg = 1;
+    let cb = 1;
+    let rev = -1;
 
-    // --- hero TZ ---
-    {
-      const [x0, y0, z0] = tzPoint(rnd);
-      a0[i * 3] = x0 * 1.1;
-      a0[i * 3 + 1] = y0 * 1.1;
-      a0[i * 3 + 2] = z0;
-    }
-
-    // --- cube edges (Work) ---
-    {
-      const H = 1.12;
-      const axis = Math.floor(rnd() * 3);
-      const tt = (rnd() * 2 - 1) * H;
-      const c1 = rnd() < 0.5 ? -H : H;
-      const c2 = rnd() < 0.5 ? -H : H;
-      const jx = (rnd() * 2 - 1) * 0.05;
-      const jy = (rnd() * 2 - 1) * 0.05;
-      const jz = (rnd() * 2 - 1) * 0.05;
-      if (axis === 0) { cube[i * 3] = tt + jx; cube[i * 3 + 1] = c1 + jy; cube[i * 3 + 2] = c2 + jz; }
-      else if (axis === 1) { cube[i * 3] = c1 + jx; cube[i * 3 + 1] = tt + jy; cube[i * 3 + 2] = c2 + jz; }
-      else { cube[i * 3] = c1 + jx; cube[i * 3 + 1] = c2 + jy; cube[i * 3 + 2] = tt + jz; }
-    }
-
-    // --- torus (Life) ---
-    {
-      const ta = rnd() * 6.2831;
-      const tb = rnd() * 6.2831;
-      const TR = 1.0;
-      const Tt = 0.42;
-      helix[i * 3] = (TR + Tt * Math.cos(tb)) * Math.cos(ta);
-      helix[i * 3 + 1] = (TR + Tt * Math.cos(tb)) * Math.sin(ta);
-      helix[i * 3 + 2] = Tt * Math.sin(tb);
-    }
-
-    // --- cross (Likes) ---
-    if (rnd() < 0.6) {
-      cross[i * 3] = (rnd() * 2 - 1) * 0.26;
-      cross[i * 3 + 1] = (rnd() * 2 - 1) * 1.65;
-      cross[i * 3 + 2] = (rnd() * 2 - 1) * 0.26;
-    } else {
-      cross[i * 3] = (rnd() * 2 - 1) * 1.15;
-      cross[i * 3 + 1] = 0.54 + (rnd() * 2 - 1) * 0.26;
-      cross[i * 3 + 2] = (rnd() * 2 - 1) * 0.26;
-    }
-
-    // --- spheres (Writing, Contact) ---
-    {
-      const [sx, sy, sz] = spherePoint(rnd, 1.4);
-      plane[i * 3] = sx; plane[i * 3 + 1] = sy; plane[i * 3 + 2] = sz;
-      const [gx, gy, gz] = spherePoint(rnd, 1.4);
-      ring[i * 3] = gx; ring[i * 3 + 1] = gy; ring[i * 3 + 2] = gz;
-    }
-
-    // --- INTRO scene 0: SOLAR SYSTEM (sun + tilted orbit rings + planets) ---
-    {
+    if (i < A) {
+      // ---- HERO TZ at the origin (inside the room) ----
+      rev = 0.56;
+      const [tx, ty, tz] = tzPoint(rnd);
+      x = tx * 1.1;
+      y = ty * 1.1;
+      z = tz * 2.6; // extruded so the letters read as 3D in the 360° orbit
+      cr = 0.85;
+      cg = 0.92;
+      cb = 1.0;
+      {
+        const H = 1.12;
+        const axis = Math.floor(rnd() * 3);
+        const tt = (rnd() * 2 - 1) * H;
+        const c1 = rnd() < 0.5 ? -H : H;
+        const c2 = rnd() < 0.5 ? -H : H;
+        const jx = (rnd() * 2 - 1) * 0.05;
+        const jy = (rnd() * 2 - 1) * 0.05;
+        const jz = (rnd() * 2 - 1) * 0.05;
+        if (axis === 0) set(f1, i, tt + jx, c1 + jy, c2 + jz);
+        else if (axis === 1) set(f1, i, c1 + jx, tt + jy, c2 + jz);
+        else set(f1, i, c1 + jx, c2 + jy, tt + jz);
+      }
+      {
+        const ta = rnd() * 6.2831;
+        const tb = rnd() * 6.2831;
+        const TR = 1.0;
+        const Tt = 0.42;
+        set(
+          f2,
+          i,
+          (TR + Tt * Math.cos(tb)) * Math.cos(ta),
+          (TR + Tt * Math.cos(tb)) * Math.sin(ta),
+          Tt * Math.sin(tb),
+        );
+      }
+      if (rnd() < 0.6) set(f3, i, (rnd() * 2 - 1) * 0.26, (rnd() * 2 - 1) * 1.65, (rnd() * 2 - 1) * 0.26);
+      else set(f3, i, (rnd() * 2 - 1) * 1.15, 0.54 + (rnd() * 2 - 1) * 0.26, (rnd() * 2 - 1) * 0.26);
+      {
+        const [sx, sy, sz] = spherePoint(rnd, 1.4);
+        set(f4, i, sx, sy, sz);
+        const [gx, gy, gz] = spherePoint(rnd, 1.4);
+        set(f5, i, gx, gy, gz);
+      }
+    } else if (i < B) {
+      // ---- SOLAR SYSTEM (sun + orbit rings + inner planets + star dust) ----
+      rev = -1; // visible from the very first frame
       const tilt = 0.34;
-      let cr = 1, cg = 1, cb = 1;
-      if (r < 0.34) {
-        // bright dense sun
-        const [x, y, z] = spherePoint(rnd, 1.2);
-        solar[i * 3] = x; solar[i * 3 + 1] = y; solar[i * 3 + 2] = z;
+      const rr = rnd();
+      if (rr < 0.36) {
+        const [a, b, c] = spherePoint(rnd, 0.95);
+        x = a; y = b; z = c;
         cr = 1.0; cg = 0.68 + rnd() * 0.12; cb = 0.28;
-      } else if (r < 0.72) {
-        // three orbit rings (the orbital paths), tilted toward the camera
+      } else if (rr < 0.74) {
         const idx = Math.floor(rnd() * 3);
-        const ro = 2.6 + idx * 1.35;
+        const ro = 1.7 + idx * 0.95;
         const ang = rnd() * 6.2831;
         const fx = ro * Math.cos(ang);
         const fz = ro * Math.sin(ang);
-        solar[i * 3] = fx + (rnd() * 2 - 1) * 0.03;
-        solar[i * 3 + 1] = -fz * Math.sin(tilt) + (rnd() * 2 - 1) * 0.03;
-        solar[i * 3 + 2] = fz * Math.cos(tilt);
+        x = fx + (rnd() * 2 - 1) * 0.03;
+        y = -fz * Math.sin(tilt) + (rnd() * 2 - 1) * 0.03;
+        z = fz * Math.cos(tilt);
         cr = 0.55; cg = 0.8; cb = 1.0;
-      } else if (r < 0.96) {
-        // a planet sitting on each ring
+      } else if (rr < 0.94) {
         const idx = Math.floor(rnd() * 3);
-        const ro = 2.6 + idx * 1.35;
+        const ro = 1.7 + idx * 0.95;
         const ang = idx * 2.2 + 0.7;
         const fx = ro * Math.cos(ang);
         const fz = ro * Math.sin(ang);
-        const [px, py, pz] = spherePoint(rnd, 0.42 + idx * 0.12);
-        solar[i * 3] = fx + px;
-        solar[i * 3 + 1] = -fz * Math.sin(tilt) + py;
-        solar[i * 3 + 2] = fz * Math.cos(tilt) + pz;
+        const [px, py, pz] = spherePoint(rnd, 0.28 + idx * 0.08);
+        x = fx + px;
+        y = -fz * Math.sin(tilt) + py;
+        z = fz * Math.cos(tilt) + pz;
         const col = planetPal[idx];
         cr = col[0]; cg = col[1]; cb = col[2];
       } else {
-        // far star dust
-        solar[i * 3] = (rnd() * 2 - 1) * 9;
-        solar[i * 3 + 1] = (rnd() * 2 - 1) * 6;
-        solar[i * 3 + 2] = (rnd() * 2 - 1) * 9;
+        x = (rnd() * 2 - 1) * 4;
+        y = (rnd() * 2 - 1) * 3;
+        z = (rnd() * 2 - 1) * 4;
         cr = 0.8; cg = 0.85; cb = 1.0;
       }
-      colors[i * 3] = cr; colors[i * 3 + 1] = cg; colors[i * 3 + 2] = cb;
-    }
-
-    // --- INTRO scene 1: PLANET (sphere + a tilted Saturn ring) ---
-    {
-      if (r < 0.8) {
-        const [x, y, z] = spherePoint(rnd, 2.0, rnd() < 0.85);
-        planet[i * 3] = x; planet[i * 3 + 1] = y; planet[i * 3 + 2] = z;
+      x += 0; y += 0.2; z += 40;
+    } else if (i < C) {
+      // ---- SATURN: a big ringed planet, on an outer orbit of the SAME system,
+      // so it's part of the solar view from the start; we fly OVER it ----
+      rev = -1;
+      if (rnd() < 0.74) {
+        const [a, b, c] = spherePoint(rnd, 1.55, rnd() < 0.85);
+        x = a; y = b; z = c;
+        cr = 0.95; cg = 0.84; cb = 0.6;
       } else {
         const ang = rnd() * 6.2831;
-        const rr = 2.8 + rnd() * 0.8;
-        const tilt = 0.45;
-        const fx = rr * Math.cos(ang);
-        const fz = rr * Math.sin(ang);
-        planet[i * 3] = fx;
-        planet[i * 3 + 1] = -fz * Math.sin(tilt) + (rnd() * 2 - 1) * 0.04;
-        planet[i * 3 + 2] = fz * Math.cos(tilt);
+        const rr2 = 2.2 + rnd() * 0.9;
+        const tlt = 0.5;
+        const fx = rr2 * Math.cos(ang);
+        const fz = rr2 * Math.sin(ang);
+        x = fx;
+        y = -fz * Math.sin(tlt) + (rnd() * 2 - 1) * 0.04;
+        z = fz * Math.cos(tlt);
+        cr = 0.85; cg = 0.78; cb = 0.62;
       }
-    }
-
-    // --- INTRO scene 2: CITY (a skyline of solid building columns) ---
-    {
-      const col = Math.round((rnd() * 2 - 1) * 6);
-      const row = Math.round((rnd() * 2 - 1) * 2.2);
-      // deterministic height per cell so each column is one solid building
-      const kk = Math.sin(col * 12.9898 + row * 78.233) * 43758.5453;
-      const hh = 0.5 + (kk - Math.floor(kk)) * 4.2;
-      city[i * 3] = col * 0.82 + (rnd() * 2 - 1) * 0.16;
-      city[i * 3 + 1] = -2.4 + rnd() * hh;
-      city[i * 3 + 2] = row * 0.82 + (rnd() * 2 - 1) * 0.16;
-    }
-
-    // --- INTRO scene 3: ROOM (cuboid wireframe + window + table + TZ) ---
-    {
-      const RX = 2.7, RY = 1.9, RZ = 2.2;
-      if (r < 0.32) {
-        // room: edges of a cuboid -> reads as an interior
+      x += 4.5; y += 1.0; z += 32;
+    } else if (i < D) {
+      // ---- CITY: a night skyline — solid towers + lit-window grids on a
+      // glowing street grid, so it reads as a city at a glance ----
+      rev = 0.28;
+      const gx = Math.floor(rnd() * 9) - 4;
+      const gz = Math.floor(rnd() * 7) - 3;
+      const sp = 0.98; // block spacing (the gaps between are the streets)
+      const dd = 1 - Math.min(1, (Math.abs(gx) + Math.abs(gz)) / 7);
+      const hh = 1.3 + (0.25 + 0.75 * dd) * phash(gx, gz, 1) * 5.0; // tower height
+      const bw = 0.34 + phash(gx, gz, 2) * 0.13; // half width
+      const bd = 0.34 + phash(gx, gz, 3) * 0.13; // half depth
+      const cx = gx * sp;
+      const cz = gz * sp;
+      const base = -2.6;
+      const role = rnd();
+      if (role < 0.1) {
+        // glowing street grid: warm lines running between the blocks
+        if (rnd() < 0.5) {
+          x = cx + (rnd() * 2 - 1) * sp * 0.5;
+          z = cz + (rnd() < 0.5 ? -0.5 : 0.5) * sp;
+        } else {
+          x = cx + (rnd() < 0.5 ? -0.5 : 0.5) * sp;
+          z = cz + (rnd() * 2 - 1) * sp * 0.5;
+        }
+        y = base;
+        cr = 1.0; cg = 0.58; cb = 0.28;
+      } else if (role < 0.2) {
+        // crisp flat roof cap (defines the jagged skyline) + red beacon on tall
+        if (dd > 0.45 && rnd() < 0.3) {
+          x = cx + (rnd() * 2 - 1) * 0.05;
+          z = cz + (rnd() * 2 - 1) * 0.05;
+          y = base + hh + rnd() * 0.3;
+          cr = 1.0; cg = 0.2; cb = 0.16;
+        } else {
+          x = cx + (rnd() * 2 - 1) * bw;
+          z = cz + (rnd() * 2 - 1) * bd;
+          y = base + hh;
+          cr = 0.6; cg = 0.72; cb = 0.95;
+        }
+      } else if (role < 0.28) {
+        // bright vertical corner edges define the box
+        x = cx + (rnd() < 0.5 ? -bw : bw);
+        z = cz + (rnd() < 0.5 ? -bd : bd);
+        y = base + rnd() * hh;
+        cr = 0.5; cg = 0.62; cb = 0.85;
+      } else {
+        // DENSE lit windows over the whole facade so each tower reads as a solid
+        // lit block — most warm, a few cool, only a few dark
+        const side = Math.floor(rnd() * 4);
+        const cols = Math.max(2, Math.round(bw / 0.14));
+        const rows = Math.max(4, Math.round(hh / 0.24));
+        const wc = Math.floor(rnd() * cols);
+        const wr = Math.floor(rnd() * rows);
+        const across = ((wc + 0.5) / cols) * 2 - 1;
+        const jx = (rnd() * 2 - 1) * 0.03;
+        const jy = (rnd() * 2 - 1) * 0.04;
+        if (side === 0) { x = cx + bw; z = cz + across * bd + jx; }
+        else if (side === 1) { x = cx - bw; z = cz + across * bd + jx; }
+        else if (side === 2) { x = cx + across * bw + jx; z = cz + bd; }
+        else { x = cx + across * bw + jx; z = cz - bd; }
+        y = base + 0.2 + ((wr + 0.5) / rows) * (hh - 0.35) + jy;
+        const lit = phash(gx * 3 + side, gz * 5 + wc, wr + 2);
+        if (lit > 0.22) {
+          if (phash(gx + wc, gz + wr, side) > 0.88) {
+            cr = 0.7; cg = 0.85; cb = 1.0; // a few cool-white windows
+          } else {
+            cr = 1.0; cg = 0.76 + 0.14 * lit; cb = 0.44; // warm windows
+          }
+        } else {
+          cr = 0.18; cg = 0.2; cb = 0.28; // a few dark windows
+        }
+      }
+      y += -2.5; z += 18;
+    } else {
+      // ---- ROOM around the origin (box + window frame + table) — the room you
+      // see through a city window, then fly into ----
+      rev = 0.5;
+      const RX = 2.7;
+      const RY = 1.9;
+      const NEARZ = 5;
+      const FARZ = -1.5;
+      const zc = (s: number) => ((s + 1) / 2) * (NEARZ - FARZ) + FARZ;
+      const rr3 = rnd();
+      if (rr3 < 0.46) {
         const axis = Math.floor(rnd() * 3);
         const s = rnd() * 2 - 1;
         const e1 = rnd() < 0.5 ? -1 : 1;
         const e2 = rnd() < 0.5 ? -1 : 1;
-        if (axis === 0) { house[i * 3] = s * RX; house[i * 3 + 1] = e1 * RY; house[i * 3 + 2] = e2 * RZ; }
-        else if (axis === 1) { house[i * 3] = e1 * RX; house[i * 3 + 1] = s * RY; house[i * 3 + 2] = e2 * RZ; }
-        else { house[i * 3] = e1 * RX; house[i * 3 + 1] = e2 * RY; house[i * 3 + 2] = s * RZ; }
-      } else if (r < 0.46) {
-        // a bright window on the back wall
-        house[i * 3] = -1.0 + (rnd() * 2 - 1) * 1.0;
-        house[i * 3 + 1] = 0.4 + (rnd() * 2 - 1) * 1.0;
-        house[i * 3 + 2] = -RZ + 0.02;
-      } else if (r < 0.6) {
-        // table: a slab on two legs
-        if (rnd() < 0.68) {
-          house[i * 3] = 0.6 + (rnd() * 2 - 1) * 1.2;
-          house[i * 3 + 1] = -1.05;
-          house[i * 3 + 2] = (rnd() * 2 - 1) * 0.7;
+        if (axis === 0) { x = s * RX; y = e1 * RY; z = zc(e2); }
+        else if (axis === 1) { x = e1 * RX; y = s * RY; z = zc(e2); }
+        else { x = e1 * RX; y = e2 * RY; z = zc(s); }
+        cr = 0.5; cg = 0.82; cb = 1.0;
+      } else if (rr3 < 0.64) {
+        const ww = 1.5;
+        const wh = 1.2;
+        const edge = Math.floor(rnd() * 4);
+        const t = rnd() * 2 - 1;
+        if (edge === 0) { x = t * ww; y = 0.3 + wh; }
+        else if (edge === 1) { x = t * ww; y = 0.3 - wh; }
+        else if (edge === 2) { x = ww; y = 0.3 + t * wh; }
+        else { x = -ww; y = 0.3 + t * wh; }
+        z = NEARZ - 0.02;
+        cr = 1.0; cg = 0.97; cb = 0.86;
+      } else if (rr3 < 0.82) {
+        if (rnd() < 0.7) {
+          x = (rnd() * 2 - 1) * 1.4;
+          y = -1.15;
+          z = (rnd() * 2 - 1) * 0.8;
         } else {
-          house[i * 3] = 0.6 + (rnd() < 0.5 ? -1 : 1) * 1.0;
-          house[i * 3 + 1] = -1.05 - rnd() * 0.8;
-          house[i * 3 + 2] = (rnd() < 0.5 ? -1 : 1) * 0.5;
+          x = (rnd() < 0.5 ? -1 : 1) * 1.15;
+          y = -1.15 - rnd() * 0.9;
+          z = (rnd() < 0.5 ? -1 : 1) * 0.6;
         }
+        cr = 0.55; cg = 0.8; cb = 1.0;
       } else {
-        // TZ standing on the table
-        const [tx, ty, tz] = tzPoint(rnd);
-        house[i * 3] = 0.6 + tx * 0.62;
-        house[i * 3 + 1] = -0.1 + ty * 0.52;
-        house[i * 3 + 2] = tz;
+        x = (rnd() * 2 - 1) * RX;
+        y = -RY + 0.02;
+        z = zc(rnd() * 2 - 1);
+        cr = 0.45; cg = 0.7; cb = 1.0;
       }
     }
 
+    set(pos, i, x, y, z);
+    if (i >= A) {
+      set(f1, i, x, y, z);
+      set(f2, i, x, y, z);
+      set(f3, i, x, y, z);
+      set(f4, i, x, y, z);
+      set(f5, i, x, y, z);
+    }
+    colors[i * 3] = cr;
+    colors[i * 3 + 1] = cg;
+    colors[i * 3 + 2] = cb;
     seed[i] = rnd();
+    reveal[i] = rev;
   }
 
   const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.BufferAttribute(a0, 3));
-  g.setAttribute("aF1", new THREE.BufferAttribute(cube, 3));
-  g.setAttribute("aF2", new THREE.BufferAttribute(helix, 3));
-  g.setAttribute("aF3", new THREE.BufferAttribute(cross, 3));
-  g.setAttribute("aF4", new THREE.BufferAttribute(plane, 3));
-  g.setAttribute("aF5", new THREE.BufferAttribute(ring, 3));
-  g.setAttribute("aSolar", new THREE.BufferAttribute(solar, 3));
-  g.setAttribute("aPlanet", new THREE.BufferAttribute(planet, 3));
-  g.setAttribute("aCity", new THREE.BufferAttribute(city, 3));
-  g.setAttribute("aHouse", new THREE.BufferAttribute(house, 3));
+  g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  g.setAttribute("aF1", new THREE.BufferAttribute(f1, 3));
+  g.setAttribute("aF2", new THREE.BufferAttribute(f2, 3));
+  g.setAttribute("aF3", new THREE.BufferAttribute(f3, 3));
+  g.setAttribute("aF4", new THREE.BufferAttribute(f4, 3));
+  g.setAttribute("aF5", new THREE.BufferAttribute(f5, 3));
   g.setAttribute("aColor", new THREE.BufferAttribute(colors, 3));
   g.setAttribute("aSeed", new THREE.BufferAttribute(seed, 1));
+  g.setAttribute("aReveal", new THREE.BufferAttribute(reveal, 1));
   return g;
 }
 const PARTICLE_GEO = buildGeo();
@@ -262,9 +364,8 @@ const PARTICLE_GEO = buildGeo();
 const particleUniforms = {
   uTime: { value: 0 },
   uMorph: { value: 0 },
-  uIntro: { value: 0 }, // 0..4 across the intro scenes
-  uIntroAmt: { value: 1 }, // 1 = show intro scenes, 0 = show scroll forms
-  uIntroTint: { value: new THREE.Color(1, 1, 1) }, // per-scene colour mood
+  uIntroAmt: { value: 1 }, // 1 = show the static world, 0 = show the scroll forms
+  uU: { value: 0 }, // the flight parameter, drives per-scene reveal
   uMouse: { value: new THREE.Vector3(999, 999, 0) },
   uMouseActive: { value: 0 },
   uSize: { value: LOW_END ? 18 : 22 },
@@ -276,9 +377,8 @@ const particleUniforms = {
 const VERT = /* glsl */ `
 uniform float uTime;
 uniform float uMorph;
-uniform float uIntro;
 uniform float uIntroAmt;
-uniform vec3 uIntroTint;
+uniform float uU;
 uniform vec3 uMouse;
 uniform float uMouseActive;
 uniform float uSize;
@@ -289,25 +389,19 @@ attribute vec3 aF2;
 attribute vec3 aF3;
 attribute vec3 aF4;
 attribute vec3 aF5;
-attribute vec3 aSolar;
-attribute vec3 aPlanet;
-attribute vec3 aCity;
-attribute vec3 aHouse;
 attribute vec3 aColor;
 attribute float aSeed;
+attribute float aReveal;
 varying float vA;
 varying vec3 vCol;
 float tw(float m, float c) { return max(0.0, 1.0 - abs(m - c)); }
 void main() {
-  // scroll forms (post-intro): TZ, cube, torus, cross, sphere, sphere
   vec3 scrollForm =
     position * tw(uMorph, 0.0) + aF1 * tw(uMorph, 1.0) + aF2 * tw(uMorph, 2.0) +
     aF3 * tw(uMorph, 3.0) + aF4 * tw(uMorph, 4.0) + aF5 * tw(uMorph, 5.0);
-  // intro scenes: solar -> planet -> city -> house -> hero TZ (position)
-  vec3 introForm =
-    aSolar * tw(uIntro, 0.0) + aPlanet * tw(uIntro, 1.0) + aCity * tw(uIntro, 2.0) +
-    aHouse * tw(uIntro, 3.0) + position * tw(uIntro, 4.0);
-  vec3 p = mix(scrollForm, introForm, uIntroAmt);
+  // intro = the static world (position); after handoff = the scroll forms. The
+  // hero TZ sits at the origin in both, so the swap is invisible.
+  vec3 p = mix(scrollForm, position, uIntroAmt);
 
   float nf = floor(uMorph + 0.5);
   float crisp = 1.0 - smoothstep(0.06, 0.34, abs(uMorph - nf));
@@ -321,16 +415,22 @@ void main() {
   vec4 world = modelMatrix * vec4(p, 1.0);
   vec2 toM = world.xy - uMouse.xy;
   float dM = length(toM);
-  float infl = uMouseActive * smoothstep(0.5, 0.0, dM);
+  float infl = uMouseActive * smoothstep(0.5, 0.0, dM) * (1.0 - uIntroAmt);
   world.xy += normalize(toM + 0.0001) * infl * 0.16;
   vec4 mv = viewMatrix * world;
   gl_Position = projectionMatrix * mv;
   gl_PointSize = uSize / max(0.1, -mv.z);
-  vA = 0.5 + 0.5 * sin(uTime * 1.5 + aSeed * 6.2831);
+  // per-scene reveal: a scene stays hidden until the camera flies up to it
+  float vis = smoothstep(aReveal, aReveal + 0.18, uU);
+  // the outer world (solar, Saturn, city: aReveal < 0.4) fades away before the
+  // final orbit, so circling behind the TZ never shows the city through it; the
+  // room (aReveal 0.5) fades as we settle onto the front hero shot.
+  if (aReveal < 0.4) vis *= 1.0 - smoothstep(0.74, 0.82, uU);
+  else if (aReveal < 0.55) vis *= 1.0 - smoothstep(0.94, 1.0, uU);
+  vis = mix(1.0, vis, uIntroAmt);
+  vA = (0.5 + 0.5 * sin(uTime * 1.5 + aSeed * 6.2831)) * vis;
   vec3 heroCol = mix(uColorA, uColorB, smoothstep(0.45, 1.0, aSeed));
-  // cosmic scene colours (tinted per scene) during the intro, fading to the
-  // hero palette at the end
-  vCol = mix(heroCol, aColor * uIntroTint, uIntroAmt);
+  vCol = mix(heroCol, aColor, uIntroAmt);
 }
 `;
 const FRAG = /* glsl */ `
@@ -347,17 +447,64 @@ void main() {
 }
 `;
 
-// Cinematic intro state. `phase` morphs across the four scenes (+ hero), `amt`
-// crossfades intro<->scroll, `cz/cy` place the camera and `ly` its look height,
-// `spin` turns the cloud.
-const intro = { active: false, phase: 0, amt: 1, cz: 14, cy: 5, ly: 0, spin: 0 };
+// Cinematic intro state. `u` (0..1) drives the camera along its flight; `amt`
+// crossfades the static world -> scroll forms at the very end.
+const intro = { active: false, u: 0, amt: 1 };
 let introTl: gsap.core.Timeline | null = null;
 const TWO_PI = Math.PI * 2;
 const morphState = { v: 0 };
 let lockArmed = false;
 let lastHoverSound = 0;
+let camRoll = 0;
 const LOCK_NOTES = [196, 220, 247, 294, 330, 392];
 const BASE_SIZE = LOW_END ? 18 : 22;
+
+// The camera's continuous zoom through the static world. 9 control points -> 8
+// segments; scene beats land on the EVEN indices (u = 0,.25,.5,.75,1) and the
+// ODD indices shape the curve. The path: take in the whole solar system (Saturn
+// included) -> rise UP and OVER Saturn's horizon -> the city revealed beyond ->
+// fly over the city, down toward a house window -> into the room -> swing to the
+// front of the TZ -> hero. The camera only ever moves forward / around.
+const CAM_PATH = new THREE.CatmullRomCurve3(
+  [
+    new THREE.Vector3(0, 1.6, 52), // 0 solar system (Saturn in view)
+    new THREE.Vector3(3.5, 3.2, 41), // 1 climb toward Saturn
+    new THREE.Vector3(5.0, 5.0, 34), // 2 OVER Saturn's horizon
+    new THREE.Vector3(0.6, 1.5, 28), // 3 descend past Saturn toward the city
+    new THREE.Vector3(0, -0.2, 24), // 4 down at skyline height, in profile
+    new THREE.Vector3(0, 0.6, 12), // 5 rise over the rooftops toward a window
+    new THREE.Vector3(0, 0.4, 7), // 6 at the window (== orbit start, o=0)
+    new THREE.Vector3(2.6, 0.2, 3.2), // 7 (curve shaping; orbit takes over here)
+    new THREE.Vector3(0, 0, 4.2), // 8 hero front
+  ],
+  false,
+  "centripetal",
+);
+const LOOK_PATH = new THREE.CatmullRomCurve3(
+  [
+    new THREE.Vector3(1.0, 0.3, 40), // 0 the system
+    new THREE.Vector3(4.5, 1.2, 33), // 1 Saturn
+    new THREE.Vector3(3.0, -0.5, 25), // 2 over Saturn, toward the far side
+    new THREE.Vector3(0, -0.8, 20), // 3 the city ahead
+    new THREE.Vector3(0, -0.5, 16), // 4 across the skyline (near-horizontal)
+    new THREE.Vector3(0, -0.1, 3), // 5 the house window
+    new THREE.Vector3(0, 0, 0), // 6 room / TZ (== orbit look target, origin)
+    new THREE.Vector3(0, 0, 0), // 7 TZ
+    new THREE.Vector3(0, 0, 0), // 8 hero TZ at origin
+  ],
+  false,
+  "centripetal",
+);
+const _camPos = new THREE.Vector3();
+const _lookPos = new THREE.Vector3();
+const _tan = new THREE.Vector3();
+
+// DEV-ONLY: lets the verification harness jump straight to a beat (set
+// __intro.active = true, __intro.u = k) without playing the whole timeline.
+if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
+  (window as unknown as { __intro: typeof intro }).__intro = intro;
+  (window as unknown as { __pu: typeof particleUniforms }).__pu = particleUniforms;
+}
 
 function PointsField() {
   const ref = useRef<THREE.Points>(null);
@@ -365,19 +512,26 @@ function PointsField() {
   const { camera } = useThree();
 
   useEffect(() => {
-    intro.phase = 0;
+    intro.u = 0;
     intro.amt = 1;
-    intro.cz = 13;
-    intro.cy = 4.6;
-    intro.ly = 0;
-    intro.spin = 0.1;
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     const unsub = onIntroDone(() => {
+      if (reduce) {
+        intro.amt = 0;
+        intro.u = 1;
+        particleUniforms.uU.value = 1;
+        PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT);
+        markWorldReady();
+        return;
+      }
       intro.active = true;
       document.documentElement.classList.add("intro-flying");
       audio.flight();
-      particleUniforms.uSize.value = LOW_END ? 26 : 32;
-      particleUniforms.uIntroTint.value.setRGB(1.0, 0.92, 0.8); // solar warm
-      PARTICLE_GEO.setDrawRange(0, COUNT); // full density for the cinematic
+      particleUniforms.uSize.value = LOW_END ? 30 : 42;
+      PARTICLE_GEO.setDrawRange(0, COUNT);
       introTl = gsap.timeline({
         onComplete: () => {
           intro.active = false;
@@ -386,55 +540,38 @@ function PointsField() {
           audio.arrival();
         },
       });
-      const tint = (rr: number, gg: number, bb: number, at: number, dur: number) =>
-        introTl!.to(
-          particleUniforms.uIntroTint.value,
-          { r: rr, g: gg, b: bb, duration: dur, ease: "power1.inOut" },
-          at,
-        );
 
-      // ONE continuous tween carries BOTH the camera (cz/cy/ly) and the scene
-      // morph (phase) through every keyframe — so the camera always glides into
-      // the next scene instead of cutting. "Hold" keyframes keep phase steady
-      // while the camera drifts slowly (a held shot that breathes, never frozen).
+      // ONE even, gently-eased glide — the camera accelerates away from a scene
+      // and eases into the next at a steady pace, only ever slowing at a scene,
+      // never stopping, never lurching. All motion is the camera; world is rigid.
       introTl.to(
         intro,
         {
           keyframes: [
-            { phase: 0, cz: 11, cy: 4.2, ly: 0, duration: 2.2, ease: "power1.inOut" }, // solar hold
-            { phase: 1, cz: 6, cy: 0.8, ly: 0, duration: 2.2, ease: "power2.inOut" }, // -> planet
-            { phase: 1, cz: 5.2, cy: 0.5, ly: 0, duration: 1.8, ease: "sine.inOut" }, // planet drift
-            { phase: 2, cz: 8.5, cy: -1.4, ly: 0.8, duration: 2.4, ease: "power2.inOut" }, // -> city (low)
-            { phase: 2, cz: 7.8, cy: -1.3, ly: 0.8, duration: 1.8, ease: "sine.inOut" }, // skyline drift
-            { phase: 3, cz: 5.4, cy: 0, ly: -0.2, duration: 2.4, ease: "power2.inOut" }, // -> room
-            { phase: 3, cz: 5.0, cy: 0, ly: -0.2, duration: 1.8, ease: "sine.inOut" }, // room drift
-            { phase: 4, cz: 4.2, cy: 0, ly: 0, duration: 2.2, ease: "power2.inOut" }, // -> hero TZ
+            { u: 0.25, duration: 3.4, ease: "sine.inOut" }, // system -> over Saturn
+            { u: 0.5, duration: 3.4, ease: "sine.inOut" }, // -> city
+            { u: 0.75, duration: 3.4, ease: "sine.inOut" }, // -> house window
+            { u: 1, duration: 3.6, ease: "sine.inOut" }, // through, orbit, hero
           ],
         },
         0,
       );
 
-      // Per-scene colour mood, aligned to each morph.
-      tint(0.6, 0.78, 1.0, 2.2, 2.2); // planet blue
-      tint(1.0, 0.82, 0.55, 6.2, 2.4); // city warm
-      tint(0.65, 0.92, 1.0, 10.4, 2.4); // room cool
+      // Swoosh at each segment's MIDPOINT, where the camera moves fastest.
+      introTl.add(() => audio.transition(), 1.7);
+      introTl.add(() => audio.transition(), 5.1);
+      introTl.add(() => audio.transition(), 8.5);
 
-      // A soft swoosh on each scene change.
-      introTl.add(() => audio.transition(), 2.2);
-      introTl.add(() => audio.transition(), 6.2);
-      introTl.add(() => audio.transition(), 10.4);
-
-      // Resolve into the hero: thin out the count mid-swarm, drop the spin,
-      // crossfade to the scroll forms, ease the pixels back to the hero size.
-      introTl.add(() => PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT), 15.8);
+      // Resolve: crossfade to the scroll forms, ease the pixels back to the hero
+      // size, then drop the (already faded) world particles for the scroll phase.
       introTl
-        .to(intro, { spin: 0, duration: 1.6, ease: "power2.out" }, 15.0)
-        .to(intro, { amt: 0, duration: 1.6, ease: "power2.in" }, 15.2)
+        .to(intro, { amt: 0, duration: 1.2, ease: "power2.in" }, 13.0)
         .to(
           particleUniforms.uSize,
           { value: BASE_SIZE, duration: 1.8, ease: "power2.in" },
-          15.0,
+          12.6,
         );
+      introTl.add(() => PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT), 13.9);
     });
 
     const tmp = new THREE.Vector3();
@@ -454,7 +591,6 @@ function PointsField() {
       const now = performance.now();
       if (!intro.active && near && now - lastHoverSound > 120) {
         lastHoverSound = now;
-        // higher in the cloud -> higher pitch
         const heightT = Math.min(Math.max((world.y + 1.8) / 3.6, 0), 1);
         audio.hoverParticle(150 + heightT * 520);
       }
@@ -482,17 +618,16 @@ function PointsField() {
       introTl?.kill();
       intro.active = false;
       intro.amt = 0;
-      intro.phase = 4;
+      intro.u = 1;
       particleUniforms.uSize.value = BASE_SIZE;
       PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT);
       document.documentElement.classList.remove("intro-flying");
       markWorldReady();
     }
 
-    mat.uniforms.uIntro.value = intro.phase;
     mat.uniforms.uIntroAmt.value = intro.amt;
+    mat.uniforms.uU.value = intro.u;
 
-    // Scroll morph target (only meaningful once the intro has handed off).
     const raw = Math.min(Math.max(scrollProgress.morphTarget, 0), 5);
     const seg = Math.min(Math.floor(raw), 4);
     const frac = raw - seg;
@@ -521,13 +656,32 @@ function PointsField() {
     if (p) {
       const t = mat.uniforms.uTime.value;
       if (intro.active) {
-        // The world transforms scene to scene; the camera pushes/rises and the
-        // cloud turns slowly for a weighty, cinematic feel.
-        cam.position.set(0, intro.cy, intro.cz);
-        cam.lookAt(0, intro.ly, 0);
+        // The world is rigid; the camera is the only thing that moves.
+        const u = Math.min(Math.max(intro.u, 0), 1);
+        if (u <= 0.75) {
+          // zoom through the world along the path, aimed at the scene ahead,
+          // with a slight bank in the turns
+          CAM_PATH.getPoint(u, _camPos);
+          LOOK_PATH.getPoint(u, _lookPos);
+          cam.position.copy(_camPos);
+          cam.lookAt(_lookPos);
+          CAM_PATH.getTangent(u, _tan);
+          const rollTarget = Math.min(Math.max(-_tan.x * 0.4, -0.14), 0.14);
+          camRoll += (rollTarget - camRoll) * 0.06;
+          cam.rotateZ(camRoll);
+        } else {
+          // a real full 360° around the TZ, spiralling inward to the hero shot.
+          // Starts at the window pose (matches path point 6) and ends dead front.
+          const o = (u - 0.75) / 0.25; // 0..1
+          const R = 7 + (4.2 - 7) * o;
+          const ang = o * TWO_PI;
+          cam.position.set(R * Math.sin(ang), 0.4 * (1 - o), R * Math.cos(ang));
+          cam.lookAt(0, 0, 0);
+          camRoll += (0 - camRoll) * 0.06;
+          cam.rotateZ(camRoll);
+        }
         p.position.set(0, 0, 0);
-        p.rotation.y += d * intro.spin;
-        p.rotation.x += (0 - p.rotation.x) * 0.02;
+        p.rotation.set(0, 0, 0);
       } else {
         p.rotation.y += d * 0.3 * (1 - crisp);
         p.rotation.y += (Math.sin(t * 0.4) * 0.14 - p.rotation.y) * 0.04 * crisp;
@@ -541,13 +695,17 @@ function PointsField() {
         cam.rotation.z += (0 - cam.rotation.z) * 0.06;
         p.position.x = Math.sin(morph * Math.PI) * 0.38 * (1 - crisp);
         const w0 = Math.max(0, 1 - Math.abs(morph));
-        p.position.y = w0 * 0.5 + Math.sin(t * 0.5) * 0.05;
+        // ease (don't snap) to the hero height — the intro ends with the TZ
+        // centred (y=0); the hero wants it lifted (y=0.5) to leave room for the
+        // text. Easing makes that a glide instead of a jump at the handoff.
+        const targetY = w0 * 0.5 + Math.sin(t * 0.5) * 0.05;
+        p.position.y += (targetY - p.position.y) * 0.04;
       }
     }
   });
 
   return (
-    <points ref={ref} geometry={PARTICLE_GEO}>
+    <points ref={ref} geometry={PARTICLE_GEO} frustumCulled={false}>
       <shaderMaterial
         ref={matRef}
         vertexShader={VERT}
