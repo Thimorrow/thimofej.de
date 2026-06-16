@@ -5,7 +5,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import { onIntroDone } from "@/lib/intro";
+import { onWorldReady } from "@/lib/intro";
 
 gsap.registerPlugin(useGSAP, SplitText);
 
@@ -62,9 +62,9 @@ export function HeroIntro() {
           );
       };
 
-      // Wait for the intro handoff AND the display font, so the char split
-      // measures real glyphs (no reflow pop).
-      const unsub = onIntroDone(() => {
+      // Wait for the drone-flight to arrive AND the display font, so the char
+      // split measures real glyphs (no reflow pop).
+      const unsub = onWorldReady(() => {
         void document.fonts.ready.then(build);
       });
 

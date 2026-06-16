@@ -9,7 +9,7 @@ import { CanvasMount } from "@/components/canvas/CanvasMount";
 import { SoundToggle } from "@/components/SoundToggle";
 import { InteractionSound } from "@/components/InteractionSound";
 import { AliBabaEasterEgg } from "@/components/AliBabaEasterEgg";
-import { Preloader } from "@/components/Preloader";
+import { EnterGate } from "@/components/EnterGate";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -58,7 +58,7 @@ export default function RootLayout({
       className={`${fraunces.variable} ${spectral.variable} ${ibmPlexMono.variable} antialiased`}
     >
       <body className="min-h-dvh">
-        <Preloader />
+        <EnterGate />
         <CanvasMount />
         <SmoothScrollProvider>
           <SkipLink />

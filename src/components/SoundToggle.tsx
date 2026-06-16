@@ -16,6 +16,7 @@ export function SoundToggle() {
   return (
     <button
       type="button"
+      data-intro-hide
       onClick={() => setOn(audio.toggle())}
       aria-pressed={on}
       aria-label={on ? "Hintergrundton ausschalten" : "Hintergrundton einschalten"}

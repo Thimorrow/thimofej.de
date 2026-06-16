@@ -65,6 +65,18 @@
   }
 }
 
+/* Fullscreen cinematic intro: hide the page chrome while the drone flies the
+   particle field; it all fades back in when the flight arrives. */
+header,
+[data-intro-hide] {
+  transition: opacity 700ms ease;
+}
+.intro-flying header,
+.intro-flying [data-intro-hide] {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Hero poster crossfades out once the live WebGL canvas has painted. */
 [data-hero-poster] {
   transition: opacity 700ms ease;

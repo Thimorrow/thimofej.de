@@ -1,24 +1,38 @@
-// Tiny one-shot signal: the Preloader fires it when the curtain has lifted; the
-// hero text listens so its reveal hands off cleanly from the intro instead of
-// guessing with a hard-coded delay. Module-level (not window) so it stays typed
-// and SSR-safe — no listener can run before hydration anyway.
-let done = false;
-const subs = new Set<() => void>();
+// Two one-shot intro signals, module-level (not window) so they stay typed and
+// SSR-safe — no listener can run before hydration anyway.
+//
+//  - introDone  : the preloader curtain has lifted. The particle drone-flight
+//                 starts here, and the page chrome hides for a fullscreen ride.
+//  - worldReady : the flight has arrived (or the user scrolled past it). The
+//                 hero text and nav reveal here, not before.
 
-export function markIntroDone() {
-  if (done) return;
-  done = true;
-  subs.forEach((f) => f());
-  subs.clear();
+type Signal = { done: boolean; subs: Set<() => void> };
+
+function makeSignal(): Signal {
+  return { done: false, subs: new Set() };
 }
 
-// Subscribe to the intro-finished signal. If it already fired, the callback runs
-// on the next microtask. Returns an unsubscribe.
-export function onIntroDone(cb: () => void): () => void {
-  if (done) {
+function fire(sig: Signal) {
+  if (sig.done) return;
+  sig.done = true;
+  sig.subs.forEach((f) => f());
+  sig.subs.clear();
+}
+
+function subscribe(sig: Signal, cb: () => void): () => void {
+  if (sig.done) {
     queueMicrotask(cb);
     return () => {};
   }
-  subs.add(cb);
-  return () => subs.delete(cb);
+  sig.subs.add(cb);
+  return () => sig.subs.delete(cb);
 }
+
+const introDone = makeSignal();
+const worldReady = makeSignal();
+
+export const markIntroDone = () => fire(introDone);
+export const onIntroDone = (cb: () => void) => subscribe(introDone, cb);
+
+export const markWorldReady = () => fire(worldReady);
+export const onWorldReady = (cb: () => void) => subscribe(worldReady, cb);

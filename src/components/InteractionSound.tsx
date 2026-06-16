@@ -14,7 +14,7 @@ export function InteractionSound() {
       const el = (e.target as HTMLElement | null)?.closest("a, button");
       if (!el || el === last) return;
       last = el;
-      audio.hover();
+      audio.hoverButton();
     };
     const onOut = (e: PointerEvent) => {
       const el = (e.target as HTMLElement | null)?.closest("a, button");

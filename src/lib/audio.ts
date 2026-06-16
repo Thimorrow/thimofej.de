@@ -1,16 +1,23 @@
-// Single shared audio engine, synthesized with the Web Audio API (no assets).
-// Holds the ambient drone (toggled from the SoundToggle button) plus two soft
-// UI cues: a warm "bloom" when a particle form locks, and an airy "hover" tap.
-// One AudioContext, created lazily on the first user gesture (autoplay policy).
-// Everything is silent unless the user has switched sound on.
-
-type Drone = { gain: GainNode; oscs: OscillatorNode[] };
+// Single shared audio engine. Mixes AI-generated samples (ElevenLabs, served
+// from /public/sound) for the rich cues — the ambient drone, the intro flight
+// whoosh, the arrival, and the particle hover — with cheap synthesized ticks for
+// the high-frequency UI cues (button taps, scroll form-locks). One AudioContext,
+// created lazily on the first user gesture (autoplay policy); everything is
+// silent unless sound is on (the default).
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
-let drone: Drone | null = null;
-let enabled = true; // on by default; the drone actually starts on first gesture
+let enabled = true; // on by default; samples load + drone starts on first gesture
 let armed = false;
+
+let droneSrc: AudioBufferSourceNode | null = null;
+let droneGain: GainNode | null = null;
+
+const raw: Record<string, ArrayBuffer> = {};
+const buffers: Record<string, AudioBuffer> = {};
+const SAMPLES = ["drone", "arrival", "whoosh"] as const;
+let prefetching: Promise<void> | null = null;
+let decoding: Promise<void> | null = null;
 
 function ensureCtx(): AudioContext {
   if (!ctx) {
@@ -23,57 +30,104 @@ function ensureCtx(): AudioContext {
   return ctx;
 }
 
-function startDrone() {
+// Fetch the raw bytes (no AudioContext needed) — safe to call during the enter
+// gate, before any user gesture, so decoding on click is instant.
+function prefetch(): Promise<void> {
+  if (prefetching) return prefetching;
+  prefetching = Promise.all(
+    SAMPLES.map(async (name) => {
+      const res = await fetch(`/sound/${name}.mp3`);
+      raw[name] = await res.arrayBuffer();
+    }),
+  ).then(() => {});
+  return prefetching;
+}
+
+// Decode the prefetched bytes into the context (needs a gesture-created ctx).
+function decodeAll(): Promise<void> {
+  if (decoding) return decoding;
   const c = ensureCtx();
-  const gain = c.createGain();
-  gain.gain.value = 0;
-  gain.connect(master as GainNode);
+  decoding = prefetch()
+    .then(() =>
+      Promise.all(
+        SAMPLES.map(async (name) => {
+          // decodeAudioData detaches the buffer, so decode a copy.
+          buffers[name] = await c.decodeAudioData(raw[name].slice(0));
+        }),
+      ),
+    )
+    .then(() => {});
+  return decoding;
+}
 
-  const lp = c.createBiquadFilter();
-  lp.type = "lowpass";
-  lp.frequency.value = 420;
-  lp.Q.value = 0.6;
-  lp.connect(gain);
+function playSample(
+  name: string,
+  { gain = 1, rate = 1, loop = false }: { gain?: number; rate?: number; loop?: boolean },
+): { src: AudioBufferSourceNode; gain: GainNode } | null {
+  if (!ctx || !master || !buffers[name]) return null;
+  const src = ctx.createBufferSource();
+  src.buffer = buffers[name];
+  src.loop = loop;
+  src.playbackRate.value = rate;
+  const g = ctx.createGain();
+  g.gain.value = gain;
+  src.connect(g);
+  g.connect(master);
+  src.start();
+  return { src, gain: g };
+}
 
-  const make = (type: OscillatorType, freq: number) => {
-    const o = c.createOscillator();
-    o.type = type;
-    o.frequency.value = freq;
-    o.connect(lp);
-    o.start();
-    return o;
-  };
-  const oscs = [make("sine", 110), make("sine", 110.4), make("triangle", 55)];
-  gain.gain.setTargetAtTime(0.045, c.currentTime, 0.6);
-  drone = { gain, oscs };
+function startDrone() {
+  if (!ctx || droneSrc) return;
+  const node = playSample("drone", { gain: 0, loop: true });
+  if (!node) return;
+  droneSrc = node.src;
+  droneGain = node.gain;
+  droneGain.gain.setTargetAtTime(0.5, ctx.currentTime, 0.9);
 }
 
 function stopDrone() {
-  if (!ctx || !drone) return;
+  if (!ctx || !droneSrc || !droneGain) return;
   const t = ctx.currentTime;
-  drone.gain.gain.cancelScheduledValues(t);
-  drone.gain.gain.setTargetAtTime(0, t, 0.3);
-  drone.oscs.forEach((o) => o.stop(t + 1.2));
-  drone = null;
+  droneGain.gain.cancelScheduledValues(t);
+  droneGain.gain.setTargetAtTime(0, t, 0.4);
+  droneSrc.stop(t + 1.6);
+  droneSrc = null;
+  droneGain = null;
+}
+
+function primeAndStart() {
+  if (!enabled) return;
+  void decodeAll().then(() => {
+    if (enabled && !droneSrc) startDrone();
+  });
 }
 
 export const audio = {
   get enabled() {
     return enabled;
   },
-  // Browsers block audio until a user gesture. Call once on mount: when sound is
-  // on (the default), the drone fades in on the first click / scroll / key.
+  // Warm the cache during the enter gate (fetch only, no gesture needed).
+  prefetch() {
+    if (typeof window !== "undefined") void prefetch();
+  },
+  // Unlock + start from a user gesture (the enter-gate click). Decodes the
+  // prefetched samples into the freshly created context, then fades in the
+  // drone. Resolves once samples are ready so cues fire in time.
+  async start() {
+    armed = true;
+    await decodeAll();
+    if (enabled && !droneSrc) startDrone();
+  },
+  // Fallback unlock on the first gesture if the gate was somehow bypassed.
   arm() {
     if (armed || typeof window === "undefined") return;
     armed = true;
-    const start = () => {
-      if (enabled && !drone) startDrone();
-    };
     const opts = { once: true, passive: true } as const;
-    window.addEventListener("pointerdown", start, opts);
-    window.addEventListener("keydown", start, opts);
-    window.addEventListener("wheel", start, opts);
-    window.addEventListener("touchstart", start, opts);
+    window.addEventListener("pointerdown", primeAndStart, opts);
+    window.addEventListener("keydown", primeAndStart, opts);
+    window.addEventListener("wheel", primeAndStart, opts);
+    window.addEventListener("touchstart", primeAndStart, opts);
   },
   // Returns the new on/off state so the button can reflect it.
   toggle(): boolean {
@@ -81,15 +135,103 @@ export const audio = {
       stopDrone();
       enabled = false;
     } else {
-      startDrone();
       enabled = true;
+      primeAndStart();
     }
     return enabled;
   },
 
-  // Warm bloom when a form locks: two sine partials (root + a fifth) through a
-  // lowpass that opens then closes, with a soft attack and long tail. Reads as a
-  // breath of resonance, not a beep.
+  // --- Sample cues (rich, AI-generated) ---
+
+  // Intro: the forward-flight riser as the drone tears through the pixel field.
+  flight() {
+    if (!enabled) return;
+    playSample("whoosh", { gain: 0.5 });
+  },
+  // Intro: a soft, quick swoosh at each scene change (lighter than flight()).
+  transition() {
+    if (!enabled) return;
+    playSample("whoosh", { gain: 0.32, rate: 1.5 });
+  },
+  // Intro: the deep bloom as the TZ lands and the world arrives.
+  arrival() {
+    if (!enabled) return;
+    playSample("arrival", { gain: 0.7 });
+  },
+  // Particle-cloud hover: a vibrating tone whose pitch tracks how high in the
+  // cloud the cursor is. `freq` is supplied by the canvas from the cursor height;
+  // a pitch LFO (vibrato) + amplitude LFO (tremolo) make it shimmer/vibrate.
+  hoverParticle(freq = 220) {
+    if (!enabled || !ctx || !master) return;
+    const c = ctx;
+    const t = c.currentTime;
+
+    const env = c.createGain();
+    env.connect(master);
+    // tremolo: an LFO swinging a VCA's gain so the tone pulses
+    const vca = c.createGain();
+    vca.gain.value = 0.65;
+    vca.connect(env);
+    const trem = c.createOscillator();
+    trem.type = "sine";
+    trem.frequency.value = 11;
+    const tremDepth = c.createGain();
+    tremDepth.gain.value = 0.35;
+    trem.connect(tremDepth);
+    tremDepth.connect(vca.gain);
+
+    const o = c.createOscillator();
+    o.type = "sine";
+    o.frequency.value = freq;
+    o.connect(vca);
+    // vibrato: pitch wobble
+    const vib = c.createOscillator();
+    vib.type = "sine";
+    vib.frequency.value = 6.5;
+    const vibDepth = c.createGain();
+    vibDepth.gain.value = freq * 0.03;
+    vib.connect(vibDepth);
+    vibDepth.connect(o.frequency);
+
+    env.gain.setValueAtTime(0, t);
+    env.gain.linearRampToValueAtTime(0.06, t + 0.03);
+    env.gain.exponentialRampToValueAtTime(0.0001, t + 0.42);
+    o.start(t); trem.start(t); vib.start(t);
+    o.stop(t + 0.46); trem.stop(t + 0.46); vib.stop(t + 0.46);
+  },
+
+  // --- Synth cues (cheap, instant, high-frequency) ---
+
+  // Button / link hover: a dry bandpassed-noise tap.
+  hoverButton() {
+    if (!enabled || !ctx || !master) return;
+    const c = ctx;
+    const t = c.currentTime;
+    const dur = 0.05;
+
+    const buf = c.createBuffer(1, Math.ceil(c.sampleRate * dur), c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 1900 + Math.random() * 1400;
+    bp.Q.value = 1.1;
+    const g = c.createGain();
+    src.connect(bp);
+    bp.connect(g);
+    g.connect(master);
+
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.022, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.start(t);
+    src.stop(t + dur);
+  },
+
+  // Scroll form-lock: a short warm sine bloom on a low note (one per form snap).
   lock(freq = 196) {
     if (!enabled || !ctx || !master) return;
     const c = ctx;
@@ -110,7 +252,7 @@ export const audio = {
     o1.frequency.value = freq;
     const o2 = c.createOscillator();
     o2.type = "sine";
-    o2.frequency.value = freq * 1.5; // a perfect fifth above
+    o2.frequency.value = freq * 1.5;
     o1.connect(lp);
     o2.connect(lp);
 
@@ -121,36 +263,5 @@ export const audio = {
     o2.start(t);
     o1.stop(t + 1.15);
     o2.stop(t + 1.15);
-  },
-
-  // Airy hover tap: a tiny burst of bandpassed noise. Soft, dry, no pitch — a
-  // tactile "tick" rather than a tone.
-  hover() {
-    if (!enabled || !ctx || !master) return;
-    const c = ctx;
-    const t = c.currentTime;
-    const dur = 0.05;
-
-    const buf = c.createBuffer(1, Math.ceil(c.sampleRate * dur), c.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-
-    const src = c.createBufferSource();
-    src.buffer = buf;
-    const bp = c.createBiquadFilter();
-    bp.type = "bandpass";
-    // Vary the centre so repeated taps shimmer instead of machine-gunning.
-    bp.frequency.value = 1900 + Math.random() * 1400;
-    bp.Q.value = 1.1;
-    const g = c.createGain();
-    src.connect(bp);
-    bp.connect(g);
-    g.connect(master);
-
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(0.022, t + 0.004);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    src.start(t);
-    src.stop(t + dur);
   },
 };
