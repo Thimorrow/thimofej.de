@@ -1,26 +1,74 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Design tokens — Midnight + Chrome + electric cyan, with one engineered amber.
+   See PLAN.md §2.1. */
+@theme {
+  --color-void: #070a12;
+  --color-surface: #0e1320;
+  --color-text: #e8ecf4;
+  --color-text-muted: #5a6478;
+  --color-text-meta: #7c879c;
+  --color-accent: #21e6ff;
+  --color-warm: #e0a56a;
+  --color-warm-text: #f0c594;
+  --color-chrome-base: #c6cdd8;
+  --color-chrome-shadow: #8a93a6;
+  --color-chrome-spec: #f2f5fa;
 }
 
+/* Fonts wired from next/font (set as CSS vars on <html> in layout.tsx).
+   `inline` so the utilities reference the runtime variables directly. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-spectral);
+  --font-mono: var(--font-ibm-plex-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* The void lives on <html> so the fixed WebGL canvas (-z-10) can show
+       through transparent sections (the hero); opaque sections cover it. */
+    background-color: var(--color-void);
+    background-image: radial-gradient(
+      120% 80% at 50% -10%,
+      rgba(33, 230, 255, 0.06),
+      transparent 60%
+    );
+    background-attachment: fixed;
+  }
+  body {
+    color: var(--color-text);
+    font-family: var(--font-spectral), Georgia, serif;
+  }
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-void);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Reduced motion: kill CSS animation/transition; the JS smooth-scroll path
+   is disabled separately in SmoothScrollProvider. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Hero poster crossfades out once the live WebGL canvas has painted. */
+[data-hero-poster] {
+  transition: opacity 700ms ease;
+}
+.canvas-ready [data-hero-poster] {
+  opacity: 0;
 }

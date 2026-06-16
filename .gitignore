@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# internal planning/research notes (not for public repo)
+/PLAN.md
+/RESEARCH_DIGEST.md
+/PHASE45.md
+/content.md
