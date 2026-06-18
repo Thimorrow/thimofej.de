@@ -7,10 +7,11 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-// Star-Wars-Feel: jeder Content-Block ([data-reveal]) bleibt voll lesbar, solange
-// er im Blick ist, und kippt erst beim Verlassen am oberen Rand leicht in die
-// Perspektive und fadet weg, statt hart rauszuscrollen. Scrub-getrieben (folgt
-// dem Scroll), reversibel, unter reduced motion komplett aus.
+// Star-Wars-Feel ueber den ganzen Durchlauf: jeder Content-Block ([data-reveal])
+// kommt von unten getiltet + gefadet rein, steht in der Mitte flach und voll
+// lesbar (Hold), und kippt am oberen Rand wieder weg. Eine scrub-getriebene
+// Timeline pro Block (eine Quelle fuer rotationX, kein Tween-Konflikt),
+// reversibel. Unter reduced motion komplett aus -> Inhalt bleibt einfach sichtbar.
 export function ScrollCrawl() {
   const reduce = useReducedMotion();
 
@@ -19,31 +20,35 @@ export function ScrollCrawl() {
       if (reduce) return;
       const blocks = gsap.utils.toArray<HTMLElement>("[data-reveal]");
       if (!blocks.length) return;
-      const tweens = blocks.map((block) =>
-        gsap.fromTo(
+      const timelines = blocks.map((block) => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: block,
+            start: "top bottom", // Block taucht unten auf
+            end: "bottom top", // Block ist oben ganz raus
+            scrub: true,
+          },
+        });
+        tl.fromTo(
           block,
-          { transformPerspective: 900, rotationX: 0, yPercent: 0, autoAlpha: 1 },
-          {
+          { transformPerspective: 900, rotationX: 24, yPercent: 8, autoAlpha: 0 },
+          { rotationX: 0, yPercent: 0, autoAlpha: 1, ease: "none", duration: 1 },
+        )
+          .to(block, { duration: 2 }) // Hold: flach + lesbar in der Mitte
+          .to(block, {
             rotationX: 24,
             yPercent: -6,
             autoAlpha: 0,
             ease: "none",
-            transformOrigin: "center center",
-            scrollTrigger: {
-              trigger: block,
-              // erst wenn der Block oben anstößt -> bis er ganz raus ist
-              start: "top top",
-              end: "bottom top",
-              scrub: true,
-            },
-          },
-        ),
-      );
+            duration: 1,
+          });
+        return tl;
+      });
       ScrollTrigger.refresh();
       return () => {
-        tweens.forEach((t) => {
-          t.scrollTrigger?.kill();
-          t.kill();
+        timelines.forEach((tl) => {
+          tl.scrollTrigger?.kill();
+          tl.kill();
         });
       };
     },
