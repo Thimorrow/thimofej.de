@@ -73,12 +73,12 @@ export default function RootLayout({
         <div
           aria-hidden
           data-intro-hide
-          className="pointer-events-none fixed inset-x-0 top-0 z-30 h-24 bg-gradient-to-b from-void to-transparent backdrop-blur-[2px] [mask-image:linear-gradient(to_bottom,black,transparent)] sm:h-32"
+          className="pointer-events-none fixed inset-x-0 top-0 z-30 h-32 bg-gradient-to-b from-void via-void/70 to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_bottom,black,transparent)] sm:h-52"
         />
         <div
           aria-hidden
           data-intro-hide
-          className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-24 bg-gradient-to-t from-void to-transparent backdrop-blur-[2px] [mask-image:linear-gradient(to_top,black,transparent)] sm:h-32"
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-32 bg-gradient-to-t from-void via-void/70 to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_top,black,transparent)] sm:h-52"
         />
         <SoundToggle />
         <ReplayIntro />
