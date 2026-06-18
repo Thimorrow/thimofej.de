@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ScrollReveals } from "@/components/ScrollReveals";
+import { ScrollCrawl } from "@/components/ScrollCrawl";
 import { MagneticLink } from "@/components/MagneticLink";
 import { HeroIntro } from "@/components/HeroIntro";
 
@@ -8,6 +9,7 @@ export default function Home() {
   return (
     <main id="main">
       <ScrollReveals />
+      <ScrollCrawl />
       {/* HERO */}
       <section
         aria-labelledby="hero-heading"

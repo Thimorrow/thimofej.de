@@ -16,10 +16,10 @@ export function PostFX({ low }: { low: boolean }) {
     <EffectComposer multisampling={low ? 0 : 4}>
       <Bloom
         mipmapBlur
-        luminanceThreshold={0.55}
-        luminanceSmoothing={0.2}
-        intensity={low ? 0.26 : 0.32}
-        radius={0.4}
+        luminanceThreshold={0.7}
+        luminanceSmoothing={0.18}
+        intensity={low ? 0.14 : 0.18}
+        radius={0.3}
       />
       <Noise
         premultiply
