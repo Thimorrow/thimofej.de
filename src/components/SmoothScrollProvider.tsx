@@ -46,6 +46,8 @@ export function SmoothScrollProvider({
 
       const lenis = lenisRef.current?.lenis;
       lenis?.on("scroll", ScrollTrigger.update);
+      // Exposed so the intro replay can jump to the top before re-flying.
+      (window as unknown as { __lenis?: typeof lenis }).__lenis = lenis;
 
       // One anchor per section: the scroll position where that section's heading
       // sits in the centre of the viewport. The cloud morphs toward form i as
@@ -170,6 +172,7 @@ export function SmoothScrollProvider({
         chapterTriggers.forEach((t) => t.kill());
         headingTriggers.forEach((t) => t.kill());
         st.kill();
+        delete (window as unknown as { __lenis?: unknown }).__lenis;
       };
     },
     { dependencies: [reduce], revertOnUpdate: true },

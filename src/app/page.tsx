@@ -37,7 +37,7 @@ export default function Home() {
       <section
         id="work"
         aria-labelledby="work-heading"
-        className="relative border-t border-white/5 bg-[radial-gradient(130%_72%_at_50%_50%,rgba(7,10,18,0.9)_0%,rgba(7,10,18,0.55)_55%,rgba(7,10,18,0)_100%)]"
+        className="relative border-t border-white/5 backdrop-blur-[2px] bg-[radial-gradient(130%_80%_at_50%_50%,rgba(7,10,18,0.96)_0%,rgba(7,10,18,0.74)_58%,rgba(7,10,18,0)_100%)]"
       >
         <div data-reveal className="mx-auto max-w-3xl px-6 py-32">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent">
@@ -91,7 +91,7 @@ export default function Home() {
       <section
         id="life"
         aria-labelledby="life-heading"
-        className="relative border-t border-white/5 bg-[radial-gradient(130%_72%_at_50%_50%,rgba(7,10,18,0.9)_0%,rgba(7,10,18,0.55)_55%,rgba(7,10,18,0)_100%)]"
+        className="relative border-t border-white/5 backdrop-blur-[2px] bg-[radial-gradient(130%_80%_at_50%_50%,rgba(7,10,18,0.96)_0%,rgba(7,10,18,0.74)_58%,rgba(7,10,18,0)_100%)]"
       >
         <div data-reveal className="mx-auto max-w-3xl px-6 py-32">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-warm">
@@ -126,7 +126,7 @@ export default function Home() {
       <section
         id="likes"
         aria-labelledby="likes-heading"
-        className="relative border-t border-white/5 bg-[radial-gradient(130%_72%_at_50%_50%,rgba(7,10,18,0.9)_0%,rgba(7,10,18,0.55)_55%,rgba(7,10,18,0)_100%)]"
+        className="relative border-t border-white/5 backdrop-blur-[2px] bg-[radial-gradient(130%_80%_at_50%_50%,rgba(7,10,18,0.96)_0%,rgba(7,10,18,0.74)_58%,rgba(7,10,18,0)_100%)]"
       >
         <div data-reveal className="mx-auto max-w-3xl px-6 py-32">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-warm">
@@ -163,7 +163,7 @@ export default function Home() {
       <section
         id="writing"
         aria-labelledby="writing-heading"
-        className="relative border-t border-white/5 bg-[radial-gradient(130%_72%_at_50%_50%,rgba(7,10,18,0.9)_0%,rgba(7,10,18,0.55)_55%,rgba(7,10,18,0)_100%)]"
+        className="relative border-t border-white/5 backdrop-blur-[2px] bg-[radial-gradient(130%_80%_at_50%_50%,rgba(7,10,18,0.96)_0%,rgba(7,10,18,0.74)_58%,rgba(7,10,18,0)_100%)]"
       >
         <div data-reveal className="mx-auto max-w-3xl px-6 py-32">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent">
@@ -191,7 +191,7 @@ export default function Home() {
       <section
         id="contact"
         aria-labelledby="contact-heading"
-        className="relative border-t border-white/5 bg-[radial-gradient(130%_72%_at_50%_50%,rgba(7,10,18,0.9)_0%,rgba(7,10,18,0.55)_55%,rgba(7,10,18,0)_100%)]"
+        className="relative border-t border-white/5 backdrop-blur-[2px] bg-[radial-gradient(130%_80%_at_50%_50%,rgba(7,10,18,0.96)_0%,rgba(7,10,18,0.74)_58%,rgba(7,10,18,0)_100%)]"
       >
         <div data-reveal className="mx-auto max-w-3xl px-6 py-32">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent">

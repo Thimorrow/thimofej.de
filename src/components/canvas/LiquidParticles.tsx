@@ -6,7 +6,13 @@ import * as THREE from "three";
 import gsap from "gsap";
 import { scrollProgress } from "@/lib/scrollProgress";
 import { audio } from "@/lib/audio";
-import { onIntroDone, markWorldReady } from "@/lib/intro";
+import {
+  onIntroDone,
+  markWorldReady,
+  skipFlight,
+  onReplay,
+  emitArrive,
+} from "@/lib/intro";
 import { PostFX } from "./PostFX";
 
 const LOW_END =
@@ -211,124 +217,150 @@ function buildGeo() {
       }
       x += 4.5; y += 1.0; z += 32;
     } else if (i < D) {
-      // ---- CITY: a night skyline — solid towers + lit-window grids on a
-      // glowing street grid, so it reads as a city at a glance ----
+      // ---- CITY: a night skyline read in profile — a wide glowing ground line,
+      // towers of staggered heights with lit windows + crisp roof/edge lines, and
+      // a pale moon behind, so it reads as a night city at a glance ----
       rev = 0.28;
-      const gx = Math.floor(rnd() * 9) - 4;
-      const gz = Math.floor(rnd() * 7) - 3;
-      const sp = 0.98; // block spacing (the gaps between are the streets)
-      const dd = 1 - Math.min(1, (Math.abs(gx) + Math.abs(gz)) / 7);
-      const hh = 1.3 + (0.25 + 0.75 * dd) * phash(gx, gz, 1) * 5.0; // tower height
-      const bw = 0.34 + phash(gx, gz, 2) * 0.13; // half width
-      const bd = 0.34 + phash(gx, gz, 3) * 0.13; // half depth
-      const cx = gx * sp;
-      const cz = gz * sp;
-      const base = -2.6;
-      const role = rnd();
-      if (role < 0.1) {
-        // glowing street grid: warm lines running between the blocks
-        if (rnd() < 0.5) {
-          x = cx + (rnd() * 2 - 1) * sp * 0.5;
-          z = cz + (rnd() < 0.5 ? -0.5 : 0.5) * sp;
-        } else {
-          x = cx + (rnd() < 0.5 ? -0.5 : 0.5) * sp;
-          z = cz + (rnd() * 2 - 1) * sp * 0.5;
-        }
-        y = base;
-        cr = 1.0; cg = 0.58; cb = 0.28;
-      } else if (role < 0.2) {
-        // crisp flat roof cap (defines the jagged skyline) + red beacon on tall
-        if (dd > 0.45 && rnd() < 0.3) {
-          x = cx + (rnd() * 2 - 1) * 0.05;
-          z = cz + (rnd() * 2 - 1) * 0.05;
-          y = base + hh + rnd() * 0.3;
-          cr = 1.0; cg = 0.2; cb = 0.16;
-        } else {
-          x = cx + (rnd() * 2 - 1) * bw;
-          z = cz + (rnd() * 2 - 1) * bd;
-          y = base + hh;
-          cr = 0.6; cg = 0.72; cb = 0.95;
-        }
-      } else if (role < 0.28) {
-        // bright vertical corner edges define the box
-        x = cx + (rnd() < 0.5 ? -bw : bw);
-        z = cz + (rnd() < 0.5 ? -bd : bd);
-        y = base + rnd() * hh;
-        cr = 0.5; cg = 0.62; cb = 0.85;
+      const GY = -3.2; // ground / street level
+      const r = rnd();
+      if (r < 0.08) {
+        // big pale moon disc low on the horizon, BEHIND the skyline (the camera
+        // looks slightly down as it descends, so a low moon stays in frame)
+        const ang = rnd() * 6.2831;
+        const rad = 2.5 * Math.sqrt(rnd());
+        x = -3.8 + rad * Math.cos(ang);
+        y = 3.2 + rad * Math.sin(ang);
+        z = -5;
+        cr = 1.0; cg = 0.98; cb = 0.93;
+      } else if (r < 0.22) {
+        // glowing ground haze + a brighter far horizon line
+        const horizon = rnd() < 0.5;
+        x = (rnd() * 2 - 1) * 6.5;
+        y = GY + (horizon ? 0.04 : (rnd() * 2 - 1) * 0.12);
+        z = horizon ? -3.0 : (rnd() * 2 - 1) * 2.4;
+        cr = 1.0; cg = horizon ? 0.64 : 0.5; cb = horizon ? 0.34 : 0.26;
       } else {
-        // DENSE lit windows over the whole facade so each tower reads as a solid
-        // lit block — most warm, a few cool, only a few dark
-        const side = Math.floor(rnd() * 4);
-        const cols = Math.max(2, Math.round(bw / 0.14));
-        const rows = Math.max(4, Math.round(hh / 0.24));
-        const wc = Math.floor(rnd() * cols);
-        const wr = Math.floor(rnd() * rows);
-        const across = ((wc + 0.5) / cols) * 2 - 1;
-        const jx = (rnd() * 2 - 1) * 0.03;
-        const jy = (rnd() * 2 - 1) * 0.04;
-        if (side === 0) { x = cx + bw; z = cz + across * bd + jx; }
-        else if (side === 1) { x = cx - bw; z = cz + across * bd + jx; }
-        else if (side === 2) { x = cx + across * bw + jx; z = cz + bd; }
-        else { x = cx + across * bw + jx; z = cz - bd; }
-        y = base + 0.2 + ((wr + 0.5) / rows) * (hh - 0.35) + jy;
-        const lit = phash(gx * 3 + side, gz * 5 + wc, wr + 2);
-        if (lit > 0.22) {
-          if (phash(gx + wc, gz + wr, side) > 0.88) {
-            cr = 0.7; cg = 0.85; cb = 1.0; // a few cool-white windows
+        // towers: a row across (x), a few rows deep (z); each a solid lit block.
+        // Kept narrow + tall so the ~40k city particles stay dense and bright.
+        const gx = Math.floor(rnd() * 11) - 5; // -5..5
+        const gz = Math.floor(rnd() * 4); // 0..3 (rows receding from camera)
+        const sp = 1.0;
+        const cx = gx * sp + (phash(gx, gz, 7) - 0.5) * 0.28;
+        const cz = gz * sp;
+        const hh = 2.6 + phash(gx, gz, 1) * 5.2; // tall, staggered heights
+        const bw = 0.38 + phash(gx, gz, 2) * 0.16;
+        const bd = 0.38 + phash(gx, gz, 3) * 0.16;
+        const role = rnd();
+        if (role < 0.16) {
+          // crisp flat roof cap -> jagged silhouette; tall ones get a red beacon
+          if (hh > 4.6 && rnd() < 0.4) {
+            x = cx + (rnd() * 2 - 1) * 0.05;
+            z = cz + (rnd() * 2 - 1) * 0.05;
+            y = GY + hh + 0.1 + rnd() * 0.4;
+            cr = 1.0; cg = 0.25; cb = 0.18;
           } else {
-            cr = 1.0; cg = 0.76 + 0.14 * lit; cb = 0.44; // warm windows
+            x = cx + (rnd() * 2 - 1) * bw;
+            z = cz + (rnd() * 2 - 1) * bd;
+            y = GY + hh;
+            cr = 0.78; cg = 0.9; cb = 1.0;
           }
+        } else if (role < 0.34) {
+          // bright vertical corner columns -> read the tower edges
+          x = cx + (rnd() < 0.5 ? -bw : bw);
+          z = cz + (rnd() < 0.5 ? -bd : bd);
+          y = GY + rnd() * hh;
+          cr = 0.62; cg = 0.78; cb = 1.0;
         } else {
-          cr = 0.18; cg = 0.2; cb = 0.28; // a few dark windows
+          // dense lit windows over the facades -> solid glowing towers
+          const side = Math.floor(rnd() * 4);
+          const across = rnd() * 2 - 1;
+          if (side === 0) { x = cx + bw; z = cz + across * bd; }
+          else if (side === 1) { x = cx - bw; z = cz + across * bd; }
+          else if (side === 2) { x = cx + across * bw; z = cz + bd; }
+          else { x = cx + across * bw; z = cz - bd; }
+          const wr = Math.floor(rnd() * Math.max(4, Math.round(hh / 0.22)));
+          y = GY + 0.18 + (wr + 0.5) * 0.22 + (rnd() * 2 - 1) * 0.03;
+          if (y > GY + hh) y = GY + hh - rnd() * 0.2;
+          const lit = phash(gx * 3 + side, gz * 5, wr + 2);
+          if (lit > 0.18) {
+            if (phash(gx + wr, gz + side, wr) > 0.86) {
+              cr = 0.7; cg = 0.86; cb = 1.0; // a few cool-white windows
+            } else {
+              cr = 1.0; cg = 0.74 + 0.16 * lit; cb = 0.42; // warm windows
+            }
+          } else {
+            cr = 0.16; cg = 0.18; cb = 0.26; // a few dark windows
+          }
         }
       }
-      y += -2.5; z += 18;
+      z += 18;
     } else {
-      // ---- ROOM around the origin (box + window frame + table) — the room you
-      // see through a city window, then fly into ----
+      // ---- ROOM around the origin: a clean dark room the camera flies into — a
+      // perspective floor grid, slim wall/ceiling edges, and one warm glowing
+      // window (on the near wall) we pass through. The TZ floats at its centre,
+      // no clutter, no furniture. ----
       rev = 0.5;
-      const RX = 2.7;
-      const RY = 1.9;
-      const NEARZ = 5;
-      const FARZ = -1.5;
-      const zc = (s: number) => ((s + 1) / 2) * (NEARZ - FARZ) + FARZ;
+      const RX = 2.8;
+      const RY = 2.0;
+      const NEARZ = 5.0;
+      const FARZ = -2.2;
       const rr3 = rnd();
-      if (rr3 < 0.46) {
-        const axis = Math.floor(rnd() * 3);
-        const s = rnd() * 2 - 1;
-        const e1 = rnd() < 0.5 ? -1 : 1;
-        const e2 = rnd() < 0.5 ? -1 : 1;
-        if (axis === 0) { x = s * RX; y = e1 * RY; z = zc(e2); }
-        else if (axis === 1) { x = e1 * RX; y = s * RY; z = zc(e2); }
-        else { x = e1 * RX; y = e2 * RY; z = zc(s); }
-        cr = 0.5; cg = 0.82; cb = 1.0;
-      } else if (rr3 < 0.64) {
-        const ww = 1.5;
-        const wh = 1.2;
-        const edge = Math.floor(rnd() * 4);
-        const t = rnd() * 2 - 1;
-        if (edge === 0) { x = t * ww; y = 0.3 + wh; }
-        else if (edge === 1) { x = t * ww; y = 0.3 - wh; }
-        else if (edge === 2) { x = ww; y = 0.3 + t * wh; }
-        else { x = -ww; y = 0.3 + t * wh; }
-        z = NEARZ - 0.02;
-        cr = 1.0; cg = 0.97; cb = 0.86;
-      } else if (rr3 < 0.82) {
-        if (rnd() < 0.7) {
-          x = (rnd() * 2 - 1) * 1.4;
-          y = -1.15;
-          z = (rnd() * 2 - 1) * 0.8;
+      if (rr3 < 0.4) {
+        // perspective floor grid: lines along z (depth) and along x (across)
+        if (rnd() < 0.5) {
+          x = (Math.floor(rnd() * 7) / 6 - 0.5) * 2 * RX;
+          z = FARZ + rnd() * (NEARZ - FARZ);
         } else {
-          x = (rnd() < 0.5 ? -1 : 1) * 1.15;
-          y = -1.15 - rnd() * 0.9;
-          z = (rnd() < 0.5 ? -1 : 1) * 0.6;
+          z = FARZ + (Math.floor(rnd() * 7) / 6) * (NEARZ - FARZ);
+          x = (rnd() * 2 - 1) * RX;
         }
-        cr = 0.55; cg = 0.8; cb = 1.0;
+        y = -RY + 0.01;
+        cr = 0.4; cg = 0.66; cb = 1.0;
+      } else if (rr3 < 0.56) {
+        // slim room frame: the 4 vertical corners + ceiling rails (clean box)
+        const pick = Math.floor(rnd() * 3);
+        const e1 = rnd() < 0.5 ? -1 : 1;
+        if (pick === 0) {
+          x = e1 * RX;
+          y = (rnd() * 2 - 1) * RY;
+          z = rnd() < 0.5 ? FARZ : NEARZ;
+        } else {
+          x = pick === 1 ? (rnd() * 2 - 1) * RX : e1 * RX;
+          y = RY;
+          z = FARZ + rnd() * (NEARZ - FARZ);
+        }
+        cr = 0.45; cg = 0.6; cb = 0.9;
+      } else if (rr3 < 0.92) {
+        // the warm glowing window on the near wall, the one we fly through
+        const ww = 1.7;
+        const wh = 1.3;
+        const wcy = 0.1;
+        if (rnd() < 0.32) {
+          // bright frame outline
+          const edge = Math.floor(rnd() * 4);
+          const t = rnd() * 2 - 1;
+          if (edge === 0) { x = t * ww; y = wcy + wh; }
+          else if (edge === 1) { x = t * ww; y = wcy - wh; }
+          else if (edge === 2) { x = ww; y = wcy + t * wh; }
+          else { x = -ww; y = wcy + t * wh; }
+          cr = 1.0; cg = 0.85; cb = 0.55;
+        } else {
+          // soft warm glow filling the pane (+ an occasional mullion)
+          x = (rnd() * 2 - 1) * ww;
+          y = wcy + (rnd() * 2 - 1) * wh;
+          if (rnd() < 0.16) {
+            if (rnd() < 0.5) x = 0;
+            else y = wcy;
+          }
+          cr = 1.0; cg = 0.78; cb = 0.5;
+        }
+        z = NEARZ - 0.02;
       } else {
+        // faint dust in the air of the room
         x = (rnd() * 2 - 1) * RX;
-        y = -RY + 0.02;
-        z = zc(rnd() * 2 - 1);
-        cr = 0.45; cg = 0.7; cb = 1.0;
+        y = (rnd() * 2 - 1) * RY;
+        z = FARZ + rnd() * (NEARZ - FARZ);
+        cr = 0.5; cg = 0.62; cb = 0.85;
       }
     }
 
@@ -504,6 +536,7 @@ const _tan = new THREE.Vector3();
 if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
   (window as unknown as { __intro: typeof intro }).__intro = intro;
   (window as unknown as { __pu: typeof particleUniforms }).__pu = particleUniforms;
+  (window as unknown as { __geo: typeof PARTICLE_GEO }).__geo = PARTICLE_GEO;
 }
 
 function PointsField() {
@@ -518,15 +551,22 @@ function PointsField() {
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const unsub = onIntroDone(() => {
-      if (reduce) {
-        intro.amt = 0;
-        intro.u = 1;
-        particleUniforms.uU.value = 1;
-        PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT);
-        markWorldReady();
-        return;
-      }
+    // Returning visitors / reduced motion: no flight, jump straight to the hero.
+    const jumpToHero = () => {
+      intro.active = false;
+      intro.amt = 0;
+      intro.u = 1;
+      particleUniforms.uU.value = 1;
+      particleUniforms.uSize.value = BASE_SIZE;
+      document.documentElement.classList.remove("intro-flying");
+      PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT);
+    };
+
+    // The cinematic camera flight. Re-runnable: the replay button calls it again.
+    const startFlight = () => {
+      introTl?.kill();
+      intro.u = 0;
+      intro.amt = 1;
       intro.active = true;
       document.documentElement.classList.add("intro-flying");
       audio.flight();
@@ -536,7 +576,7 @@ function PointsField() {
         onComplete: () => {
           intro.active = false;
           document.documentElement.classList.remove("intro-flying");
-          markWorldReady();
+          emitArrive();
           audio.arrival();
         },
       });
@@ -572,7 +612,17 @@ function PointsField() {
           12.6,
         );
       introTl.add(() => PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT), 13.9);
+    };
+
+    const unsubIntro = onIntroDone(() => {
+      if (reduce || skipFlight()) {
+        jumpToHero();
+        markWorldReady();
+        return;
+      }
+      startFlight();
     });
+    const unsubReplay = onReplay(() => startFlight());
 
     const tmp = new THREE.Vector3();
     const onMove = (e: MouseEvent) => {
@@ -597,7 +647,8 @@ function PointsField() {
     };
     window.addEventListener("mousemove", onMove);
     return () => {
-      unsub();
+      unsubIntro();
+      unsubReplay();
       introTl?.kill();
       intro.active = false;
       document.documentElement.classList.remove("intro-flying");
@@ -622,6 +673,7 @@ function PointsField() {
       particleUniforms.uSize.value = BASE_SIZE;
       PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT);
       document.documentElement.classList.remove("intro-flying");
+      emitArrive();
       markWorldReady();
     }
 

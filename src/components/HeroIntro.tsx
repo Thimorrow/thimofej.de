@@ -5,7 +5,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import { onWorldReady } from "@/lib/intro";
+import { onWorldReady, onArrive, onReplay } from "@/lib/intro";
 
 gsap.registerPlugin(useGSAP, SplitText);
 
@@ -33,43 +33,62 @@ export function HeroIntro() {
       gsap.set(h1, { autoAlpha: 0 });
 
       let split: SplitText | null = null;
-      const build = () => {
-        if (!rootRef.current) return;
+      const ensureSplit = () => {
+        if (split || !rootRef.current) return;
         split = SplitText.create(h1, {
           type: "words,chars",
           mask: "chars",
           aria: "auto",
         });
-        gsap.set(h1, { autoAlpha: 1 });
-        gsap
-          .timeline()
-          .to(kicker, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" })
-          .from(
-            split.chars,
-            { yPercent: 115, duration: 0.8, ease: "power4.out", stagger: 0.04 },
-            "-=0.15",
-          )
-          .to(
-            [tagline, hint],
-            {
-              autoAlpha: 1,
-              y: 0,
-              duration: 0.7,
-              ease: "power2.out",
-              stagger: 0.14,
-            },
-            "-=0.35",
-          );
       };
 
-      // Wait for the drone-flight to arrive AND the display font, so the char
-      // split measures real glyphs (no reflow pop).
-      const unsub = onWorldReady(() => {
-        void document.fonts.ready.then(build);
-      });
+      // Re-runnable reveal (the replay button can trigger it again). Wait for the
+      // display font so the char split measures real glyphs (no reflow pop).
+      const reveal = () => {
+        void document.fonts.ready.then(() => {
+          if (!rootRef.current) return;
+          ensureSplit();
+          if (!split) return;
+          gsap.set(h1, { autoAlpha: 1 });
+          gsap.set([kicker, tagline, hint], { autoAlpha: 0, y: 18 });
+          gsap
+            .timeline()
+            .to(kicker, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" })
+            .from(
+              split.chars,
+              { yPercent: 115, duration: 0.8, ease: "power4.out", stagger: 0.04 },
+              "-=0.15",
+            )
+            .to(
+              [tagline, hint],
+              {
+                autoAlpha: 1,
+                y: 0,
+                duration: 0.7,
+                ease: "power2.out",
+                stagger: 0.14,
+              },
+              "-=0.35",
+            );
+        });
+      };
+
+      // Hide instantly while a replay flight is running, so it re-reveals at the
+      // flight's arrival.
+      const hide = () => {
+        gsap.set([h1, kicker, tagline, hint], { autoAlpha: 0 });
+      };
+
+      // worldReady = skip / reduced-motion (no flight). arrive = a flight ended
+      // (first run or replay). replay = a flight just started.
+      const unsubReady = onWorldReady(reveal);
+      const unsubArrive = onArrive(reveal);
+      const unsubReplay = onReplay(hide);
 
       return () => {
-        unsub();
+        unsubReady();
+        unsubArrive();
+        unsubReplay();
         split?.revert();
       };
     },

@@ -7,6 +7,7 @@ import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { CanvasMount } from "@/components/canvas/CanvasMount";
 import { SoundToggle } from "@/components/SoundToggle";
+import { ReplayIntro } from "@/components/ReplayIntro";
 import { InteractionSound } from "@/components/InteractionSound";
 import { AliBabaEasterEgg } from "@/components/AliBabaEasterEgg";
 import { EnterGate } from "@/components/EnterGate";
@@ -66,7 +67,21 @@ export default function RootLayout({
           {children}
           <SiteFooter />
         </SmoothScrollProvider>
+        {/* Cinematic Fade: Content taucht unten auf und verschwindet oben in
+            einem weichen Blur (Star-Wars-Vibe). Folgt dem Viewport, blendet
+            während des Intro-Flugs mit aus. */}
+        <div
+          aria-hidden
+          data-intro-hide
+          className="pointer-events-none fixed inset-x-0 top-0 z-30 h-24 bg-gradient-to-b from-void to-transparent backdrop-blur-[2px] [mask-image:linear-gradient(to_bottom,black,transparent)] sm:h-32"
+        />
+        <div
+          aria-hidden
+          data-intro-hide
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-24 bg-gradient-to-t from-void to-transparent backdrop-blur-[2px] [mask-image:linear-gradient(to_top,black,transparent)] sm:h-32"
+        />
         <SoundToggle />
+        <ReplayIntro />
         <InteractionSound />
         <AliBabaEasterEgg />
       </body>
