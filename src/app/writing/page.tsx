@@ -20,8 +20,8 @@ export default function WritingIndex() {
       </Link>
       <h1 className="mt-8 font-display text-5xl font-light">Writing</h1>
       <p className="mt-6 text-lg leading-relaxed text-text-muted">
-        First notes coming soon. I write about building, AI, faith, and figuring
-        life out piece by piece.
+        First notes are on the way. I write about building, AI, faith, and
+        figuring out life one piece at a time.
       </p>
     </main>
   );

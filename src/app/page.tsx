@@ -54,16 +54,16 @@ export default function Home() {
           </h2>
           <div className="mt-8 space-y-6 text-lg leading-relaxed text-text-muted">
             <p>
-              I&apos;m still in school. On the side I build at yesterday-ai, a
-              studio with one clear principle:{" "}
-              <em className="text-text">think human, build AI.</em> We turn real
-              knowledge into AI agents for companies that are done with generic
-              chatbots.
+              By day I&apos;m still in school. Everywhere else I&apos;m building
+              at yesterday, a studio with one rule we don&apos;t break:{" "}
+              <em className="text-text">think human, build AI.</em> We turn real,
+              hard-won knowledge into agents for companies that are sick of
+              generic chatbots.
             </p>
             <p>
-              And in whatever time is left, I build my own stuff. I can build
-              almost anything I come up with. Finishing is the hard part. Ask me
-              what I&apos;m obsessed with this week.
+              Whatever hours are left go into my own ideas. Building them is the
+              easy part. Finishing them is the fight. Ask me what I&apos;m
+              obsessed with this week and you&apos;ll get the honest answer.
             </p>
           </div>
           <div className="mt-12 border-t border-line/10 pt-10">
@@ -79,8 +79,9 @@ export default function Home() {
                   Email checker
                 </p>
                 <p className="mt-2 text-base text-text-muted">
-                  An n8n workflow that turns your inbox into voice messages and
-                  lets you reply with your voice. First customer that same week.
+                  An n8n workflow that turns your inbox into voice notes and
+                  lets you answer out loud. Had a paying customer by the end of
+                  the week.
                 </p>
               </div>
               <a
@@ -93,7 +94,7 @@ export default function Home() {
                   Studio · think human, build AI
                 </p>
                 <p className="mt-3 font-display text-2xl text-text">
-                  yesterday-ai
+                  yesterday
                   <span
                     aria-hidden
                     className="ml-3 inline-block text-accent opacity-0 transition-all duration-300 group-hover/item:translate-x-1 group-hover/item:opacity-100"
@@ -102,8 +103,8 @@ export default function Home() {
                   </span>
                 </p>
                 <p className="mt-2 text-base text-text-muted">
-                  Where I build day after day: AI agents that turn real
-                  knowledge into tools companies actually use.
+                  Where I show up and build, day after day. AI agents that turn
+                  what a company actually knows into tools it actually uses.
                 </p>
               </a>
             </div>
@@ -128,19 +129,21 @@ export default function Home() {
             Who I am
           </h2>
           <div className="mt-8 space-y-6 text-lg leading-relaxed text-text-muted">
-            <p>I&apos;m Thimofej, 15, and I taught myself how to build.</p>
             <p>
-              It started with a hackathon. Honestly, total beginner stuff. But
-              that&apos;s exactly where tech grabbed me and never let go. Since
-              then one question won&apos;t leave my head:{" "}
-              <em className="text-warm-text">what can AI really become?</em> And
-              while I chase that, I&apos;m also working on a better version of
-              myself.
+              I&apos;m Thimofej, 15, and nobody handed me any of this. I taught
+              myself to build.
             </p>
             <p>
-              I start way too many things and never finish most of them. But
-              what I do finish, I make{" "}
-              <em className="text-warm-text">really</em> good.
+              It started with one hackathon. Total beginner, no clue what I was
+              doing. That&apos;s the exact moment tech grabbed me and never let
+              go. One question has lived in my head ever since:{" "}
+              <em className="text-warm-text">what can AI really become?</em> And
+              while I chase that, I&apos;m quietly building a better version of
+              myself too.
+            </p>
+            <p>
+              I start far too many things and finish far too few. But the ones I
+              do finish, I make <em className="text-warm-text">really</em> good.
             </p>
           </div>
         </div>
@@ -164,21 +167,21 @@ export default function Home() {
           </h2>
           <div className="mt-8 space-y-6 text-lg leading-relaxed text-text-muted">
             <p>
-              First things first: I love Jesus Christ, and He loves me.
-              Everything else I build stands on that.
+              First, the thing everything else rests on: I love Jesus Christ,
+              and He loves me. Take that away and none of the rest holds up.
             </p>
             <p>
-              The rest of me, honestly: church, sports and way too much
-              doomscrolling (working on it). I barely listen to music. And what
-              I&apos;m really working toward isn&apos;t a hobby, it&apos;s
-              becoming a better person.
+              Beyond that, honestly: church, sport, and way too much
+              doomscrolling (I&apos;m working on it). I barely listen to music.
+              And the real project isn&apos;t a hobby at all. It&apos;s becoming
+              a better person.
             </p>
             <p>
-              Two unpopular opinions, since you&apos;re already here:{" "}
+              Two unpopular opinions while you&apos;re here:{" "}
               <em className="text-warm-text">Mbappé is overrated</em>, and people
               should take faith a lot more seriously.
             </p>
-            <p>And the best döner in town? Ali Baba. End of discussion.</p>
+            <p>Best döner in town? Ali Baba. There&apos;s nothing to discuss.</p>
           </div>
         </div>
       </section>
@@ -200,7 +203,8 @@ export default function Home() {
             Writing
           </h2>
           <p className="mt-8 text-lg leading-relaxed text-text-muted">
-            Notes, half-formed thoughts, things I sort out for myself in public.
+            Notes, half-finished thoughts, things I only understand once
+            I&apos;ve written them down in public.
           </p>
           <Link
             href="/writing"
@@ -228,8 +232,8 @@ export default function Home() {
             Let&apos;s talk
           </h2>
           <p className="mt-8 text-lg leading-relaxed text-text-muted">
-            You&apos;re building something, looking for someone, or just want to
-            say hi? My inbox is open.
+            Building something, hiring someone, or just want to say hi? The
+            inbox is open, and I actually read it.
           </p>
           <MagneticLink
             href="mailto:thimofej@yesterday-ai.de"

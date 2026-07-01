@@ -116,7 +116,8 @@ export function HeroIntro() {
         data-hero-tagline
         className="mx-auto mt-6 max-w-md text-balance text-lg text-text-muted sm:text-xl"
       >
-        I build things. This is the human behind them.
+        Fifteen, self-taught, already shipping. This is the human behind
+        the build.
       </p>
       <span
         data-hero-hint
