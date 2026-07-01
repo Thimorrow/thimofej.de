@@ -98,13 +98,13 @@ export function HeroIntro() {
   return (
     <div
       ref={rootRef}
-      className="relative [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]"
+      className="relative [text-shadow:var(--text-glow)]"
     >
       <p
         data-hero-kicker
         className="font-mono text-[11px] uppercase tracking-[0.3em] text-text-meta"
       >
-        Bochum · 15 · baut
+        Bochum · 15 · builds
       </p>
       <h1
         id="hero-heading"
@@ -116,13 +116,13 @@ export function HeroIntro() {
         data-hero-tagline
         className="mx-auto mt-6 max-w-md text-balance text-lg text-text-muted sm:text-xl"
       >
-        Ich bau Sachen. Das hier ist der Mensch dahinter.
+        I build things. This is the human behind them.
       </p>
       <span
         data-hero-hint
         className="mt-12 block font-mono text-[10px] uppercase tracking-[0.3em] text-text-meta"
       >
-        ↓ scrollen
+        ↓ scroll to get to know me
       </span>
     </div>
   );

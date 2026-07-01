@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* Design tokens — Midnight + Chrome + electric cyan, with one engineered amber.
-   See PLAN.md §2.1. */
+/* Design tokens — dark only: Midnight + Chrome + electric cyan, with one
+   engineered amber. See PLAN.md §2.1. */
 @theme {
   --color-void: #070a12;
   --color-surface: #0e1320;
@@ -14,6 +14,9 @@
   --color-chrome-base: #c6cdd8;
   --color-chrome-shadow: #8a93a6;
   --color-chrome-spec: #f2f5fa;
+  /* Hairlines/borders — near-white, always used with an opacity modifier
+     (border-line/10 etc.). */
+  --color-line: #e8ecf4;
 }
 
 /* Fonts wired from next/font (set as CSS vars on <html> in layout.tsx).
@@ -25,6 +28,15 @@
 }
 
 @layer base {
+  :root {
+    /* Non-token theme knobs: the section veil gradient, the ambient page glow
+       and the text glows that keep copy readable over the particle canvas. */
+    --veil-strong: rgba(7, 10, 18, 0.96);
+    --veil-mid: rgba(7, 10, 18, 0.74);
+    --page-glow: rgba(33, 230, 255, 0.06);
+    --text-glow: 0 2px 24px rgba(0, 0, 0, 0.85);
+    --caption-glow: 0 1px 16px rgba(0, 0, 0, 0.9);
+  }
   html {
     -webkit-text-size-adjust: 100%;
     /* The void lives on <html> so the fixed WebGL canvas (-z-10) can show
@@ -32,14 +44,16 @@
     background-color: var(--color-void);
     background-image: radial-gradient(
       120% 80% at 50% -10%,
-      rgba(33, 230, 255, 0.06),
+      var(--page-glow),
       transparent 60%
     );
     background-attachment: fixed;
+    transition: background-color 500ms ease;
   }
   body {
     color: var(--color-text);
     font-family: var(--font-spectral), Georgia, serif;
+    transition: color 500ms ease;
   }
   ::selection {
     background: var(--color-accent);
@@ -49,6 +63,18 @@
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
     border-radius: 2px;
+  }
+}
+
+@layer components {
+  /* The content sections' readability veil over the particle canvas. */
+  .section-veil {
+    background: radial-gradient(
+      130% 80% at 50% 50%,
+      var(--veil-strong) 0%,
+      var(--veil-mid) 58%,
+      transparent 100%
+    );
   }
 }
 

@@ -29,8 +29,8 @@ export function ReplayIntro() {
       type="button"
       data-intro-hide
       onClick={replay}
-      aria-label="Intro erneut abspielen"
-      className="fixed bottom-4 left-4 z-40 rounded-full border border-white/10 bg-void/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-text-meta backdrop-blur-md transition-colors hover:text-accent"
+      aria-label="Replay the intro"
+      className="fixed bottom-4 left-4 z-40 rounded-full border border-line/10 bg-void/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-text-meta backdrop-blur-md transition-colors hover:text-accent"
     >
       ↻ intro
     </button>

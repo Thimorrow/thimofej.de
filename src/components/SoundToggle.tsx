@@ -11,6 +11,8 @@ export function SoundToggle() {
 
   useEffect(() => {
     audio.arm();
+    // Follow external flips too (the gate's "ohne Ton" path mutes directly).
+    return audio.onChange(setOn);
   }, []);
 
   return (
@@ -19,8 +21,8 @@ export function SoundToggle() {
       data-intro-hide
       onClick={() => setOn(audio.toggle())}
       aria-pressed={on}
-      aria-label={on ? "Hintergrundton ausschalten" : "Hintergrundton einschalten"}
-      className="fixed bottom-4 right-4 z-40 rounded-full border border-white/10 bg-void/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-text-meta backdrop-blur-md transition-colors hover:text-accent"
+      aria-label={on ? "Turn ambient sound off" : "Turn ambient sound on"}
+      className="fixed bottom-4 right-4 z-40 rounded-full border border-line/10 bg-void/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-text-meta backdrop-blur-md transition-colors hover:text-accent"
     >
       {on ? "sound ◉" : "sound ○"}
     </button>

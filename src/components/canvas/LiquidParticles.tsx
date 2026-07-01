@@ -12,6 +12,10 @@ import {
   skipFlight,
   onReplay,
   emitArrive,
+  emitFlightStart,
+  onFlightSkip,
+  FLIGHT_SEGS,
+  FLIGHT_TOTAL,
 } from "@/lib/intro";
 import { PostFX } from "./PostFX";
 
@@ -26,10 +30,10 @@ const COUNT = LOW_END ? 34000 : 170000; // full static world, only during the in
 // flight; far scenes fade in only as the camera nears them (aReveal), and the
 // far-scene particles are dropped at the end (off-screen behind the camera).
 const N_TZ = Math.floor(COUNT * 0.24);
-const N_SOLAR = Math.floor(COUNT * 0.18);
-const N_SATURN = Math.floor(COUNT * 0.12);
-const N_CITY = Math.floor(COUNT * 0.24);
-// room = the remainder (~0.22)
+const N_SOLAR = Math.floor(COUNT * 0.16);
+const N_SATURN = Math.floor(COUNT * 0.1);
+const N_CITY = Math.floor(COUNT * 0.3);
+// room = the remainder (~0.20)
 const SCROLL_COUNT = N_TZ; // scroll phase renders exactly the hero-TZ particles
 
 // One sample on the "TZ" initials inside a roughly unit box (x ~ ±1.5, y ~ ±0.95).
@@ -66,18 +70,43 @@ function spherePoint(rnd: () => number, R: number, shell = false): [number, numb
   return [r * Math.sin(v) * Math.cos(u), r * Math.cos(v), r * Math.sin(v) * Math.sin(u)];
 }
 
+// A jittered point on the outline of a rect (w/h = half-extents), edge-weighted
+// so the particle density is even along the perimeter.
+function rectEdgePoint(rnd: () => number, w: number, h: number): [number, number] {
+  const horizontal = rnd() < w / (w + h);
+  const s = rnd() < 0.5 ? -1 : 1;
+  const j = () => (rnd() * 2 - 1) * 0.045;
+  return horizontal
+    ? [(rnd() * 2 - 1) * w + j(), s * h + j()]
+    : [s * w + j(), (rnd() * 2 - 1) * h + j()];
+}
+
+// A jittered point on the segment (x1,y1) -> (x2,y2).
+function segPoint(
+  rnd: () => number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): [number, number] {
+  const t = rnd();
+  const j = () => (rnd() * 2 - 1) * 0.045;
+  return [x1 + (x2 - x1) * t + j(), y1 + (y2 - y1) * t + j()];
+}
+
 // Builds the static world. `position` is each particle's fixed place; `aReveal`
 // is the `u` at which its scene fades in. The hero TZ group additionally carries
-// the scroll-phase forms (cube/torus/cross/two spheres); every other particle's
-// scroll forms equal its own position (never rendered in scroll, kept inert).
+// the scroll-phase forms — one meaningful symbol per section; every other
+// particle's scroll forms equal its own position (never rendered in scroll,
+// kept inert).
 function buildGeo() {
   const rnd = Math.random;
   const pos = new Float32Array(COUNT * 3);
-  const f1 = new Float32Array(COUNT * 3); // cube (Work)
-  const f2 = new Float32Array(COUNT * 3); // torus (Life)
-  const f3 = new Float32Array(COUNT * 3); // cross (Likes)
-  const f4 = new Float32Array(COUNT * 3); // sphere (Writing)
-  const f5 = new Float32Array(COUNT * 3); // sphere (Contact)
+  const f1 = new Float32Array(COUNT * 3); // gear (Work: bauen)
+  const f2 = new Float32Array(COUNT * 3); // arrow up (Life: das bessere Ich)
+  const f3 = new Float32Array(COUNT * 3); // cross (Likes: Glaube zuerst)
+  const f4 = new Float32Array(COUNT * 3); // page with lines (Writing)
+  const f5 = new Float32Array(COUNT * 3); // envelope (Contact: Postfach offen)
   const colors = new Float32Array(COUNT * 3);
   const seed = new Float32Array(COUNT);
   const reveal = new Float32Array(COUNT);
@@ -125,49 +154,96 @@ function buildGeo() {
       cg = 0.92;
       cb = 1.0;
       {
-        const H = 1.12;
-        const axis = Math.floor(rnd() * 3);
-        const tt = (rnd() * 2 - 1) * H;
-        const c1 = rnd() < 0.5 ? -H : H;
-        const c2 = rnd() < 0.5 ? -H : H;
-        const jx = (rnd() * 2 - 1) * 0.05;
-        const jy = (rnd() * 2 - 1) * 0.05;
-        const jz = (rnd() * 2 - 1) * 0.05;
-        if (axis === 0) set(f1, i, tt + jx, c1 + jy, c2 + jz);
-        else if (axis === 1) set(f1, i, c1 + jx, tt + jy, c2 + jz);
-        else set(f1, i, c1 + jx, c2 + jy, tt + jz);
+        // GEAR (Arbeit): hub + ring + 8 teeth — the thing that builds things.
+        const pick = rnd();
+        let ga: number;
+        let gr: number;
+        if (pick < 0.18) {
+          ga = rnd() * 6.2831;
+          gr = 0.3 + rnd() * 0.16;
+        } else if (pick < 0.66) {
+          ga = rnd() * 6.2831;
+          gr = 0.72 + rnd() * 0.33;
+        } else {
+          const tooth = Math.floor(rnd() * 8);
+          ga = (tooth / 8) * 6.2831 + (rnd() * 2 - 1) * 0.16;
+          gr = 1.05 + rnd() * 0.35;
+        }
+        set(f1, i, Math.cos(ga) * gr, Math.sin(ga) * gr, (rnd() * 2 - 1) * 0.18);
       }
       {
-        const ta = rnd() * 6.2831;
-        const tb = rnd() * 6.2831;
-        const TR = 1.0;
-        const Tt = 0.42;
-        set(
-          f2,
-          i,
-          (TR + Tt * Math.cos(tb)) * Math.cos(ta),
-          (TR + Tt * Math.cos(tb)) * Math.sin(ta),
-          Tt * Math.sin(tb),
-        );
+        // ARROW UP (Leben): the better self, always pointing up. Head sampled
+        // area-weighted so the solid triangle glows evenly.
+        if (rnd() < 0.45) {
+          set(
+            f2,
+            i,
+            (rnd() * 2 - 1) * 0.16,
+            -1.35 + rnd() * 1.75,
+            (rnd() * 2 - 1) * 0.18,
+          );
+        } else {
+          const th = 1 - Math.sqrt(rnd());
+          const hw = 0.72 * (1 - th);
+          set(
+            f2,
+            i,
+            (rnd() * 2 - 1) * hw,
+            0.32 + th * 1.05,
+            (rnd() * 2 - 1) * 0.18,
+          );
+        }
       }
+      // CROSS (Mag ich): faith first — the one form that always made sense.
       if (rnd() < 0.6) set(f3, i, (rnd() * 2 - 1) * 0.26, (rnd() * 2 - 1) * 1.65, (rnd() * 2 - 1) * 0.26);
       else set(f3, i, (rnd() * 2 - 1) * 1.15, 0.54 + (rnd() * 2 - 1) * 0.26, (rnd() * 2 - 1) * 0.26);
       {
-        const [sx, sy, sz] = spherePoint(rnd, 1.4);
-        set(f4, i, sx, sy, sz);
-        const [gx, gy, gz] = spherePoint(rnd, 1.4);
-        set(f5, i, gx, gy, gz);
+        // PAGE (Schreiben): a sheet outline with text lines, the last one short
+        // like a paragraph that just ended.
+        if (rnd() < 0.38) {
+          const [px, py] = rectEdgePoint(rnd, 0.8, 1.05);
+          set(f4, i, px, py, (rnd() * 2 - 1) * 0.15);
+        } else {
+          const line = Math.floor(rnd() * 4);
+          const ly = 0.62 - line * 0.42;
+          const lx = line === 3 ? -0.55 + rnd() * 0.55 : -0.55 + rnd() * 1.1;
+          set(f4, i, lx, ly + (rnd() * 2 - 1) * 0.035, (rnd() * 2 - 1) * 0.15);
+        }
+      }
+      {
+        // ENVELOPE (Kontakt): the open Postfach — outline plus flap.
+        if (rnd() < 0.55) {
+          const [ex, ey] = rectEdgePoint(rnd, 1.3, 0.82);
+          set(f5, i, ex, ey, (rnd() * 2 - 1) * 0.15);
+        } else {
+          const sgn = rnd() < 0.5 ? -1 : 1;
+          const [ex, ey] = segPoint(rnd, sgn * 1.3, 0.82, 0, -0.08);
+          set(f5, i, ex, ey, (rnd() * 2 - 1) * 0.15);
+        }
       }
     } else if (i < B) {
-      // ---- SOLAR SYSTEM (sun + orbit rings + inner planets + star dust) ----
+      // ---- SOLAR SYSTEM (sun + corona + orbit rings + inner planets + a
+      // milky-way band of stars) ----
       rev = -1; // visible from the very first frame
       const tilt = 0.34;
       const rr = rnd();
-      if (rr < 0.36) {
+      if (rr < 0.3) {
+        // sun core: white-hot centre cooling to a deep orange rim
         const [a, b, c] = spherePoint(rnd, 0.95);
         x = a; y = b; z = c;
-        cr = 1.0; cg = 0.68 + rnd() * 0.12; cb = 0.28;
-      } else if (rr < 0.74) {
+        const rN = Math.min(1, Math.hypot(a, b, c) / 0.95);
+        const heat = 1 - rN * rN;
+        cr = 1.0;
+        cg = 0.52 + 0.42 * heat + rnd() * 0.05;
+        cb = 0.2 + 0.68 * heat;
+      } else if (rr < 0.36) {
+        // corona: sparse flaring shell, dimmer the farther it reaches
+        const reach = Math.pow(rnd(), 2.4);
+        const [a, b, c] = spherePoint(rnd, 0.98 + reach * 0.55, true);
+        x = a; y = b; z = c;
+        const dim = 0.55 - reach * 0.35;
+        cr = dim; cg = dim * 0.6; cb = dim * 0.25;
+      } else if (rr < 0.62) {
         const idx = Math.floor(rnd() * 3);
         const ro = 1.7 + idx * 0.95;
         const ang = rnd() * 6.2831;
@@ -177,7 +253,7 @@ function buildGeo() {
         y = -fz * Math.sin(tilt) + (rnd() * 2 - 1) * 0.03;
         z = fz * Math.cos(tilt);
         cr = 0.55; cg = 0.8; cb = 1.0;
-      } else if (rr < 0.94) {
+      } else if (rr < 0.84) {
         const idx = Math.floor(rnd() * 3);
         const ro = 1.7 + idx * 0.95;
         const ang = idx * 2.2 + 0.7;
@@ -189,111 +265,271 @@ function buildGeo() {
         z = fz * Math.cos(tilt) + pz;
         const col = planetPal[idx];
         cr = col[0]; cg = col[1]; cb = col[2];
+      } else if (rnd() < 0.6) {
+        // a tilted milky-way band behind the system: dense along a diagonal,
+        // falling off softly above and below it
+        const along = (rnd() * 2 - 1) * 5.5;
+        const spread = (rnd() + rnd() + rnd() - 1.5) / 1.5; // soft gaussian
+        x = along;
+        y = along * 0.32 + spread * 0.9 + 1.2;
+        z = (rnd() * 2 - 1) * 4 - 2;
+        const w = 0.45 + 0.55 * rnd();
+        cr = 0.75 * w; cg = 0.8 * w; cb = w;
       } else {
-        x = (rnd() * 2 - 1) * 4;
-        y = (rnd() * 2 - 1) * 3;
+        // loose scattered stars, a few warm giants among the cool ones
+        x = (rnd() * 2 - 1) * 4.5;
+        y = (rnd() * 2 - 1) * 3.2;
         z = (rnd() * 2 - 1) * 4;
-        cr = 0.8; cg = 0.85; cb = 1.0;
+        if (rnd() < 0.18) { cr = 1.0; cg = 0.72; cb = 0.5; }
+        else { cr = 0.8; cg = 0.85; cb = 1.0; }
       }
       x += 0; y += 0.2; z += 40;
     } else if (i < C) {
       // ---- SATURN: a big ringed planet, on an outer orbit of the SAME system,
       // so it's part of the solar view from the start; we fly OVER it ----
       rev = -1;
-      if (rnd() < 0.74) {
+      if (rnd() < 0.68) {
+        // banded gas-giant body: subtle latitude stripes, dimmer poles
         const [a, b, c] = spherePoint(rnd, 1.55, rnd() < 0.85);
         x = a; y = b; z = c;
-        cr = 0.95; cg = 0.84; cb = 0.6;
+        const lat = b / 1.55; // -1..1
+        const band = 0.86 + 0.14 * Math.sin(lat * 11.5 + 0.8);
+        const pole = 1 - 0.25 * lat * lat;
+        cr = 0.97 * band * pole;
+        cg = 0.85 * band * pole;
+        cb = 0.58 * pole;
       } else {
+        // rings: a bright cream inner ring, the dark Cassini division as a
+        // real gap, and a cooler, dimmer outer ring — kept thin so the disc
+        // reads flat, with radial grain so it shimmers
+        const inner = rnd() < 0.62;
+        const rr2 = inner ? 2.05 + rnd() * 0.55 : 2.74 + rnd() * 0.42;
         const ang = rnd() * 6.2831;
-        const rr2 = 2.2 + rnd() * 0.9;
         const tlt = 0.5;
         const fx = rr2 * Math.cos(ang);
         const fz = rr2 * Math.sin(ang);
         x = fx;
-        y = -fz * Math.sin(tlt) + (rnd() * 2 - 1) * 0.04;
+        y = -fz * Math.sin(tlt) + (rnd() * 2 - 1) * 0.02;
         z = fz * Math.cos(tlt);
-        cr = 0.85; cg = 0.78; cb = 0.62;
+        const grain = 0.8 + 0.2 * Math.sin(rr2 * 34.0);
+        if (inner) { cr = 0.92 * grain; cg = 0.84 * grain; cb = 0.66 * grain; }
+        else { cr = 0.66 * grain; cg = 0.64 * grain; cb = 0.58 * grain; }
       }
       x += 4.5; y += 1.0; z += 32;
     } else if (i < D) {
-      // ---- CITY: a night skyline read in profile — a wide glowing ground line,
-      // towers of staggered heights with lit windows + crisp roof/edge lines, and
-      // a pale moon behind, so it reads as a night city at a glance ----
+      // ---- CITY + THE WAY HOME (world coords). The camera flies DOWN a central
+      // boulevard cut through the skyline (towers flank both sides, none on the
+      // camera line), out the far end onto a lamp-lit street that narrows toward
+      // ONE small house — the room's near wall (z≈5) gets a full facade + gable
+      // roof around its warm window, so "city -> window" reads as coming home. ----
       rev = 0.28;
       const GY = -3.2; // ground / street level
+      const SP = 1.15; // tower grid spacing
+      const HZ = 5.06; // house facade plane, just outside the room's near wall
       const r = rnd();
-      if (r < 0.08) {
-        // big pale moon disc low on the horizon, BEHIND the skyline (the camera
-        // looks slightly down as it descends, so a low moon stays in frame)
+      if (r < 0.05) {
+        // big pale moon low BEHIND the house — down the boulevard the closing
+        // shot is: small house, big moon
         const ang = rnd() * 6.2831;
-        const rad = 2.5 * Math.sqrt(rnd());
-        x = -3.8 + rad * Math.cos(ang);
-        y = 3.2 + rad * Math.sin(ang);
-        z = -5;
+        const rad = 2.0 * Math.sqrt(rnd());
+        x = -3.2 + rad * Math.cos(ang);
+        y = 3.8 + rad * Math.sin(ang);
+        z = 1.5;
         cr = 1.0; cg = 0.98; cb = 0.93;
-      } else if (r < 0.22) {
-        // glowing ground haze + a brighter far horizon line
-        const horizon = rnd() < 0.5;
-        x = (rnd() * 2 - 1) * 6.5;
+      } else if (r < 0.11) {
+        // ground haze around the city + a faint warm horizon far beyond the house
+        const horizon = rnd() < 0.4;
+        x = (rnd() * 2 - 1) * 8.5;
         y = GY + (horizon ? 0.04 : (rnd() * 2 - 1) * 0.12);
-        z = horizon ? -3.0 : (rnd() * 2 - 1) * 2.4;
+        z = horizon ? 2 + (rnd() * 2 - 1) * 0.4 : 15.5 + rnd() * 6;
         cr = 1.0; cg = horizon ? 0.64 : 0.5; cb = horizon ? 0.34 : 0.26;
-      } else {
-        // towers: a row across (x), a few rows deep (z); each a solid lit block.
-        // Kept narrow + tall so the ~40k city particles stay dense and bright.
-        const gx = Math.floor(rnd() * 11) - 5; // -5..5
-        const gz = Math.floor(rnd() * 4); // 0..3 (rows receding from camera)
-        const sp = 1.0;
-        const cx = gx * sp + (phash(gx, gz, 7) - 0.5) * 0.28;
-        const cz = gz * sp;
-        const hh = 2.6 + phash(gx, gz, 1) * 5.2; // tall, staggered heights
-        const bw = 0.38 + phash(gx, gz, 2) * 0.16;
-        const bd = 0.38 + phash(gx, gz, 3) * 0.16;
-        const role = rnd();
-        if (role < 0.16) {
-          // crisp flat roof cap -> jagged silhouette; tall ones get a red beacon
-          if (hh > 4.6 && rnd() < 0.4) {
-            x = cx + (rnd() * 2 - 1) * 0.05;
-            z = cz + (rnd() * 2 - 1) * 0.05;
-            y = GY + hh + 0.1 + rnd() * 0.4;
-            cr = 1.0; cg = 0.25; cb = 0.18;
+      } else if (r < 0.2) {
+        // sodium street grid: the lit boulevard the camera flies down + cross
+        // streets glowing between the tower rows
+        if (rnd() < 0.55) {
+          const lane = rnd() < 0.7 ? (rnd() < 0.5 ? -0.85 : 0.85) : (rnd() * 2 - 1) * 0.8;
+          x = lane + (rnd() * 2 - 1) * 0.05;
+          y = GY + 0.02;
+          z = 17.4 + rnd() * 6.4;
+          cr = 1.0; cg = 0.58; cb = 0.24;
+        } else {
+          const rowz = 18 + (Math.floor(rnd() * 4) + 0.5) * SP;
+          x = (rnd() * 2 - 1) * 8.5;
+          y = GY + 0.02;
+          z = rowz + (rnd() * 2 - 1) * 0.06;
+          const dimm = 0.5 + rnd() * 0.3;
+          cr = dimm; cg = 0.55 * dimm; cb = 0.22 * dimm;
+        }
+      } else if (r < 0.29) {
+        // the way home: a street from the city's edge to the house, edges
+        // converging on the door, centre dashes, lampposts alternating sides
+        const t = rnd();
+        if (t < 0.5) {
+          const s = rnd() < 0.5 ? -1 : 1;
+          z = 5.6 + rnd() * 11.8;
+          const wRoad = 0.55 + (z - 5.6) * 0.03;
+          x = s * wRoad + (rnd() * 2 - 1) * 0.05;
+          y = GY + 0.02;
+          cr = 0.85; cg = 0.5; cb = 0.24;
+        } else if (t < 0.68) {
+          const di = Math.floor(rnd() * 9);
+          z = 6.2 + di * 1.25 + rnd() * 0.5;
+          x = (rnd() * 2 - 1) * 0.05;
+          y = GY + 0.02;
+          cr = 0.9; cg = 0.78; cb = 0.45;
+        } else {
+          const k = Math.floor(rnd() * 6);
+          const lz = 6.6 + k * 1.85;
+          const lx = (k % 2 === 0 ? -1 : 1) * 1.25;
+          if (rnd() < 0.35) {
+            // pole
+            x = lx + (rnd() * 2 - 1) * 0.02;
+            y = GY + rnd() * 1.15;
+            z = lz + (rnd() * 2 - 1) * 0.02;
+            cr = 0.4; cg = 0.46; cb = 0.6;
           } else {
-            x = cx + (rnd() * 2 - 1) * bw;
-            z = cz + (rnd() * 2 - 1) * bd;
-            y = GY + hh;
-            cr = 0.78; cg = 0.9; cb = 1.0;
+            // warm glow cluster at the lamp head
+            const ga = rnd() * 6.2831;
+            const gr2 = Math.sqrt(rnd()) * 0.16;
+            x = lx + Math.cos(ga) * gr2;
+            y = GY + 1.2 + Math.sin(ga) * gr2 * 0.8;
+            z = lz + (rnd() * 2 - 1) * 0.08;
+            cr = 1.0; cg = 0.78; cb = 0.42;
           }
-        } else if (role < 0.34) {
+        }
+      } else if (r < 0.37) {
+        // the HOUSE: a facade with gable roof + chimney wrapped around the
+        // room's warm window, so the window belongs to a home, not to the void
+        const f = rnd();
+        if (f < 0.3) {
+          // dim wall fill (window opening kept clear so the warm pane pops)
+          x = (rnd() * 2 - 1) * 3.0;
+          y = GY + rnd() * (2.3 - GY);
+          if (Math.abs(x) < 1.85 && Math.abs(y - 0.1) < 1.45) {
+            x = (1.95 + rnd() * 0.95) * (rnd() < 0.5 ? -1 : 1);
+          }
+          z = HZ + (rnd() * 2 - 1) * 0.04;
+          cr = 0.2; cg = 0.24; cb = 0.34;
+        } else if (f < 0.48) {
+          // corner + eaves edge lines
+          if (rnd() < 0.5) { x = rnd() < 0.5 ? -3.0 : 3.0; y = GY + rnd() * (2.3 - GY); }
+          else { x = (rnd() * 2 - 1) * 3.0; y = 2.3; }
+          z = HZ + (rnd() * 2 - 1) * 0.03;
+          cr = 0.5; cg = 0.58; cb = 0.78;
+        } else if (f < 0.75) {
+          // gable roof: two rising edges to the ridge + sparse fill under them
+          if (rnd() < 0.6) {
+            const s = rnd() < 0.5 ? -1 : 1;
+            const tt = rnd();
+            x = s * (3.0 - tt * 3.0);
+            y = 2.3 + tt * 1.2;
+            cr = 0.6; cg = 0.66; cb = 0.84;
+          } else {
+            const fx = rnd() * 2 - 1;
+            x = fx * 3.0;
+            y = 2.3 + rnd() * (1 - Math.abs(fx)) * 1.2;
+            cr = 0.24; cg = 0.28; cb = 0.4;
+          }
+          z = HZ + (rnd() * 2 - 1) * 0.04;
+        } else if (f < 0.85) {
+          // chimney on the roof slope + a couple of faint smoke wisps
+          if (rnd() < 0.72) {
+            x = 1.7 + (rnd() * 2 - 1) * 0.16;
+            y = 2.85 + rnd() * 0.95;
+            cr = 0.42; cg = 0.46; cb = 0.58;
+          } else {
+            x = 1.7 + (rnd() * 2 - 1) * 0.3 + rnd() * 0.25;
+            y = 3.85 + rnd() * 0.9;
+            cr = 0.3; cg = 0.32; cb = 0.38;
+          }
+          z = HZ + (rnd() * 2 - 1) * 0.05;
+        } else {
+          // warm light spilling out around the window frame — the beacon
+          const ha = rnd() * 6.2831;
+          const hr = 1.0 + rnd() * rnd() * 0.5;
+          x = Math.cos(ha) * 1.7 * hr;
+          y = 0.1 + Math.sin(ha) * 1.3 * hr;
+          z = HZ + 0.03 + rnd() * 0.03;
+          const dimm = 0.5 - (hr - 1.0) * 0.7;
+          cr = dimm; cg = 0.75 * dimm; cb = 0.45 * dimm;
+        }
+      } else {
+        // towers: two banks flanking the boulevard (gx=0 stays clear), downtown
+        // height profile + landmark spikes, windows in real grids, neon signs.
+        // Particles never occlude, so legibility comes from restraint: fewer
+        // towers, windows only on the two faces the camera actually sees, and
+        // rows dimming with depth so near buildings separate from far ones.
+        let gx = Math.floor(rnd() * 10) - 5; // -5..4
+        if (gx >= 0) gx += 1; // skip 0 -> boulevard stays open
+        const gz = Math.floor(rnd() * 5); // 0..4 rows receding
+        const bank = gx > 0 ? 1 : -1;
+        const cx = gx * SP + bank * 0.3 + (phash(gx, gz, 7) - 0.5) * 0.26;
+        const cz = 18 + gz * SP;
+        const dim2 = 1 - gz * 0.15; // depth cue: far rows fall back
+        const prof = Math.exp(-Math.pow(Math.abs(gx) - 2.6, 2) / 14);
+        let hh = 2.2 + phash(gx, gz, 1) * 3.4 + prof * 2.8;
+        if (phash(gx, gz, 9) > 0.93) hh += 2.4; // landmark towers
+        const bw = 0.36 + phash(gx, gz, 2) * 0.18;
+        const bd = 0.36 + phash(gx, gz, 3) * 0.18;
+        const role = rnd();
+        if (role < 0.05 && hh > 5.4) {
+          // antenna spire, red beacon at the tip
+          const at = rnd();
+          x = cx + (rnd() * 2 - 1) * 0.04;
+          z = cz + (rnd() * 2 - 1) * 0.04;
+          y = GY + hh + at * 1.1;
+          if (at > 0.82) { cr = 1.0; cg = 0.22; cb = 0.16; }
+          else { cr = 0.55 * dim2; cg = 0.62 * dim2; cb = 0.75 * dim2; }
+        } else if (role < 0.2) {
+          // crisp flat roof cap -> the skyline silhouette against the sky
+          x = cx + (rnd() * 2 - 1) * bw;
+          z = cz + (rnd() * 2 - 1) * bd;
+          y = GY + hh;
+          cr = 0.78 * dim2; cg = 0.9 * dim2; cb = dim2;
+        } else if (role < 0.32) {
           // bright vertical corner columns -> read the tower edges
           x = cx + (rnd() < 0.5 ? -bw : bw);
           z = cz + (rnd() < 0.5 ? -bd : bd);
           y = GY + rnd() * hh;
-          cr = 0.62; cg = 0.78; cb = 1.0;
+          cr = 0.6 * dim2; cg = 0.76 * dim2; cb = dim2;
+        } else if (role < 0.36 && phash(gx, gz, 11) > 0.72) {
+          // a neon sign strip on the boulevard-facing facade
+          const sy = GY + 0.9 + phash(gx, gz, 13) * 2.6;
+          x = cx - bank * (bw + 0.01);
+          z = cz + (rnd() * 2 - 1) * bd * 0.5;
+          y = sy + rnd() * 0.9;
+          const np = phash(gx, gz, 17);
+          if (np < 0.4) { cr = 0.25 * dim2; cg = 0.95 * dim2; cb = dim2; }
+          else if (np < 0.7) { cr = dim2; cg = 0.3 * dim2; cb = 0.72 * dim2; }
+          else { cr = dim2; cg = 0.62 * dim2; cb = 0.2 * dim2; }
         } else {
-          // dense lit windows over the facades -> solid glowing towers
-          const side = Math.floor(rnd() * 4);
-          const across = rnd() * 2 - 1;
-          if (side === 0) { x = cx + bw; z = cz + across * bd; }
-          else if (side === 1) { x = cx - bw; z = cz + across * bd; }
-          else if (side === 2) { x = cx + across * bw; z = cz + bd; }
-          else { x = cx + across * bw; z = cz - bd; }
+          // windows in a real grid: quantized columns AND rows, whole windows
+          // lit or dark — and ONLY on the approach-facing and boulevard-facing
+          // facades, so you don't read three overlapping grids through a tower
+          const cols = 4 + Math.floor(phash(gx, gz, 4) * 3);
+          const ci = Math.floor(rnd() * cols);
+          const across = ((ci + 0.5) / cols) * 2 - 1;
+          const front = rnd() < 0.5;
+          const side = front ? 2 : 1;
+          if (front) { z = cz + bd; x = cx + across * bw; }
+          else { x = cx - bank * bw; z = cz + across * bd; }
+          x += (rnd() * 2 - 1) * 0.015;
+          z += (rnd() * 2 - 1) * 0.015;
           const wr = Math.floor(rnd() * Math.max(4, Math.round(hh / 0.22)));
-          y = GY + 0.18 + (wr + 0.5) * 0.22 + (rnd() * 2 - 1) * 0.03;
+          y = GY + 0.18 + (wr + 0.5) * 0.22 + (rnd() * 2 - 1) * 0.02;
           if (y > GY + hh) y = GY + hh - rnd() * 0.2;
-          const lit = phash(gx * 3 + side, gz * 5, wr + 2);
-          if (lit > 0.18) {
-            if (phash(gx + wr, gz + side, wr) > 0.86) {
-              cr = 0.7; cg = 0.86; cb = 1.0; // a few cool-white windows
+          const lit = phash(gx * 7 + side, gz * 5 + ci, wr + 2);
+          if (lit > 0.3) {
+            if (phash(gx + wr, gz + side, ci) > 0.86) {
+              cr = 0.7 * dim2; cg = 0.86 * dim2; cb = dim2; // cool-white windows
             } else {
-              cr = 1.0; cg = 0.74 + 0.16 * lit; cb = 0.42; // warm windows
+              cr = dim2; cg = (0.74 + 0.16 * lit) * dim2; cb = 0.42 * dim2; // warm
             }
           } else {
-            cr = 0.16; cg = 0.18; cb = 0.26; // a few dark windows
+            cr = 0.14; cg = 0.16; cb = 0.24; // dark windows keep the grid visible
           }
         }
       }
-      z += 18;
     } else {
       // ---- ROOM around the origin: a clean dark room the camera flies into — a
       // perspective floor grid, slim wall/ceiling edges, and one warm glowing
@@ -491,21 +727,38 @@ let camRoll = 0;
 const LOCK_NOTES = [196, 220, 247, 294, 330, 392];
 const BASE_SIZE = LOW_END ? 18 : 22;
 
+// Cuts a running flight straight to the hero (scroll past the threshold, or the
+// skip button). Everything it touches is module state, so both callers share it.
+function cutFlightToHero() {
+  if (!intro.active) return;
+  introTl?.kill();
+  intro.active = false;
+  intro.amt = 0;
+  intro.u = 1;
+  particleUniforms.uSize.value = BASE_SIZE;
+  PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT);
+  document.documentElement.classList.remove("intro-flying");
+  emitArrive();
+  markWorldReady();
+}
+
 // The camera's continuous zoom through the static world. 9 control points -> 8
 // segments; scene beats land on the EVEN indices (u = 0,.25,.5,.75,1) and the
 // ODD indices shape the curve. The path: take in the whole solar system (Saturn
-// included) -> rise UP and OVER Saturn's horizon -> the city revealed beyond ->
-// fly over the city, down toward a house window -> into the room -> swing to the
-// front of the TZ -> hero. The camera only ever moves forward / around.
+// included) -> rise UP and OVER Saturn's horizon -> descend to the canyon mouth
+// of the city boulevard -> fly DOWN the boulevard between the towers -> out the
+// far end, along the lamp-lit street to the small house -> up to its lit window
+// -> through, into the room -> swing to the front of the TZ -> hero. The camera
+// only ever moves forward / around.
 const CAM_PATH = new THREE.CatmullRomCurve3(
   [
     new THREE.Vector3(0, 1.6, 52), // 0 solar system (Saturn in view)
     new THREE.Vector3(3.5, 3.2, 41), // 1 climb toward Saturn
     new THREE.Vector3(5.0, 5.0, 34), // 2 OVER Saturn's horizon
-    new THREE.Vector3(0.6, 1.5, 28), // 3 descend past Saturn toward the city
-    new THREE.Vector3(0, -0.2, 24), // 4 down at skyline height, in profile
-    new THREE.Vector3(0, 0.6, 12), // 5 rise over the rooftops toward a window
-    new THREE.Vector3(0, 0.4, 7), // 6 at the window (== orbit start, o=0)
+    new THREE.Vector3(0.8, 1.9, 30), // 3 descend, lining up on the boulevard
+    new THREE.Vector3(0, -1.3, 26), // 4 canyon mouth, low: rooflines vs. sky
+    new THREE.Vector3(0, -0.9, 15.2), // 5 down the boulevard, out the far end
+    new THREE.Vector3(0, 0.15, 7), // 6 up to the lit window (== orbit start)
     new THREE.Vector3(2.6, 0.2, 3.2), // 7 (curve shaping; orbit takes over here)
     new THREE.Vector3(0, 0, 4.2), // 8 hero front
   ],
@@ -517,9 +770,9 @@ const LOOK_PATH = new THREE.CatmullRomCurve3(
     new THREE.Vector3(1.0, 0.3, 40), // 0 the system
     new THREE.Vector3(4.5, 1.2, 33), // 1 Saturn
     new THREE.Vector3(3.0, -0.5, 25), // 2 over Saturn, toward the far side
-    new THREE.Vector3(0, -0.8, 20), // 3 the city ahead
-    new THREE.Vector3(0, -0.5, 16), // 4 across the skyline (near-horizontal)
-    new THREE.Vector3(0, -0.1, 3), // 5 the house window
+    new THREE.Vector3(0, -0.9, 21), // 3 down into the streets ahead
+    new THREE.Vector3(0, 0.2, 12), // 4 slightly UP the boulevard: skyline vs. sky
+    new THREE.Vector3(0, 0.0, 4.6), // 5 the lit window of the house
     new THREE.Vector3(0, 0, 0), // 6 room / TZ (== orbit look target, origin)
     new THREE.Vector3(0, 0, 0), // 7 TZ
     new THREE.Vector3(0, 0, 0), // 8 hero TZ at origin
@@ -569,6 +822,7 @@ function PointsField() {
       intro.amt = 1;
       intro.active = true;
       document.documentElement.classList.add("intro-flying");
+      emitFlightStart();
       audio.flight();
       particleUniforms.uSize.value = LOW_END ? 30 : 42;
       PARTICLE_GEO.setDrawRange(0, COUNT);
@@ -584,34 +838,38 @@ function PointsField() {
       // ONE even, gently-eased glide — the camera accelerates away from a scene
       // and eases into the next at a steady pace, only ever slowing at a scene,
       // never stopping, never lurching. All motion is the camera; world is rigid.
+      // Segment durations live in FLIGHT_SEGS (shared with the caption overlay).
       introTl.to(
         intro,
         {
           keyframes: [
-            { u: 0.25, duration: 3.4, ease: "sine.inOut" }, // system -> over Saturn
-            { u: 0.5, duration: 3.4, ease: "sine.inOut" }, // -> city
-            { u: 0.75, duration: 3.4, ease: "sine.inOut" }, // -> house window
-            { u: 1, duration: 3.6, ease: "sine.inOut" }, // through, orbit, hero
+            { u: 0.25, duration: FLIGHT_SEGS[0], ease: "sine.inOut" }, // system -> over Saturn
+            { u: 0.5, duration: FLIGHT_SEGS[1], ease: "sine.inOut" }, // -> city
+            { u: 0.75, duration: FLIGHT_SEGS[2], ease: "sine.inOut" }, // -> house window
+            { u: 1, duration: FLIGHT_SEGS[3], ease: "sine.inOut" }, // through, orbit, hero
           ],
         },
         0,
       );
 
       // Swoosh at each segment's MIDPOINT, where the camera moves fastest.
-      introTl.add(() => audio.transition(), 1.7);
-      introTl.add(() => audio.transition(), 5.1);
-      introTl.add(() => audio.transition(), 8.5);
+      introTl.add(() => audio.transition(), FLIGHT_SEGS[0] / 2);
+      introTl.add(() => audio.transition(), FLIGHT_SEGS[0] + FLIGHT_SEGS[1] / 2);
+      introTl.add(
+        () => audio.transition(),
+        FLIGHT_SEGS[0] + FLIGHT_SEGS[1] + FLIGHT_SEGS[2] / 2,
+      );
 
       // Resolve: crossfade to the scroll forms, ease the pixels back to the hero
       // size, then drop the (already faded) world particles for the scroll phase.
       introTl
-        .to(intro, { amt: 0, duration: 1.2, ease: "power2.in" }, 13.0)
+        .to(intro, { amt: 0, duration: 1.2, ease: "power2.in" }, FLIGHT_TOTAL - 0.8)
         .to(
           particleUniforms.uSize,
-          { value: BASE_SIZE, duration: 1.8, ease: "power2.in" },
-          12.6,
+          { value: BASE_SIZE, duration: 2.4, ease: "power2.inOut" },
+          FLIGHT_TOTAL - 3.0,
         );
-      introTl.add(() => PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT), 13.9);
+      introTl.add(() => PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT), FLIGHT_TOTAL + 0.1);
     };
 
     const unsubIntro = onIntroDone(() => {
@@ -623,6 +881,7 @@ function PointsField() {
       startFlight();
     });
     const unsubReplay = onReplay(() => startFlight());
+    const unsubSkip = onFlightSkip(cutFlightToHero);
 
     const tmp = new THREE.Vector3();
     const onMove = (e: MouseEvent) => {
@@ -649,6 +908,7 @@ function PointsField() {
     return () => {
       unsubIntro();
       unsubReplay();
+      unsubSkip();
       introTl?.kill();
       intro.active = false;
       document.documentElement.classList.remove("intro-flying");
@@ -660,21 +920,22 @@ function PointsField() {
   useFrame((state, delta) => {
     const mat = matRef.current;
     if (!mat) return;
+    if (process.env.NODE_ENV !== "production") {
+      (window as unknown as { __mat: THREE.ShaderMaterial }).__mat = mat;
+    }
     const cam = state.camera;
     const d = Math.min(delta, 0.05);
     mat.uniforms.uTime.value += d;
 
+    // R3F clones the `uniforms` prop into the material — the module-level
+    // particleUniforms the gsap tweens (flight pixel size) write to is NOT the
+    // object the shader reads. Sync the externally-animated scalars here every
+    // frame; everything else is either static or set via mat below.
+    mat.uniforms.uSize.value = particleUniforms.uSize.value;
+
     // Scrolling cuts the cinematic short and hands straight to scroll.
     if (intro.active && scrollProgress.progress > 0.02) {
-      introTl?.kill();
-      intro.active = false;
-      intro.amt = 0;
-      intro.u = 1;
-      particleUniforms.uSize.value = BASE_SIZE;
-      PARTICLE_GEO.setDrawRange(0, SCROLL_COUNT);
-      document.documentElement.classList.remove("intro-flying");
-      emitArrive();
-      markWorldReady();
+      cutFlightToHero();
     }
 
     mat.uniforms.uIntroAmt.value = intro.amt;
@@ -727,7 +988,7 @@ function PointsField() {
           const o = (u - 0.75) / 0.25; // 0..1
           const R = 7 + (4.2 - 7) * o;
           const ang = o * TWO_PI;
-          cam.position.set(R * Math.sin(ang), 0.4 * (1 - o), R * Math.cos(ang));
+          cam.position.set(R * Math.sin(ang), 0.15 * (1 - o), R * Math.cos(ang));
           cam.lookAt(0, 0, 0);
           camRoll += (0 - camRoll) * 0.06;
           cam.rotateZ(camRoll);
@@ -790,6 +1051,7 @@ export default function LiquidParticles() {
         gl.toneMappingExposure = 1.0;
       }}
     >
+      {/* Matches --color-void. */}
       <color attach="background" args={["#070a12"]} />
       <PointsField />
       <SignalReady />

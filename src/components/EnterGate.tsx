@@ -46,15 +46,27 @@ export function EnterGate() {
     });
   }, [reduce]);
 
-  const enter = () => {
-    void audio.start();
-    markIntroSeen();
-    markIntroDone();
+  const fadeOut = () => {
     gsap.to(rootRef.current, {
       autoAlpha: 0,
       duration: 0.7,
       ease: "power2.inOut",
     });
+  };
+
+  const enter = () => {
+    void audio.start();
+    markIntroSeen();
+    markIntroDone();
+    fadeOut();
+  };
+
+  // Same flight, just silent — sound stays a real choice, not a toll.
+  const enterMuted = () => {
+    audio.mute();
+    markIntroSeen();
+    markIntroDone();
+    fadeOut();
   };
 
   return (
@@ -68,25 +80,34 @@ export function EnterGate() {
       >
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.4em] text-text-meta">
-            Bochum · 15 · baut
+            Bochum · 15 · builds
           </p>
           <h1 className="mt-4 font-display text-5xl font-light tracking-tight sm:text-7xl">
             Thimofej Zapko
           </h1>
         </div>
-        <button
-          type="button"
-          onClick={enter}
-          className="group flex flex-col items-center gap-3"
-          aria-label="Eintreten, mit Ton"
-        >
-          <span className="rounded-full border border-white/15 px-8 py-3 font-mono text-xs uppercase tracking-[0.3em] text-text transition-colors group-hover:border-accent group-hover:text-accent">
-            Eintreten
-          </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-text-meta">
-            ◉ mit Ton
-          </span>
-        </button>
+        <div className="flex flex-col items-center gap-5">
+          <button
+            type="button"
+            onClick={enter}
+            className="group flex flex-col items-center gap-3"
+            aria-label="Enter, with sound"
+          >
+            <span className="rounded-full border border-line/15 px-8 py-3 font-mono text-xs uppercase tracking-[0.3em] text-text transition-[color,border-color,transform] duration-300 group-hover:-translate-y-0.5 group-hover:border-accent group-hover:text-accent">
+              Enter
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-text-meta">
+              ◉ with sound
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={enterMuted}
+            className="font-mono text-[10px] uppercase tracking-[0.3em] text-text-meta underline decoration-line/20 underline-offset-4 transition-colors hover:text-text"
+          >
+            rather without sound
+          </button>
+        </div>
       </div>
     </div>
   );

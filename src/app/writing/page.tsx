@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Schreiben · Thimofej Zapko",
-  description: "Notizen und halbe Gedanken von Thimofej Zapko.",
+  title: "Writing · Thimofej Zapko",
+  description: "Notes and half-formed thoughts by Thimofej Zapko.",
 };
 
 export default function WritingIndex() {
@@ -16,12 +16,12 @@ export default function WritingIndex() {
         href="/"
         className="font-mono text-xs uppercase tracking-widest text-text-meta transition-colors hover:text-accent"
       >
-        ← Start
+        ← Home
       </Link>
-      <h1 className="mt-8 font-display text-5xl font-light">Schreiben</h1>
+      <h1 className="mt-8 font-display text-5xl font-light">Writing</h1>
       <p className="mt-6 text-lg leading-relaxed text-text-muted">
-        Die ersten Notizen kommen bald. Ich schreib über Bauen, KI, Glauben und
-        darüber, das Leben Stück für Stück zu kapieren.
+        First notes coming soon. I write about building, AI, faith, and figuring
+        life out piece by piece.
       </p>
     </main>
   );

@@ -18,16 +18,19 @@ export default function Home() {
         <Image
           data-hero-poster
           src="/poster/hero-placeholder.svg"
-          alt="Ein spiegelglattes Chrom Objekt, das in einer dunklen Leere schwebt."
+          alt="A mirror-smooth chrome object floating in a dark void."
           width={620}
           height={620}
           priority
           unoptimized
           className="pointer-events-none absolute left-1/2 top-1/2 h-[58vmin] w-[58vmin] max-w-[82vw] -translate-x-1/2 -translate-y-1/2 select-none drop-shadow-[0_30px_80px_rgba(0,0,0,0.6)]"
         />
-        {/* Readability scrim so the identity text stays legible over the cloud. */}
+        {/* Readability scrim so the identity text stays legible over the cloud.
+            Hidden during the intro flight — otherwise it reads as a big dark
+            bar over the bottom half of the cinematic. */}
         <div
           aria-hidden
+          data-intro-hide
           className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-void/85 via-void/35 to-transparent"
         />
         <HeroIntro />
@@ -37,51 +40,72 @@ export default function Home() {
       <section
         id="work"
         aria-labelledby="work-heading"
-        className="relative border-t border-white/5 backdrop-blur-[2px] bg-[radial-gradient(130%_80%_at_50%_50%,rgba(7,10,18,0.96)_0%,rgba(7,10,18,0.74)_58%,rgba(7,10,18,0)_100%)]"
+        className="section-veil relative border-t border-line/5 backdrop-blur-[2px]"
       >
         <div data-reveal className="mx-auto max-w-3xl px-6 py-32">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent">
-            01 / Arbeit
+            01 / Work
           </p>
           <h2
             id="work-heading"
             className="mt-4 font-display text-4xl font-light sm:text-5xl"
           >
-            Woran ich bau
+            What I build
           </h2>
           <div className="mt-8 space-y-6 text-lg leading-relaxed text-text-muted">
             <p>
-              Ich geh noch zur Schule. Nebenbei bau ich bei yesterday-ai, einem
-              Studio mit einem klaren Prinzip:{" "}
-              <em className="text-text">think human, build AI.</em> Wir machen aus
-              echtem Wissen KI Agenten für Firmen, die keinen Bock mehr auf
-              generische Chatbots haben.
+              I&apos;m still in school. On the side I build at yesterday-ai, a
+              studio with one clear principle:{" "}
+              <em className="text-text">think human, build AI.</em> We turn real
+              knowledge into AI agents for companies that are done with generic
+              chatbots.
             </p>
             <p>
-              Und in der Zeit, die übrig bleibt, bau ich mein eigenes Zeug. Ich
-              krieg fast alles gebaut, was ich mir ausdenke. Das Fertigmachen ist
-              der harte Teil. Frag mich, worauf ich diese Woche grad abfahr.
+              And in whatever time is left, I build my own stuff. I can build
+              almost anything I come up with. Finishing is the hard part. Ask me
+              what I&apos;m obsessed with this week.
             </p>
           </div>
-          <div className="mt-12 space-y-8 border-t border-white/10 pt-10">
+          <div className="mt-12 border-t border-line/10 pt-10">
             <p className="font-mono text-xs uppercase tracking-[0.25em] text-text-meta">
-              Ausgewählte Projekte
+              Selected projects
             </p>
-            <div>
-              <p className="font-display text-2xl text-text">E-Mail-Checker</p>
-              <p className="mt-2 text-base text-text-muted">
-                Mit 14 den AI Coding Hackathon im STARTPLATZ Köln gewonnen. Ein
-                n8n Workflow, der dein Postfach in Sprachnachrichten verwandelt
-                und dich per Stimme antworten lässt. Erster Kunde noch in
-                derselben Woche.
-              </p>
-            </div>
-            <div>
-              <p className="font-display text-2xl text-text">yesterday-ai</p>
-              <p className="mt-2 text-base text-text-muted">
-                Wo ich Tag für Tag bau: KI Agenten, die echtes Wissen in Tools
-                verwandeln, die Firmen wirklich nutzen.
-              </p>
+            <div className="group/list mt-2">
+              <div className="border-b border-line/10 py-8 transition-opacity duration-300 group-hover/list:opacity-50 hover:!opacity-100">
+                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent">
+                  Hackathon winner · STARTPLATZ Cologne · at 14
+                </p>
+                <p className="mt-3 font-display text-2xl text-text">
+                  Email checker
+                </p>
+                <p className="mt-2 text-base text-text-muted">
+                  An n8n workflow that turns your inbox into voice messages and
+                  lets you reply with your voice. First customer that same week.
+                </p>
+              </div>
+              <a
+                href="https://yesterday-ai.de"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group/item block border-b border-line/10 py-8 transition-opacity duration-300 group-hover/list:opacity-50 hover:!opacity-100"
+              >
+                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent">
+                  Studio · think human, build AI
+                </p>
+                <p className="mt-3 font-display text-2xl text-text">
+                  yesterday-ai
+                  <span
+                    aria-hidden
+                    className="ml-3 inline-block text-accent opacity-0 transition-all duration-300 group-hover/item:translate-x-1 group-hover/item:opacity-100"
+                  >
+                    →
+                  </span>
+                </p>
+                <p className="mt-2 text-base text-text-muted">
+                  Where I build day after day: AI agents that turn real
+                  knowledge into tools companies actually use.
+                </p>
+              </a>
             </div>
           </div>
         </div>
@@ -91,32 +115,32 @@ export default function Home() {
       <section
         id="life"
         aria-labelledby="life-heading"
-        className="relative border-t border-white/5 backdrop-blur-[2px] bg-[radial-gradient(130%_80%_at_50%_50%,rgba(7,10,18,0.96)_0%,rgba(7,10,18,0.74)_58%,rgba(7,10,18,0)_100%)]"
+        className="section-veil relative border-t border-line/5 backdrop-blur-[2px]"
       >
         <div data-reveal className="mx-auto max-w-3xl px-6 py-32">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-warm">
-            02 / Leben
+            02 / Life
           </p>
           <h2
             id="life-heading"
             className="mt-4 font-display text-4xl font-light sm:text-5xl"
           >
-            Wer ich bin
+            Who I am
           </h2>
           <div className="mt-8 space-y-6 text-lg leading-relaxed text-text-muted">
-            <p>Ich bin Thimofej, 15, und ich hab mir das Bauen selbst beigebracht.</p>
+            <p>I&apos;m Thimofej, 15, and I taught myself how to build.</p>
             <p>
-              Angefangen hat es mit einem Hackathon. Ehrlich, totales Anfänger
-              Zeug. Aber genau da hat Tech mich gepackt und nicht mehr
-              losgelassen. Seitdem geht mir eine Frage nicht mehr aus dem Kopf:{" "}
-              <em className="text-warm-text">was kann KI wirklich werden?</em> Und
-              während ich dem nachgeh, arbeite ich auch an einer besseren Version
-              von mir.
+              It started with a hackathon. Honestly, total beginner stuff. But
+              that&apos;s exactly where tech grabbed me and never let go. Since
+              then one question won&apos;t leave my head:{" "}
+              <em className="text-warm-text">what can AI really become?</em> And
+              while I chase that, I&apos;m also working on a better version of
+              myself.
             </p>
             <p>
-              Ich fang viel zu viel an und bring das meiste nie zu Ende. Aber das,
-              was ich fertig mach, das mach ich <em className="text-warm-text">richtig</em>{" "}
-              gut.
+              I start way too many things and never finish most of them. But
+              what I do finish, I make{" "}
+              <em className="text-warm-text">really</em> good.
             </p>
           </div>
         </div>
@@ -126,35 +150,35 @@ export default function Home() {
       <section
         id="likes"
         aria-labelledby="likes-heading"
-        className="relative border-t border-white/5 backdrop-blur-[2px] bg-[radial-gradient(130%_80%_at_50%_50%,rgba(7,10,18,0.96)_0%,rgba(7,10,18,0.74)_58%,rgba(7,10,18,0)_100%)]"
+        className="section-veil relative border-t border-line/5 backdrop-blur-[2px]"
       >
         <div data-reveal className="mx-auto max-w-3xl px-6 py-32">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-warm">
-            03 / Mag ich
+            03 / Likes
           </p>
           <h2
             id="likes-heading"
             className="mt-4 font-display text-4xl font-light sm:text-5xl"
           >
-            Was ich mag
+            What I like
           </h2>
           <div className="mt-8 space-y-6 text-lg leading-relaxed text-text-muted">
             <p>
-              Das Wichtigste zuerst: ich liebe Jesus Christus, und Er liebt mich.
-              Alles andere, was ich bau, steht darauf.
+              First things first: I love Jesus Christ, and He loves me.
+              Everything else I build stands on that.
             </p>
             <p>
-              Der Rest von mir, ehrlich: Kirche, Sport und viel zu viel
-              Doomscrolling (arbeite dran). Musik hör ich kaum. Worauf ich
-              wirklich hinarbeite, ist kein Hobby, sondern ein besserer Mensch zu
-              werden.
+              The rest of me, honestly: church, sports and way too much
+              doomscrolling (working on it). I barely listen to music. And what
+              I&apos;m really working toward isn&apos;t a hobby, it&apos;s
+              becoming a better person.
             </p>
             <p>
-              Zwei unbeliebte Meinungen, weil du schon mal hier bist:{" "}
-              <em className="text-warm-text">Mbappé ist überbewertet</em>, und Glauben
-              sollten die Leute viel ernster nehmen.
+              Two unpopular opinions, since you&apos;re already here:{" "}
+              <em className="text-warm-text">Mbappé is overrated</em>, and people
+              should take faith a lot more seriously.
             </p>
-            <p>Und der beste Döner der Stadt? Ali Baba. Ende der Diskussion.</p>
+            <p>And the best döner in town? Ali Baba. End of discussion.</p>
           </div>
         </div>
       </section>
@@ -163,26 +187,26 @@ export default function Home() {
       <section
         id="writing"
         aria-labelledby="writing-heading"
-        className="relative border-t border-white/5 backdrop-blur-[2px] bg-[radial-gradient(130%_80%_at_50%_50%,rgba(7,10,18,0.96)_0%,rgba(7,10,18,0.74)_58%,rgba(7,10,18,0)_100%)]"
+        className="section-veil relative border-t border-line/5 backdrop-blur-[2px]"
       >
         <div data-reveal className="mx-auto max-w-3xl px-6 py-32">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent">
-            04 / Schreiben
+            04 / Writing
           </p>
           <h2
             id="writing-heading"
             className="mt-4 font-display text-4xl font-light sm:text-5xl"
           >
-            Schreiben
+            Writing
           </h2>
           <p className="mt-8 text-lg leading-relaxed text-text-muted">
-            Notizen, halbe Gedanken, Sachen, die ich öffentlich für mich sortier.
+            Notes, half-formed thoughts, things I sort out for myself in public.
           </p>
           <Link
             href="/writing"
             className="mt-6 inline-block font-mono text-sm uppercase tracking-widest text-accent underline-offset-4 hover:underline"
           >
-            Notizen lesen →
+            Read the notes →
           </Link>
         </div>
       </section>
@@ -191,25 +215,25 @@ export default function Home() {
       <section
         id="contact"
         aria-labelledby="contact-heading"
-        className="relative border-t border-white/5 backdrop-blur-[2px] bg-[radial-gradient(130%_80%_at_50%_50%,rgba(7,10,18,0.96)_0%,rgba(7,10,18,0.74)_58%,rgba(7,10,18,0)_100%)]"
+        className="section-veil relative border-t border-line/5 backdrop-blur-[2px]"
       >
         <div data-reveal className="mx-auto max-w-3xl px-6 py-32">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent">
-            05 / Kontakt
+            05 / Contact
           </p>
           <h2
             id="contact-heading"
             className="mt-4 font-display text-4xl font-light sm:text-5xl"
           >
-            Lass uns reden
+            Let&apos;s talk
           </h2>
           <p className="mt-8 text-lg leading-relaxed text-text-muted">
-            Du baust was, suchst jemanden oder willst einfach Hallo sagen? Mein
-            Postfach ist offen.
+            You&apos;re building something, looking for someone, or just want to
+            say hi? My inbox is open.
           </p>
           <MagneticLink
             href="mailto:thimofej@yesterday-ai.de"
-            className="mt-6 inline-block font-display text-2xl text-text underline decoration-accent decoration-1 underline-offset-8 transition-colors hover:text-accent sm:text-3xl"
+            className="mt-8 inline-block break-all font-display text-2xl text-text underline decoration-accent decoration-1 underline-offset-8 transition-colors hover:text-accent sm:text-4xl lg:text-5xl"
           >
             thimofej@yesterday-ai.de
           </MagneticLink>

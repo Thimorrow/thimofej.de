@@ -11,6 +11,7 @@ import { ReplayIntro } from "@/components/ReplayIntro";
 import { InteractionSound } from "@/components/InteractionSound";
 import { AliBabaEasterEgg } from "@/components/AliBabaEasterEgg";
 import { EnterGate } from "@/components/EnterGate";
+import { FlightCinema } from "@/components/FlightCinema";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -39,13 +40,13 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://thimofej.de"),
   title: "Thimofej Zapko",
   description:
-    "Thimofej Zapko. 15, selbst beigebracht. Ich baue Sachen, und das hier ist der Mensch dahinter.",
+    "Thimofej Zapko. 15, self-taught. I build things, and this is the human behind them.",
   openGraph: {
     title: "Thimofej Zapko",
-    description: "Ich baue Sachen, und das hier ist der Mensch dahinter.",
+    description: "I build things, and this is the human behind them.",
     url: "https://thimofej.de",
     siteName: "thimofej.de",
-    locale: "de_DE",
+    locale: "en_US",
     type: "website",
   },
 };
@@ -55,7 +56,8 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
-      lang="de"
+      lang="en"
+      suppressHydrationWarning
       className={`${fraunces.variable} ${spectral.variable} ${ibmPlexMono.variable} antialiased`}
     >
       <body className="min-h-dvh">
@@ -67,9 +69,9 @@ export default function RootLayout({
           {children}
           <SiteFooter />
         </SmoothScrollProvider>
-        {/* Cinematic Fade: Content taucht unten auf und verschwindet oben in
-            einem weichen Blur (Star-Wars-Vibe). Folgt dem Viewport, blendet
-            während des Intro-Flugs mit aus. */}
+        {/* Cinematic fade: content surfaces at the bottom and dissolves at the
+            top in a soft blur (Star Wars vibe). Follows the viewport, fades out
+            with the rest of the chrome during the intro flight. */}
         <div
           aria-hidden
           data-intro-hide
@@ -80,6 +82,7 @@ export default function RootLayout({
           data-intro-hide
           className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-32 bg-gradient-to-t from-void via-void/70 to-transparent backdrop-blur-[3px] [mask-image:linear-gradient(to_top,black,transparent)] sm:h-52"
         />
+        <FlightCinema />
         <SoundToggle />
         <ReplayIntro />
         <InteractionSound />

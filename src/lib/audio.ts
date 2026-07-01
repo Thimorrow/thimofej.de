@@ -15,7 +15,7 @@ let droneGain: GainNode | null = null;
 
 const raw: Record<string, ArrayBuffer> = {};
 const buffers: Record<string, AudioBuffer> = {};
-const SAMPLES = ["drone", "arrival", "whoosh"] as const;
+const SAMPLES = ["drone", "arrival", "whoosh", "transition"] as const;
 let prefetching: Promise<void> | null = null;
 let decoding: Promise<void> | null = null;
 
@@ -103,6 +103,13 @@ function primeAndStart() {
   });
 }
 
+// On/off subscribers, so UI (the sound toggle) stays in sync when something
+// else flips the state (e.g. the "ohne Ton" enter path).
+const changeSubs = new Set<(on: boolean) => void>();
+function emitChange() {
+  changeSubs.forEach((f) => f(enabled));
+}
+
 export const audio = {
   get enabled() {
     return enabled;
@@ -138,7 +145,21 @@ export const audio = {
       enabled = true;
       primeAndStart();
     }
+    emitChange();
     return enabled;
+  },
+  // The quiet enter path: switch sound off without ever creating a context.
+  // arm()'s first-gesture fallback stays harmless because primeAndStart()
+  // checks `enabled`.
+  mute() {
+    if (!enabled) return;
+    stopDrone();
+    enabled = false;
+    emitChange();
+  },
+  onChange(cb: (on: boolean) => void): () => void {
+    changeSubs.add(cb);
+    return () => changeSubs.delete(cb);
   },
 
   // --- Sample cues (rich, AI-generated) ---
@@ -148,10 +169,12 @@ export const audio = {
     if (!enabled) return;
     playSample("whoosh", { gain: 0.5 });
   },
-  // Intro: a soft, quick swoosh at each scene change (lighter than flight()).
+  // Intro: a soft, quick swoosh at each scene change — its own short sample
+  // (not the sped-up riser), with a touch of rate variation so the three
+  // beats don't sound like a copy-paste.
   transition() {
     if (!enabled) return;
-    playSample("whoosh", { gain: 0.32, rate: 1.5 });
+    playSample("transition", { gain: 0.42, rate: 0.94 + Math.random() * 0.14 });
   },
   // Intro: the deep bloom as the TZ lands and the world arrives.
   arrival() {

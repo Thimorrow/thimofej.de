@@ -69,6 +69,26 @@ const arrive = makeEvent();
 export const onArrive = arrive.on;
 export const emitArrive = arrive.emit;
 
+// flightStart: a cinematic flight actually begins (first run AND replay, never
+// the skip paths). The letterbox/caption overlay keys off this.
+const flightStart = makeEvent();
+export const onFlightStart = flightStart.on;
+export const emitFlightStart = flightStart.emit;
+
+// flightSkip: the visitor pressed the skip button mid-flight. The canvas cuts
+// the flight and emits `arrive` in response.
+const flightSkip = makeEvent();
+export const onFlightSkip = flightSkip.on;
+export const requestFlightSkip = flightSkip.emit;
+
+// The flight's four glide segments in seconds (system -> Saturn -> city ->
+// window -> hero orbit). Shared by the camera timeline AND the caption overlay
+// so the story beats stay in sync with what the camera shows.
+// The city -> window leg carries the most visual content (canyon, street,
+// house), so it gets the extra time the emptier space legs don't need.
+export const FLIGHT_SEGS = [2.4, 2.4, 3.4, 3.0] as const;
+export const FLIGHT_TOTAL = FLIGHT_SEGS.reduce((a, b) => a + b, 0);
+
 // Persisted "the visitor has seen the intro at least once" flag. localStorage so
 // it survives across sessions — the flight auto-plays exactly once, ever.
 const SEEN_KEY = "tz-intro-seen";
