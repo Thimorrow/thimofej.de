@@ -38,9 +38,16 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thimofej.de"),
-  title: "Thimofej Zapko",
+  title: {
+    default: "Thimofej Zapko",
+    template: "%s · Thimofej Zapko",
+  },
   description:
     "Thimofej Zapko. 15, self-taught. I build things, and this is the human behind them.",
+  applicationName: "thimofej.de",
+  authors: [{ name: "Thimofej Zapko", url: "https://thimofej.de" }],
+  creator: "Thimofej Zapko",
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Thimofej Zapko",
     description: "I build things, and this is the human behind them.",
@@ -49,6 +56,81 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Thimofej Zapko",
+    description: "I build things, and this is the human behind them.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
+// Structured-data graph so Google can build the entity behind the site: the
+// human (Person), the site (WebSite) and this as their profile (ProfilePage).
+// This is what earns a name-query knowledge panel + sitelinks. `sameAs` links
+// the profiles that confirm the identity — the strongest signal here.
+const SITE = "https://thimofej.de";
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": `${SITE}/#person`,
+      name: "Thimofej Zapko",
+      url: SITE,
+      image: `${SITE}/opengraph-image`,
+      description:
+        "15, self-taught. I build things, and this is the human behind them.",
+      jobTitle: "Builder",
+      email: "mailto:thimofej@yesterday-ai.de",
+      worksFor: {
+        "@type": "Organization",
+        name: "yesterday",
+        url: "https://yesterday-ai.de",
+      },
+      homeLocation: { "@type": "Place", name: "Bochum, Germany" },
+      knowsAbout: [
+        "AI agents",
+        "Automation",
+        "n8n",
+        "Software engineering",
+        "Building products",
+      ],
+      // Filled once the real profile URLs are confirmed — the identity-linking
+      // signal Google leans on hardest for the name query.
+      sameAs: [
+        "https://yesterday-ai.de",
+        "https://github.com/Thimorrow",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE}/#website`,
+      url: SITE,
+      name: "thimofej.de",
+      description:
+        "Thimofej Zapko. 15, self-taught. I build things, and this is the human behind them.",
+      inLanguage: "en",
+      publisher: { "@id": `${SITE}/#person` },
+    },
+    {
+      "@type": "ProfilePage",
+      "@id": `${SITE}/#profilepage`,
+      url: SITE,
+      name: "Thimofej Zapko",
+      isPartOf: { "@id": `${SITE}/#website` },
+      about: { "@id": `${SITE}/#person` },
+      mainEntity: { "@id": `${SITE}/#person` },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -61,6 +143,10 @@ export default function RootLayout({
       className={`${fraunces.variable} ${spectral.variable} ${ibmPlexMono.variable} antialiased`}
     >
       <body className="min-h-dvh">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <EnterGate />
         <CanvasMount />
         <SmoothScrollProvider>

@@ -82,9 +82,11 @@ export function EnterGate() {
           <p className="font-mono text-[11px] uppercase tracking-[0.4em] text-text-meta">
             Bochum · 15 · builds
           </p>
-          <h1 className="mt-4 font-display text-5xl font-light tracking-tight sm:text-7xl">
+          {/* Not an <h1>: the gate is a pre-entry overlay, so the document's one
+              true heading lives in the hero (HeroIntro). Avoids a duplicate h1. */}
+          <p className="mt-4 font-display text-5xl font-light tracking-tight sm:text-7xl">
             Thimofej Zapko
-          </h1>
+          </p>
         </div>
         <div className="flex flex-col items-center gap-5">
           <button
