@@ -53,7 +53,7 @@ export default function Home() {
 
       <section className="content-section note-section" aria-labelledby="more-title">
         <div className="section-heading"><h2 id="more-title">more</h2><span>elsewhere</span></div>
-        <p>You can see more of my work on <LinkText href="#projects">GitHub</LinkText> and more of my thinking in <LinkText href="#writing">my notes</LinkText>.</p>
+        <p>You can find me on <LinkText href="https://x.com/thimorrowr">X</LinkText>, see more of my work in <LinkText href="#projects">my projects</LinkText>, and read more of my thinking in <LinkText href="#writing">my notes</LinkText>.</p>
       </section>
 
       <footer id="contact" className="site-footer">
