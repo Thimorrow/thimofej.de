@@ -1,13 +1,10 @@
 
 const projects = [
-  { year: "26", title: "Project one", description: "A quiet digital tool for making ideas clearer.", href: "/projects/project-one" },
-  { year: "25", title: "Project two", description: "An open-source experiment in thoughtful interfaces.", href: "/projects/project-two" },
-  { year: "24", title: "Project three", description: "A small collection of work, notes, and useful things.", href: "/projects/project-three" },
+  { year: "26", title: "Academy app", description: "A learning platform I am building with the team at yesterday.", href: "/projects/project-one" },
 ]
 
 const writing = [
-  { title: "A note on making things", description: "Thoughts on taste, detail, and the web.", href: "/writing" },
-  { title: "The quiet interface", description: "Why less can make a product feel more human.", href: "/writing" },
+  { title: "Building frontend with AI", description: "Notes from working at the intersection of interfaces, code, and AI.", href: "#writing" },
 ]
 
 function LinkText({ children, href = "#" }: { children: React.ReactNode; href?: string }) {
@@ -37,11 +34,11 @@ export default function Home() {
       </header>
 
       <section id="top" className="intro" aria-labelledby="intro-title">
-        <p className="eyebrow">Independent / Germany</p>
-        <h1 id="intro-title"><span className="avatar" aria-hidden="true">T</span> Thimorrow is a creative developer making things for the web.</h1>
-        <p>I make websites, interfaces, and small digital things with care. I like useful ideas, calm software, and details that reward attention.</p>
-        <p>I&apos;m currently working independently. Previously, I helped build products for thoughtful teams.</p>
-        <p>Follow me on <LinkText href="#contact">LinkedIn</LinkText>, find some of my work on <LinkText href="#projects">GitHub</LinkText>, or <LinkText href="mailto:hello@thimorrow.de">send me a note</LinkText>.</p>
+        <p className="eyebrow">AI engineer / frontend developer</p>
+        <h1 id="intro-title"><span className="avatar" aria-hidden="true">T</span> Thimofej Zapko makes frontend experiences with AI.</h1>
+        <p>I&apos;m 15 and specialize in building frontend with AI. I care about clear interfaces, useful products, and turning ideas into working software.</p>
+        <p>I&apos;m currently working as a frontend developer at yesterday, where I&apos;m building our Academy app with SvelteKit.</p>
+        <p>The Academy app is currently in progress. A link will follow soon.</p>
       </section>
 
       <section id="projects" className="content-section" aria-labelledby="projects-title">
