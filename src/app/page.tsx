@@ -1,6 +1,3 @@
-"use client"
-
-import { useEffect, useState } from "react"
 
 const projects = [
   { year: "26", title: "Project one", description: "A quiet digital tool for making ideas clearer.", href: "#contact" },
@@ -33,25 +30,10 @@ function List({ items }: { items: { title: string; description: string; year?: s
 }
 
 export default function Home() {
-  const [dark, setDark] = useState(false)
-  const [sound, setSound] = useState(false)
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = dark ? "dark" : "light"
-  }, [dark])
-
   return (
     <main className="page-wrap">
       <header className="site-header">
         <a className="name" href="#top" aria-label="Back to top">Thimorrow<span className="name-dot">.</span></a>
-        <div className="header-controls" aria-label="Site controls">
-          <button className="control-button" type="button" onClick={() => setDark((value) => !value)} aria-label={`Switch to ${dark ? "light" : "dark"} mode`}>
-            <span className="control-key">D</span> {dark ? "dark" : "light"}
-          </button>
-          <button className="control-button" type="button" onClick={() => setSound((value) => !value)} aria-pressed={sound}>
-            <span className="control-key">S</span> sound {sound ? "on" : "off"}
-          </button>
-        </div>
       </header>
 
       <section id="top" className="intro" aria-labelledby="intro-title">
