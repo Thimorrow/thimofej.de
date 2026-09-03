@@ -1,13 +1,13 @@
 
 const projects = [
-  { year: "26", title: "Project one", description: "A quiet digital tool for making ideas clearer.", href: "#contact" },
-  { year: "25", title: "Project two", description: "An open-source experiment in thoughtful interfaces.", href: "#contact" },
-  { year: "24", title: "Project three", description: "A small collection of work, notes, and useful things.", href: "#contact" },
+  { year: "26", title: "Project one", description: "A quiet digital tool for making ideas clearer.", href: "/projects/project-one" },
+  { year: "25", title: "Project two", description: "An open-source experiment in thoughtful interfaces.", href: "/projects/project-two" },
+  { year: "24", title: "Project three", description: "A small collection of work, notes, and useful things.", href: "/projects/project-three" },
 ]
 
 const writing = [
-  { title: "A note on making things", description: "Thoughts on taste, detail, and the web.", href: "#contact" },
-  { title: "The quiet interface", description: "Why less can make a product feel more human.", href: "#contact" },
+  { title: "A note on making things", description: "Thoughts on taste, detail, and the web.", href: "/writing" },
+  { title: "The quiet interface", description: "Why less can make a product feel more human.", href: "/writing" },
 ]
 
 function LinkText({ children, href = "#" }: { children: React.ReactNode; href?: string }) {

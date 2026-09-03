@@ -1,0 +1,5 @@
+import Link from "next/link"
+
+export default function ProjectThree() {
+  return <main className="page-wrap detail-page"><header className="site-header detail-header"><Link className="name" href="/">Thimorrow<span className="name-dot">.</span></Link><Link className="back-link" href="/">Back home</Link></header><article className="detail-content"><p className="eyebrow">Selected work / 2024</p><h1>A small collection of work, notes, and useful things.</h1><p className="detail-lede">An evolving archive of experiments made to learn something, solve something, or simply make the web a little nicer.</p><div className="detail-meta"><span>Role<br/><strong>Maker</strong></span><span>Type<br/><strong>Archive</strong></span><span>Status<br/><strong>Always changing</strong></span></div><div className="detail-body"><p>Not everything needs to become a product. Some things are just a way of following a question until it becomes clear.</p><p>This is where those things live.</p></div></article><footer className="site-footer"><Link className="inline-link" href="/">← All work</Link><span>Project three</span></footer></main>
+}
