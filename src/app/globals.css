@@ -43,9 +43,11 @@ button { color: inherit; font: inherit; }
 .item { display: grid; grid-template-columns: 1fr 1.35fr 28px 18px; gap: 16px; align-items: baseline; padding: 11px 10px; margin: 0 -10px; border-top: 1px solid transparent; border-radius: 8px; transition: color .22s ease, background-color .22s ease, border-color .22s ease, transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease; }
 .item + .item { border-top-color: var(--line); }
 .item:hover { color: var(--text); background: color-mix(in srgb, var(--accent) 9%, var(--bg)); border-top-color: color-mix(in srgb, var(--accent) 24%, var(--line)); transform: translateX(5px); box-shadow: 0 5px 18px color-mix(in srgb, var(--accent) 9%, transparent); }
-.item-title { color: var(--text); font-weight: 500; transition: color .22s ease; }
-.item:hover .item-title { color: var(--accent); }
-.item-description, .item-year { color: var(--faint); transition: color .22s ease; }
+.item-title { position: relative; display: inline-block; color: var(--text); font-weight: 500; transition: color .22s ease, transform .22s cubic-bezier(.2,.8,.2,1); }
+.item-title::after { content: ""; position: absolute; right: 0; bottom: -2px; left: 0; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: right; transition: transform .28s cubic-bezier(.2,.8,.2,1); }
+.item:hover .item-title { color: var(--accent); transform: translateX(2px); }
+.item:hover .item-title::after { transform: scaleX(1); transform-origin: left; }
+.item-description, .item-year { color: var(--faint); transition: color .22s ease, transform .22s cubic-bezier(.2,.8,.2,1); }
 .item:hover .item-description, .item:hover .item-year { color: var(--muted); }
 .item-year { text-align: right; font-size: 13px; }
 .item-arrow { color: var(--faint); font-size: 14px; opacity: 0; transform: translate(-4px, 4px); transition: opacity .22s ease, transform .22s ease, color .22s ease; }
