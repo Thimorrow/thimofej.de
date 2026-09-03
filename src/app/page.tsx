@@ -1,80 +1,69 @@
 const projects = [
-  {
-    title: "Studio Notes",
-    type: "Writing & thinking",
-    year: "2024",
-    description: "A small collection of ideas about design, technology, and making things with care.",
-  },
-  {
-    title: "North / South",
-    type: "Digital product",
-    year: "2023",
-    description: "An independent experiment in building quieter, more considered tools for the web.",
-  },
-  {
-    title: "Selected work",
-    type: "Creative direction",
-    year: "2022—24",
-    description: "A selection of collaborations, identities, and interfaces made with good people.",
-  },
+  { year: "2026", title: "Project one", description: "A quiet digital tool for making ideas clearer." },
+  { year: "2025", title: "Project two", description: "An open-source experiment in thoughtful interfaces." },
+  { year: "2024", title: "Project three", description: "A small collection of work, notes, and useful things." },
 ]
 
-const links = ["Are.na", "LinkedIn", "GitHub", "Email"]
+const writing = [
+  { title: "A note on making things", description: "Thoughts on taste, detail, and the web." },
+  { title: "The quiet interface", description: "Why less can make a product feel more human." },
+]
+
+function LinkText({ children, href = "#" }: { children: React.ReactNode; href?: string }) {
+  return <a className="inline-link" href={href}>{children}</a>
+}
+
+function List({ items }: { items: { title: string; description: string; year?: string }[] }) {
+  return (
+    <div className="item-list">
+      {items.map((item) => (
+        <a href="#contact" className="item" key={item.title}>
+          <span className="item-title">{item.title}</span>
+          <span className="item-description">{item.description}</span>
+          {item.year && <span className="item-year">{item.year}</span>}
+        </a>
+      ))}
+    </div>
+  )
+}
 
 export default function Home() {
   return (
-    <main className="site-shell">
-      <nav className="topbar" aria-label="Main navigation">
-        <a className="wordmark" href="#top" aria-label="Home">TM<span className="wordmark-dot">.</span></a>
-        <div className="nav-links">
-          <a href="#work">Work</a>
-          <a href="#about">About</a>
-          <a href="#contact">Contact</a>
+    <main className="page-wrap">
+      <header className="site-header">
+        <a className="name" href="#top">Thimorrow</a>
+        <div className="header-controls" aria-label="Site controls">
+          <button type="button" aria-label="Switch theme"><span className="control-key">D</span> light</button>
+          <span><span className="control-key">S</span> sound off</span>
         </div>
-        <span className="availability"><span className="status-dot" /> Available for select work</span>
-      </nav>
+      </header>
 
-      <section id="top" className="hero" aria-labelledby="intro-title">
-        <p className="eyebrow">Independent designer / developer</p>
-        <h1 id="intro-title">I make digital things<br /><em>with intention.</em></h1>
-        <div className="hero-bottom">
-          <p className="intro-copy">Hi, I&apos;m Thimorrow. I&apos;m a creative who cares about clarity, useful details, and work that feels like it belongs.</p>
-          <a className="circle-link" href="#work" aria-label="Scroll to selected work">↓</a>
-        </div>
+      <section id="top" className="intro" aria-labelledby="intro-title">
+        <h1 id="intro-title"><span className="avatar" aria-hidden="true">T</span> Thimorrow is a creative developer based in Germany.</h1>
+        <p>I make websites, interfaces, and small digital things with care. I like useful ideas, calm software, and details that reward attention.</p>
+        <p>I&apos;m currently working independently. Previously, I helped build products for thoughtful teams.</p>
+        <p>Follow me on <LinkText href="#contact">LinkedIn</LinkText>, find some of my work on <LinkText href="#projects">GitHub</LinkText>, or <LinkText href="mailto:hello@thimorrow.de">send me a note</LinkText>.</p>
       </section>
 
-      <section id="about" className="about-section section-rule" aria-labelledby="about-title">
-        <div className="section-label"><span>(01)</span><span id="about-title">About</span></div>
-        <div className="about-content">
-          <p className="large-copy">I work across identity, interface, and code — helping ideas become clear, useful, and a little more human.</p>
-          <p className="body-copy">Based in Germany, working independently with people and teams who care about what they put into the world. When I&apos;m not designing, you&apos;ll usually find me reading, walking, or making notes.</p>
-        </div>
+      <section id="projects" className="content-section" aria-labelledby="projects-title">
+        <h2 id="projects-title">things I&apos;ve built</h2>
+        <List items={projects} />
       </section>
 
-      <section id="work" className="work-section section-rule" aria-labelledby="work-title">
-        <div className="section-label"><span>(02)</span><span id="work-title">Selected work</span></div>
-        <div className="project-list">
-          {projects.map((project) => (
-            <a href="#contact" className="project-row" key={project.title}>
-              <div className="project-index">↳</div>
-              <div className="project-main"><h2>{project.title}</h2><p>{project.description}</p></div>
-              <div className="project-type">{project.type}</div>
-              <div className="project-year">{project.year}</div>
-            </a>
-          ))}
-        </div>
+      <section className="content-section" aria-labelledby="writing-title">
+        <h2 id="writing-title">writing</h2>
+        <List items={writing} />
       </section>
 
-      <section id="contact" className="contact-section section-rule" aria-labelledby="contact-title">
-        <div className="section-label"><span>(03)</span><span id="contact-title">Elsewhere</span></div>
-        <div className="contact-content">
-          <h2>Have something<br /><em>in mind?</em></h2>
-          <a className="email-link" href="mailto:hello@example.com">hello@example.com <span>↗</span></a>
-          <div className="social-links">{links.map((link) => <a href="#contact" key={link}>{link} <span>↗</span></a>)}</div>
-        </div>
+      <section className="content-section note-section" aria-labelledby="more-title">
+        <h2 id="more-title">more</h2>
+        <p>You can see more of my work on <LinkText href="#projects">GitHub</LinkText> and more of my thinking in <LinkText href="#writing-title">my notes</LinkText>.</p>
       </section>
 
-      <footer className="footer"><span>© 2024 Thimorrow</span><span>Made with care in Germany</span><a href="#top">Back to top ↑</a></footer>
+      <footer id="contact" className="site-footer">
+        <p>Want to say hello? <LinkText href="mailto:hello@thimorrow.de">hello@thimorrow.de</LinkText>.</p>
+        <span>© 2026 Thimorrow</span>
+      </footer>
     </main>
   )
 }
