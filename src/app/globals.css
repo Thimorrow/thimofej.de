@@ -6,8 +6,8 @@
   --font-sans: "Inter", "Helvetica Neue", sans-serif;
 }
 
-:root { color-scheme: light; --bg: #fafaf9; --text: #252525; --muted: #747474; --faint: #a1a19d; --line: #e6e6e2; --soft: #f0f0ed; --accent: #3568d4; --focus: #252525; }
-:root[data-theme="dark"] { color-scheme: dark; --bg: #191918; --text: #e9e9e5; --muted: #a5a5a0; --faint: #797974; --line: #353532; --soft: #292927; --accent: #82a7ff; --focus: #f5f5f0; }
+:root { color-scheme: light; --bg: #fafaf9; --text: #252525; --muted: #747474; --faint: #a1a19d; --line: #e6e6e2; --soft: #f0f0ed; --accent: #6f4936; --focus: #252525; }
+:root[data-theme="dark"] { color-scheme: dark; --bg: #191918; --text: #e9e9e5; --muted: #a5a5a0; --faint: #797974; --line: #353532; --soft: #292927; --accent: #bd9275; --focus: #f5f5f0; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; background: var(--bg); transition: background-color .35s ease; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.55; transition: background-color .35s ease, color .35s ease; }
