@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#191918"/>
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+    <text x="72" y="94" font-size="28" font-weight="600" fill="#e9e9e5">Thimorrow<tspan fill="#bd9275">.</tspan></text>
+    <text x="72" y="214" font-size="15" letter-spacing="2" fill="#b5b5ae">AI ENGINEER / FRONTEND DEVELOPER</text>
+    <text x="68" y="301" font-size="66" font-weight="500" letter-spacing="-2.5" fill="#e9e9e5">Thimofej Zapko.</text>
+    <text x="72" y="376" font-size="31" fill="#b5b5ae">Frontend experiences with AI.</text>
+    <path d="M72 490H1128" stroke="#353532"/>
+    <text x="72" y="552" font-size="20" fill="#9a9a93">Selected work, experiments &amp; ideas.</text>
+    <text x="1128" y="552" text-anchor="end" font-size="20" fill="#bd9275">thimofej.de</text>
+  </g>
+  <g stroke="#bd9275" stroke-width="2" stroke-linejoin="round">
+    <path d="M982 192 1094 256 982 321 870 256Z" fill="#292522"/>
+    <path d="M870 256 982 321 982 449 870 385Z" fill="#211f1d"/>
+    <path d="M982 321 1094 256 1094 385 982 449Z" fill="#302821"/>
+    <path d="M982 192V321M870 385 982 321 1094 385" fill="none" opacity=".28"/>
+  </g>
+</svg>
