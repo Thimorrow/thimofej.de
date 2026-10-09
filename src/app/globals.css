@@ -3,7 +3,7 @@
 @theme {
   --color-background: #fafaf9;
   --color-foreground: #252525;
-  --font-sans: "Inter", "Helvetica Neue", sans-serif;
+  --font-sans: var(--font-inter), "Helvetica Neue", sans-serif;
 }
 
 :root { color-scheme: light; --bg: #fafaf9; --text: #252525; --muted: #62625e; --faint: #70706b; --line: #e6e6e2; --soft: #f0f0ed; --accent: #6f4936; --focus: #252525; }
