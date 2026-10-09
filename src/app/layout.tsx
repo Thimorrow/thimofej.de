@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://thimofej.de"),
   applicationName: "Thimorrow",
-  title: "Thimofej Zapko — AI engineer & frontend developer",
+  title: "Thimofej Zapko | AI engineer & frontend developer",
   description: "The personal website of Thimofej Zapko, an AI engineer and frontend developer working at yesterday.",
   openGraph: {
     type: "website",

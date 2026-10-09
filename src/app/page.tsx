@@ -1,12 +1,9 @@
+import Link from "next/link"
 import OrbitSculpture from "@/components/orbit-sculpture"
 
 
 const projects = [
-  { year: "26", title: "Academy app", description: "A learning platform I am building with the team at yesterday.", href: "/projects/project-one" },
-]
-
-const writing = [
-  { title: "Building frontend with AI", description: "Notes on interfaces, code, and AI. Coming soon.", href: "/writing" },
+  { year: "26", title: "Academy app", description: "A learning platform I am building with the team at yesterday.", href: "/projects/academy" },
 ]
 
 function LinkText({ children, href = "#" }: { children: React.ReactNode; href?: string }) {
@@ -17,12 +14,12 @@ function List({ items }: { items: { title: string; description: string; year?: s
   return (
     <div className="item-list">
       {items.map((item) => (
-        <a href={item.href} className="item" key={item.title}>
+        <Link href={item.href} className="item" key={item.title}>
           <span className="item-title">{item.title}</span>
           <span className="item-description">{item.description}</span>
           {item.year && <span className="item-year">{item.year}</span>}
           <span className="item-arrow" aria-hidden="true">↗</span>
-        </a>
+        </Link>
       ))}
     </div>
   )
@@ -49,18 +46,13 @@ export default function Home() {
         <List items={projects} />
       </section>
 
-      <section id="writing" className="content-section" aria-labelledby="writing-title">
-        <div className="section-heading"><h2 id="writing-title">writing</h2><span>notes &amp; thoughts</span></div>
-        <List items={writing} />
-      </section>
-
       <section className="content-section note-section" aria-labelledby="more-title">
         <div className="section-heading"><h2 id="more-title">more</h2><span>elsewhere</span></div>
-        <p>You can find me on <LinkText href="https://x.com/thimorrowr">X</LinkText> and <LinkText href="https://github.com/thimorrow">GitHub</LinkText>, see more of my work in <LinkText href="#projects">my projects</LinkText>, and find upcoming writing in <LinkText href="/writing">my notes</LinkText>.</p>
+        <p>You can find me on <LinkText href="https://x.com/thimorrowr">X</LinkText> and <LinkText href="https://github.com/thimorrow">GitHub</LinkText>, or see more of my work in <LinkText href="#projects">my projects</LinkText>.</p>
       </section>
 
       <footer id="contact" className="site-footer">
-        <p>Want to say hello? <LinkText href="mailto:hello@thimorrow.de">hello@thimorrow.de</LinkText>.</p>
+        <p>Want to say hello? <LinkText href="mailto:thimofej@yesterday-ai.de">thimofej@yesterday-ai.de</LinkText>.</p>
         <span>© 2026 Thimorrow</span>
       </footer>
     </main>
