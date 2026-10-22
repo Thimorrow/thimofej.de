@@ -1,0 +1,155 @@
+{
+  "designRevision": "a6c25c016165ca57d208fbae3605ce2b78aadcdc",
+  "units": [
+    {
+      "name": "button",
+      "path": "base/components/button.html",
+      "sha256": "f09d2ab883df8e7dfa8e007c29c2ae49a202c2909a95575393787d4999c23203",
+      "header": "<!-- component: button | group: actions | source: apps/web-academy/src/lib/kosmos/primitives/Button.svelte | synced: 19d8016b4a0f0d118884974d46ce4bf087b5b852 | states: default, hover, focus, active, disabled, loading, selected | quality: good -->",
+      "quality": "good"
+    },
+    {
+      "name": "page-head",
+      "path": "base/components/page-head.html",
+      "sha256": "e7f3450ee1657c724ae53944114c1df52f2c6993fb01d36ec0757423037f6851",
+      "header": "<!-- component: page-head | group: shell | source: apps/web-academy/src/lib/kosmos/head/PageHead.svelte | synced: 19d8016b4a0f0d118884974d46ce4bf087b5b852 | states: default | quality: good -->",
+      "quality": "good"
+    },
+    {
+      "name": "sidebar-frame",
+      "path": "base/components/sidebar-frame.html",
+      "sha256": "b0ae13baf774fb763f4acd32d3e0eedd90460380c008ef23df7857624cca3d0a",
+      "header": "<!-- component: sidebar-frame | group: shell | source: apps/web-academy/src/lib/kosmos/layouts/SidebarFrame.svelte, apps/web-academy/src/lib/kosmos/nav/nav-link.css, apps/web-academy/src/lib/kosmos/components/Wordmark.svelte | synced: 8a807e26b18013661458de93cef04df89b66a2eb | states: default | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "sidebar",
+      "path": "base/components/sidebar.html",
+      "sha256": "540eedd0a6a606a19daaa6f6a6d3c2d9ced019305fc3635b79ba95fa72682775",
+      "header": "<!-- component: sidebar | group: navigation | source: apps/web-academy/src/lib/components/AcademySidebarNav.svelte, apps/web-academy/src/lib/nav/nav-config.ts | synced: 19d8016b4a0f0d118884974d46ce4bf087b5b852 | states: default | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "tooltip",
+      "path": "base/components/tooltip.html",
+      "sha256": "b584cf397b1e7f6d610f0edf7b572068785a0baf4e0d726fb6f08ae849935164",
+      "header": "<!-- component: tooltip | group: feedback | source: apps/web-academy/src/lib/kosmos/primitives/Tooltip.svelte | synced: b42a76bda25d7c348dafb2bf7bf963dfd07c95ef | states: open, hover | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "topbar-frame",
+      "path": "base/components/topbar-frame.html",
+      "sha256": "70041f54cce9f39b429f7b24fe16c5e73d058c7fccbcd7062385545596373cf6",
+      "header": "<!-- component: topbar-frame | group: shell | source: apps/web-academy/src/lib/kosmos/components/Topbar.svelte, apps/web-academy/src/lib/components/SessionMenu.svelte, apps/web-academy/src/lib/kosmos/primitives/Tooltip.svelte | synced: b42a76bda25d7c348dafb2bf7bf963dfd07c95ef | states: default | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "topbar-mission",
+      "path": "base/components/topbar-mission.html",
+      "sha256": "dae04d0b5e6474cdfb7351c98f1cec657891f3175a923b289afb4b074964868c",
+      "header": "<!-- component: topbar-mission | group: navigation | source: apps/web-academy/src/lib/kosmos/components/Topbar.svelte | synced: 8a807e26b18013661458de93cef04df89b66a2eb | states: default | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "mission-card",
+      "path": "base/components/mission-card.html",
+      "sha256": "5a3d6bad950a26e1a1f505e25767a110fb12857da4ffc58ad6dbaeadb87f6a7e",
+      "header": "<!-- component: mission-card | group: cards | source: apps/web-academy/src/lib/components/missionen/MissionCard.svelte | synced: 19d8016b4a0f0d118884974d46ce4bf087b5b852 | states: default,hover | quality: refine | quality-note: tilted cover with lilac wedge, full-width violet pill CTA, hover shadow lift. Use a plain 3:2 cover and a compact CTA -->",
+      "quality": "refine"
+    },
+    {
+      "name": "content-search",
+      "path": "base/components/content-search.html",
+      "sha256": "db65d9a103e28c4108980144b112b1746ce6a769d310e7a28443d36aa69c86cc",
+      "header": "<!-- component: content-search | group: filters | source: apps/web-academy/src/lib/components/ContentSearch.svelte | synced: 19d8016b4a0f0d118884974d46ce4bf087b5b852 | states: default, hover, focus | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "mission-controls-bar",
+      "path": "base/components/mission-controls-bar.html",
+      "sha256": "7467dee39bb518732fd4f868803c32f7c32f29beafb767080a5125567e333e32",
+      "header": "<!-- component: mission-controls-bar | group: filters | source: apps/web-academy/src/lib/components/missionen/MissionControlsBar.svelte | synced: 19d8016b4a0f0d118884974d46ce4bf087b5b852 | states: default | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "mission-filter-dropdown",
+      "path": "base/components/mission-filter-dropdown.html",
+      "sha256": "c520913ea8ac75b77db8fb7d69029e0b63a631f1af00322fa971b055db581f48",
+      "header": "<!-- component: mission-filter-dropdown | group: filters | source: apps/web-academy/src/lib/components/missionen/MissionFilterDropdown.svelte | synced: 8a807e26b18013661458de93cef04df89b66a2eb | states: default, hover, focus, open, selected | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "tomo-state-indicator",
+      "path": "base/components/tomo-state-indicator.html",
+      "sha256": "7f9481509f563f0d1429eb352339296c1f78abadeebd50a384a678c65464831a",
+      "header": "<!-- component: tomo-state-indicator | group: feedback | source: packages/app-libs/agent-chat-svelte/src/lib/components/TomoStateIndicator.svelte | synced: b42a76bda25d7c348dafb2bf7bf963dfd07c95ef | states: loading | quality: refine | quality-note: orange gradient bubble, shimmer text gets clipped -->",
+      "quality": "refine"
+    },
+    {
+      "name": "chat-composer",
+      "path": "base/components/chat-composer.html",
+      "sha256": "d7f383e03a036a4570f02565d13a31839ec68adad1fb4b158cca4103fc22f8e2",
+      "header": "<!-- component: chat-composer | group: chat | source: packages/core-base/ui-lib/src/lib/molecules/chat/ChatInputArea.svelte, apps/web-academy/src/lib/components/AiDisclaimer.svelte | synced: bd8ce6136f7bf478a541f85c9f3c055ddb15cfef | states: default,focus | quality: good -->",
+      "quality": "good"
+    },
+    {
+      "name": "chat-view",
+      "path": "base/components/chat-view.html",
+      "sha256": "66190709a41625a649f3fbee94733be2ae1ef08209ad1374508ac70554f0a889",
+      "header": "<!-- component: chat-view | group: chat | source: packages/core-base/ui-lib/src/lib/organisms/views/ChatView.svelte, packages/core-base/ui-lib/src/lib/molecules/chat/MessageBubble.svelte, apps/web-academy/src/lib/styles/chat-prose.css, apps/web-academy/src/lib/components/missionen/MissionChatView.svelte | synced: b42a76bda25d7c348dafb2bf7bf963dfd07c95ef | states: default | quality: good -->",
+      "quality": "good"
+    },
+    {
+      "name": "step-rail-identity",
+      "path": "base/components/step-rail-identity.html",
+      "sha256": "41d2448387611bcbfad67ad2b42c9af3950e1531fce74240e14e41e134267198",
+      "header": "<!-- component: step-rail-identity | group: navigation | source: apps/web-academy/src/lib/components/step-rail/StepRailIdentity.svelte | synced: b42a76bda25d7c348dafb2bf7bf963dfd07c95ef | states: default | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "step-rail",
+      "path": "base/components/step-rail.html",
+      "sha256": "a9737116be5625b276cd531b6a7b363f43f2420db65338c43583a47d944db53e",
+      "header": "<!-- component: step-rail | group: navigation | source: apps/web-academy/src/lib/components/step-rail/StepRail.svelte, apps/web-academy/src/lib/components/step-rail/StepRailHeader.svelte, apps/web-academy/src/lib/components/step-rail/StepRailItem.svelte, apps/web-academy/src/lib/components/step-rail/StepRailConnector.svelte, apps/web-academy/src/lib/components/step-rail/StepRailStepIcon.svelte, apps/web-academy/src/lib/components/step-rail/StepRailIdentity.svelte | synced: b42a76bda25d7c348dafb2bf7bf963dfd07c95ef | states: default,hover,focus | quality: refine | quality-note: every step a bordered card, orange gradient bar. Use a plain list with number/check markers, flat fill -->",
+      "quality": "refine"
+    },
+    {
+      "name": "panel-header-button",
+      "path": "base/components/panel-header-button.html",
+      "sha256": "bc04119baa8869b805eb10bbc4b3c51cd8e369b8c1698a23b02506f6b8271357",
+      "header": "<!-- component: panel-header-button | group: actions | source: apps/web-academy/src/lib/primitives/panel-header-button.css | synced: b42a76bda25d7c348dafb2bf7bf963dfd07c95ef | states: default, hover, focus | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "artifact-panel",
+      "path": "base/components/artifact-panel.html",
+      "sha256": "f8937acd69da78ffa760d02993bd204a14fbf57d6f3c4f5f1b9e88d77bed96e0",
+      "header": "<!-- component: artifact-panel | group: panels | source: apps/web-academy/src/lib/components/artifact-panel/ArtifactPanel.svelte, apps/web-academy/src/lib/components/artifact-panel/ArtifactHeader.svelte, apps/web-academy/src/lib/components/artifact-panel/ArtifactContent.svelte, apps/web-academy/src/lib/components/artifact-panel/ArtifactSectionCard.svelte, apps/web-academy/src/lib/components/artifact-panel/ArtifactFooter.svelte, apps/web-academy/src/lib/primitives/panel-header-button.css | synced: b42a76bda25d7c348dafb2bf7bf963dfd07c95ef | states: default,loading | quality: refine | quality-note: every section a bordered card, copy button floats over the first card -->",
+      "quality": "refine"
+    },
+    {
+      "name": "app-frame",
+      "path": "base/components/app-frame.html",
+      "sha256": "dddd5eb8e942436c012d3c04a9369a776f9c9d1a1588eb870c18b5fb4b408404",
+      "header": "<!-- component: app-frame | group: shell | source: apps/web-academy/src/lib/kosmos/layouts/AppShell.svelte, apps/web-academy/src/lib/kosmos/layouts/ContentShell.svelte | synced: 19d8016b4a0f0d118884974d46ce4bf087b5b852 | states: default | quality: ok -->",
+      "quality": "ok"
+    },
+    {
+      "name": "session-shell",
+      "path": "base/components/session-shell.html",
+      "sha256": "bed5309769ad8dca43748386d72934d45f36d92c57a39b72e90811d03a450209",
+      "header": "<!-- component: session-shell | group: shell | source: apps/web-academy/src/lib/layouts/SessionShell.svelte, apps/web-academy/src/lib/kosmos/components/PanelToggleGlyph.svelte | synced: b42a76bda25d7c348dafb2bf7bf963dfd07c95ef | states: default | quality: ok -->",
+      "quality": "ok"
+    }
+  ],
+  "tokens": {
+    "path": "apps/web-academy/src/lib/tokens/academy-tokens.css",
+    "sha256": "0c4ed8cac283ff48d6f2cd9042d186b3a70375b83cb8677e18a5615fc7f90821"
+  },
+  "stylesheetSha256": "056d4daa15874e7ac0afb34dccd7aba5cb3a18e8618003989037957bb139cbab",
+  "refinements": {
+    "mission-card": "Plain 3:2 cover, no tilt or hover lift, compact catalog button.",
+    "step-rail": "Unboxed numbered step list and flat progress fill.",
+    "artifact-panel": "Continuous document sections; copy action in header."
+  }
+}
