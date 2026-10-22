@@ -22,7 +22,7 @@ function setup(hidden = false) {
   };
 }
 
-test('WebGL stays asleep behind the entry gate, then follows tab visibility', () => {
+test('the GPU scene stays asleep behind the entry gate, then follows tab visibility', () => {
   const scene = setup();
   scene.show(false);
   scene.show(true);

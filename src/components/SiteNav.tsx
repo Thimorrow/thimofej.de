@@ -64,9 +64,9 @@ export function SiteNav() {
           top area free for the opener. */}
       <nav
         aria-label="Primary"
-        className="fixed left-0 top-0 z-40 hidden h-dvh flex-col justify-center pl-6 lg:flex"
+        className="pointer-events-none fixed left-0 top-0 z-40 hidden h-dvh flex-col justify-center pl-6 lg:flex"
       >
-        <ul className="flex flex-col gap-5">
+        <ul className="pointer-events-auto flex flex-col gap-5">
           {links.map((l) => (
             <li key={l.href}>
               <MagneticLink

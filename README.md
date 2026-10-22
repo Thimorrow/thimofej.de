@@ -1,6 +1,6 @@
 # thimofej.de
 
-Personal website of Thimofej Zapko. Next.js 16, React 19, Tailwind 4, three.js.
+Personal website of Thimofej Zapko. Next.js 16, React 19, Tailwind 4, vgpu / WebGPU.
 
 ```bash
 npm install
@@ -12,7 +12,9 @@ npm run build
 
 Deployed on Vercel.
 
-The homepage uses the cinematic particle intro with the current portfolio copy. Sound is opt-in; reduced-motion and unavailable WebGL use a static monogram. Project pages remain readable without the 3D scene.
+The homepage uses vgpu for the cinematic particle intro, chapter morphs, bloom, grain and vignette. Three.js supplies camera and curve math only; the homepage no longer uses a WebGL renderer or React Three Fiber. Sound is opt-in. Reduced motion, unavailable WebGPU and GPU device loss use the static monogram; navigation remains available if a flight is interrupted. Project pages remain readable without the 3D scene.
+
+`/lab/vgpu` retains the small vgpu / Three.js comparison scene. It is excluded from search indexing and is not a benchmark of the full homepage.
 
 ## Google Search
 

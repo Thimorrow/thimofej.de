@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { Component, useEffect, type ReactNode } from "react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import { markIntroDone, markWorldReady, setSkipFlight } from "@/lib/intro";
+import { emitArrive, markIntroDone, markWorldReady, setSkipFlight } from "@/lib/intro";
 
 // The particle-morph hero, code-split and client-only.
 const LiquidParticles = dynamic(() => import("./LiquidParticles"), {
@@ -15,6 +15,8 @@ function StaticFallback() {
     setSkipFlight(true);
     markIntroDone();
     markWorldReady();
+    // Release the flight's focus/inert locks if a device is lost mid-flight.
+    emitArrive();
     document.documentElement.classList.remove("canvas-ready", "intro-flying");
   }, []);
   return null;
@@ -29,7 +31,7 @@ class CanvasBoundary extends Component<{ children: ReactNode }, { failed: boolea
 export function CanvasMount() {
   const reduce = useReducedMotion();
 
-  // Reduced motion: no live WebGL — the static hero poster stays.
+  // Reduced motion: no live GPU scene — the static hero poster stays.
   if (reduce) return null;
 
   return (
