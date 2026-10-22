@@ -1,60 +1,48 @@
-import Link from "next/link"
-import OrbitSculpture from "@/components/orbit-sculpture"
-
-
-const projects = [
-  { year: "26", title: "Academy app", description: "A learning platform I am building with the team at yesterday.", href: "/projects/academy" },
-]
-
-function LinkText({ children, href = "#" }: { children: React.ReactNode; href?: string }) {
-  return <a className="inline-link" href={href}>{children}</a>
-}
-
-function List({ items }: { items: { title: string; description: string; year?: string; href: string }[] }) {
-  return (
-    <div className="item-list">
-      {items.map((item) => (
-        <Link href={item.href} className="item" key={item.title}>
-          <span className="item-title">{item.title}</span>
-          <span className="item-description">{item.description}</span>
-          {item.year && <span className="item-year">{item.year}</span>}
-          <span className="item-arrow" aria-hidden="true">↗</span>
-        </Link>
-      ))}
-    </div>
-  )
-}
+import Image from "next/image";
+import Link from "next/link";
+import { CinematicHome } from "@/components/CinematicHome";
+import { HeroIntro } from "@/components/HeroIntro";
 
 export default function Home() {
   return (
-    <main className="page-wrap">
-      <header className="site-header">
-        <a className="name" href="#top" aria-label="Back to top">Thimorrow<span className="name-dot">.</span></a>
-        <OrbitSculpture />
-      </header>
+    <CinematicHome>
+      <main id="main" tabIndex={-1}>
+        <section id="top" data-morph="0" aria-labelledby="hero-heading" className="hero-section">
+          <Image data-hero-poster src="/poster/hero-monogram.svg" alt="" width={620} height={620} priority unoptimized className="hero-poster" />
+          <div aria-hidden data-intro-hide className="hero-scrim" />
+          <HeroIntro />
+        </section>
 
-      <section id="top" className="intro" aria-labelledby="intro-title">
-        <p className="eyebrow">AI engineer / frontend developer</p>
-        <h1 id="intro-title">Thimofej Zapko makes frontend experiences with AI.</h1>
-        <p>I&apos;m 15 and specialize in building frontend with AI. I care about clear interfaces, useful products, and turning ideas into working software.</p>
-        <p>I&apos;m currently working as a frontend developer at yesterday, where I&apos;m building our Academy app with SvelteKit.</p>
-        <p>The Academy app is currently in progress. A link will follow soon.</p>
-      </section>
+        <section id="projects" data-morph="1" aria-labelledby="projects-title" className="section-veil home-section">
+          <div className="section-inner">
+            <div className="chapter-heading"><h2 id="projects-title">things I&apos;ve built</h2><span>selected work</span></div>
+            <div className="work-intro">
+              <p>I&apos;m currently working as a frontend developer at yesterday, where I&apos;m building our Academy app with SvelteKit.</p>
+              <p className="project-status">The Academy app is currently in progress. A link will follow soon.</p>
+            </div>
+            <Link href="/projects/academy" className="project-link">
+              <span className="project-year">26</span>
+              <div><h3>Academy app</h3><p>A learning platform I am building with the team at yesterday.</p></div>
+              <span className="project-arrow" aria-hidden="true">↗</span>
+            </Link>
+          </div>
+        </section>
 
-      <section id="projects" className="content-section" aria-labelledby="projects-title">
-        <div className="section-heading"><h2 id="projects-title">things I&apos;ve built</h2><span>selected work</span></div>
-        <List items={projects} />
-      </section>
+        <section id="more" data-morph="2" aria-labelledby="more-title" className="section-veil home-section more-section">
+          <div className="section-inner">
+            <div className="chapter-heading"><h2 id="more-title">more</h2><span>elsewhere</span></div>
+            <p className="elsewhere-copy">You can find me on <a className="inline-link" href="https://x.com/thimorrowr">X</a> and <a className="inline-link" href="https://github.com/thimorrow">GitHub</a>, or see more of my work in <a className="inline-link" href="#projects">my projects</a>.</p>
+          </div>
+        </section>
 
-      <section className="content-section note-section" aria-labelledby="more-title">
-        <div className="section-heading"><h2 id="more-title">more</h2><span>elsewhere</span></div>
-        <p>You can find me on <LinkText href="https://x.com/thimorrowr">X</LinkText> and <LinkText href="https://github.com/thimorrow">GitHub</LinkText>, or see more of my work in <LinkText href="#projects">my projects</LinkText>.</p>
-      </section>
-
-      <footer id="contact" className="site-footer">
-        <p>Want to say hello? <LinkText href="mailto:thimofej@yesterday-ai.de">thimofej@yesterday-ai.de</LinkText>.</p>
-        <span>© 2026 Thimorrow</span>
-      </footer>
-    </main>
-  )
+        <section id="contact" data-morph="3" aria-labelledby="contact-title" className="section-veil contact-section">
+          <div className="section-inner">
+            <h2 id="contact-title">Want to say hello?</h2>
+            <a className="contact-email" href="mailto:thimofej@yesterday-ai.de">thimofej@yesterday-ai.de<span aria-hidden="true">↗</span></a>
+          </div>
+        </section>
+      </main>
+      <footer className="home-footer"><span>© 2026 Thimorrow</span></footer>
+    </CinematicHome>
+  );
 }

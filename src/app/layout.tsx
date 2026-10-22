@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Fraunces, Spectral, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const fraunces = Fraunces({ subsets: ["latin"], axes: ["opsz"], variable: "--font-fraunces", display: "swap" });
+const spectral = Spectral({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-spectral", display: "swap" });
+const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-ibm-plex-mono", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thimofej.de"),
@@ -23,7 +25,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} bg-background`}>
+    <html lang="en" className={`${fraunces.variable} ${spectral.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );
