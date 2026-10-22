@@ -45,7 +45,11 @@ const profile = {
       url: "https://thimofej.de/",
       jobTitle: "AI engineer & frontend developer",
       description: "Thimofej Zapko builds frontend experiences with AI and works as a frontend developer at yesterday.",
-      sameAs: ["https://github.com/thimorrow", "https://x.com/thimorrowr"],
+      sameAs: [
+        "https://github.com/thimorrow",
+        "https://x.com/thimorrowr",
+        "https://www.instagram.com/thimofej_zapko/",
+      ],
     },
   ],
 };
