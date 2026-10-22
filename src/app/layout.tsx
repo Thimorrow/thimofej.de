@@ -8,7 +8,7 @@ const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variabl
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thimofej.de"),
-  applicationName: "Thimorrow",
+  applicationName: "Thimofej Zapko",
   title: "Thimofej Zapko | AI engineer & frontend developer",
   description: "The personal website of Thimofej Zapko, an AI engineer and frontend developer working at yesterday.",
   authors: [{ name: "Thimofej Zapko", url: "https://thimofej.de" }],
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    siteName: "Thimorrow",
+    siteName: "Thimofej Zapko",
     locale: "en_US",
   },
   twitter: {

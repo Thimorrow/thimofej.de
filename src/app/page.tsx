@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    siteName: "Thimorrow",
+    siteName: "Thimofej Zapko",
     locale: "en_US",
     url: "/",
   },
@@ -22,7 +22,7 @@ const profile = {
       "@id": "https://thimofej.de/#website",
       url: "https://thimofej.de/",
       name: "Thimofej Zapko",
-      alternateName: "Thimorrow",
+      alternateName: ["Thimofej", "Thimorrow", "thimofej.de"],
       publisher: { "@id": "https://thimofej.de/#person" },
     },
     {
@@ -37,7 +37,9 @@ const profile = {
       "@type": "Person",
       "@id": "https://thimofej.de/#person",
       name: "Thimofej Zapko",
-      alternateName: "Thimorrow",
+      givenName: "Thimofej",
+      familyName: "Zapko",
+      alternateName: ["Thimofej", "Thimorrow"],
       url: "https://thimofej.de/",
       jobTitle: "AI engineer & frontend developer",
       description: "Thimofej Zapko builds frontend experiences with AI and works as a frontend developer at yesterday.",
@@ -80,7 +82,7 @@ export default function Home() {
         <section id="more" data-morph="2" aria-labelledby="more-title" className="section-veil home-section more-section">
           <div className="section-inner">
             <div className="chapter-heading"><h2 id="more-title">more</h2><span>elsewhere</span></div>
-            <p className="elsewhere-copy">You can find me on <a className="inline-link" href="https://x.com/thimorrowr">X</a> and <a className="inline-link" href="https://github.com/thimorrow">GitHub</a>, or see more of my work in <a className="inline-link" href="#projects">my projects</a>.</p>
+            <p className="elsewhere-copy">I also go by Thimorrow online. You can find me on <a className="inline-link" href="https://x.com/thimorrowr">X</a> and <a className="inline-link" href="https://github.com/thimorrow">GitHub</a>, or see more of my work in <a className="inline-link" href="#projects">my projects</a>.</p>
           </div>
         </section>
 
@@ -91,7 +93,7 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <footer className="home-footer"><span>© 2026 Thimorrow</span></footer>
+      <footer className="home-footer"><span>© 2026 Thimofej Zapko · Thimorrow</span></footer>
     </CinematicHome>
   );
 }
