@@ -19,7 +19,7 @@ export function HeroIntro() {
   const reduce = useReducedMotion();
 
   useGSAP(
-    () => {
+    (context) => {
       if (reduce) return;
       const root = rootRef.current;
       if (!root) return;
@@ -35,6 +35,8 @@ export function HeroIntro() {
       gsap.set(h1, { autoAlpha: 0 });
 
       let split: SplitText | null = null;
+      let timeline: gsap.core.Timeline | null = null;
+      let active = true;
       const ensureSplit = () => {
         if (split || !rootRef.current) return;
         split = SplitText.create(h1, {
@@ -48,36 +50,41 @@ export function HeroIntro() {
       // display font so the char split measures real glyphs (no reflow pop).
       const reveal = () => {
         void document.fonts.ready.then(() => {
-          if (!rootRef.current) return;
-          ensureSplit();
-          if (!split) return;
-          gsap.set(h1, { autoAlpha: 1 });
-          gsap.set([kicker, tagline, hint], { autoAlpha: 0, y: 18 });
-          gsap
-            .timeline()
-            .to(kicker, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" })
-            .from(
-              split.chars,
-              { yPercent: 115, duration: 0.8, ease: "power4.out", stagger: 0.012 },
-              "-=0.15",
-            )
-            .to(
-              [tagline, hint],
-              {
-                autoAlpha: 1,
-                y: 0,
-                duration: 0.7,
-                ease: "power2.out",
-                stagger: 0.14,
-              },
-              "-=0.35",
-            );
+          if (!active) return;
+          context.add(() => {
+            ensureSplit();
+            if (!split) return;
+            timeline?.kill();
+            gsap.set(h1, { autoAlpha: 1 });
+            gsap.set([kicker, tagline, hint], { autoAlpha: 0, y: 18 });
+            timeline = gsap
+              .timeline()
+              .to(kicker, { autoAlpha: 1, y: 0, duration: 0.4, ease: "power2.out" })
+              .fromTo(
+                split.chars,
+                { yPercent: 110 },
+                { yPercent: 0, duration: 0.65, ease: "power3.out", stagger: 0.008 },
+                "-=0.2",
+              )
+              .to(
+                [tagline, hint],
+                {
+                  autoAlpha: 1,
+                  y: 0,
+                  duration: 0.5,
+                  ease: "power2.out",
+                  stagger: 0.08,
+                },
+                "-=0.35",
+              );
+          });
         });
       };
 
       // Hide instantly while a replay flight is running, so it re-reveals at the
       // flight's arrival.
       const hide = () => {
+        timeline?.kill();
         gsap.set([h1, kicker, tagline, hint], { autoAlpha: 0 });
       };
 
@@ -88,13 +95,15 @@ export function HeroIntro() {
       const unsubReplay = onReplay(hide);
 
       return () => {
+        active = false;
+        timeline?.kill();
         unsubReady();
         unsubArrive();
         unsubReplay();
         split?.revert();
       };
     },
-    { dependencies: [reduce], scope: rootRef },
+    { dependencies: [reduce], scope: rootRef, revertOnUpdate: true },
   );
 
   return (
@@ -112,7 +121,8 @@ export function HeroIntro() {
         id="hero-heading"
         className="hero-title font-display [font-kerning:none]"
       >
-        Thimofej Zapko makes frontend experiences with AI.
+        <span className="hero-name">Thimofej Zapko</span>{" "}
+        <span className="hero-statement">makes frontend experiences <span className="hero-accent">with AI.</span></span>
       </h1>
       <p
         data-hero-tagline
@@ -120,12 +130,14 @@ export function HeroIntro() {
       >
         I&apos;m 15 and specialize in building frontend with AI. I care about clear interfaces, useful products, and turning ideas into working software.
       </p>
-      <span
+      <a
         data-hero-hint
-        className="mt-12 block font-mono text-[10px] uppercase tracking-[0.3em] text-text-meta"
+        href="#projects"
+        className="hero-work-link mt-12 inline-flex min-h-11 items-center gap-4 font-mono text-[10px] uppercase tracking-[0.2em] text-text-meta"
       >
-        ↓ things I&apos;ve built
-      </span>
+        <span aria-hidden className="hero-work-arrow">↓</span>
+        <span>things I&apos;ve built</span>
+      </a>
       <div className="experience-controls">
         <ReplayIntro />
         <SoundToggle />

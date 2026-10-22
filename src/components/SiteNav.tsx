@@ -34,7 +34,7 @@ export function SiteNav() {
               >
                 <span
                   aria-hidden
-                  className="h-px w-4 bg-text-meta transition-all duration-300 ease-out group-hover:w-8 group-hover:bg-accent"
+                  className="nav-marker h-px w-8 origin-left bg-text-meta"
                 />
                 <span className="font-mono text-xs uppercase tracking-[0.2em] text-text-meta transition-colors group-hover:text-accent">
                   {l.label}

@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import { scrollProgress } from "@/lib/scrollProgress";
+import { subscribeCanvasActivity } from "@/lib/canvasActivity";
 import { audio } from "@/lib/audio";
 import {
   onIntroDone,
@@ -1044,9 +1045,21 @@ function SignalReady() {
   return null;
 }
 
+function RenderActivity() {
+  const setFrameloop = useThree((state) => state.setFrameloop);
+  useEffect(
+    () => subscribeCanvasActivity(onIntroDone, document, (active) => {
+      setFrameloop(active ? "always" : "never");
+    }),
+    [setFrameloop],
+  );
+  return null;
+}
+
 export default function LiquidParticles() {
   return (
     <Canvas
+      frameloop="never"
       dpr={[1, 2]}
       gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
       camera={{ position: [0, 0, 16], fov: 45 }}
@@ -1059,6 +1072,7 @@ export default function LiquidParticles() {
       <color attach="background" args={["#070a12"]} />
       <PointsField />
       <SignalReady />
+      <RenderActivity />
       <PostFX low={LOW_END} />
     </Canvas>
   );

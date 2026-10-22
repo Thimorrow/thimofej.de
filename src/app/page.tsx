@@ -66,14 +66,20 @@ export default function Home() {
 
         <section id="projects" data-morph="1" aria-labelledby="projects-title" className="section-veil home-section">
           <div className="section-inner">
-            <div className="chapter-heading"><h2 id="projects-title">things I&apos;ve built</h2><span>selected work</span></div>
+            <div className="chapter-heading"><h2 id="projects-title">things I&apos;ve built</h2><span>01 / selected work</span></div>
             <div className="work-intro">
               <p>I&apos;m currently working as a frontend developer at yesterday, where I&apos;m building our Academy app with SvelteKit.</p>
-              <p className="project-status">The Academy app is currently in progress. A link will follow soon.</p>
             </div>
             <Link href="/projects/academy" className="project-link">
+              <div className="project-art" aria-hidden="true">
+                <span className="project-art-label">yesterday / learning platform</span>
+                <span className="project-orbit project-orbit-outer" />
+                <span className="project-orbit project-orbit-inner" />
+                <span className="project-art-word">Academy<span>.</span></span>
+                <span className="project-art-note">A place to learn. A space to build.</span>
+              </div>
               <span className="project-year">26</span>
-              <div><h3>Academy app</h3><p>A learning platform I am building with the team at yesterday.</p></div>
+              <div className="project-copy"><h3>Academy app</h3><p>A learning platform I am building with the team at yesterday.</p><div className="project-meta"><span>SvelteKit</span><span>In progress</span></div></div>
               <span className="project-arrow" aria-hidden="true">↗</span>
             </Link>
           </div>
@@ -81,7 +87,7 @@ export default function Home() {
 
         <section id="more" data-morph="2" aria-labelledby="more-title" className="section-veil home-section more-section">
           <div className="section-inner">
-            <div className="chapter-heading"><h2 id="more-title">more</h2><span>elsewhere</span></div>
+            <div className="chapter-heading"><h2 id="more-title">more</h2><span>02 / elsewhere</span></div>
             <p className="elsewhere-copy">I also go by Thimorrow online. You can find me on <a className="inline-link" href="https://x.com/thimorrowr">X</a> and <a className="inline-link" href="https://github.com/thimorrow">GitHub</a>, or see more of my work in <a className="inline-link" href="#projects">my projects</a>.</p>
           </div>
         </section>
