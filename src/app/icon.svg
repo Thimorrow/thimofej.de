@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">Thimorrow</title>
-  <desc id="desc">A warm white T with a bronze dot on charcoal</desc>
-  <rect width="64" height="64" rx="14" fill="#191918"/>
-  <path d="M13 16h34v9H35v24H25V25H13z" fill="#e9e9e5"/>
-  <circle cx="47" cy="44" r="5" fill="#bd9275"/>
+  <title id="title">Thimofej Zapko</title>
+  <desc id="desc">A white T and cyan Z on midnight blue</desc>
+  <rect width="64" height="64" rx="14" fill="#070a12"/>
+  <rect x=".5" y=".5" width="63" height="63" rx="13.5" fill="none" stroke="#25343f"/>
+  <path d="M10 17h24v6h-9v25h-7V23h-8z" fill="#e8ecf4"/>
+  <path d="M37 17h17v6L42 42h13v6H34v-6l13-19H37z" fill="#21e6ff"/>
 </svg>

@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MagneticLink } from "@/components/MagneticLink";
 
@@ -8,8 +11,47 @@ const links = [
 ];
 
 export function SiteNav() {
+  const [activeSection, setActiveSection] = useState("top");
+
+  useEffect(() => {
+    let sectionId = "top";
+    let footerVisible = false;
+    const update = () => setActiveSection(footerVisible ? "contact" : sectionId);
+    const sections = [...document.querySelectorAll<HTMLElement>("#main > section")];
+    let observer: IntersectionObserver;
+    const observeSections = () => {
+      observer?.disconnect();
+      const visibleSections = new Set<Element>();
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) visibleSections.add(entry.target);
+          else visibleSections.delete(entry.target);
+        });
+        const visible = sections.filter((section) => visibleSections.has(section)).pop();
+        if (visible) {
+          sectionId = visible.id;
+          update();
+        }
+      }, { rootMargin: `-${Math.round(innerHeight * .35)}px 0px -${Math.round(innerHeight * .55)}px 0px` });
+      sections.forEach((section) => observer.observe(section));
+    };
+    observeSections();
+    window.addEventListener("resize", observeSections);
+    const footer = document.querySelector(".home-footer");
+    const endObserver = new IntersectionObserver(([entry]) => {
+      footerVisible = entry.isIntersecting && entry.intersectionRatio === 1;
+      update();
+    }, { threshold: 1 });
+    if (footer) endObserver.observe(footer);
+    return () => {
+      observer.disconnect();
+      endObserver.disconnect();
+      window.removeEventListener("resize", observeSections);
+    };
+  }, []);
+
   return (
-    <header>
+    <header className="site-navigation">
       {/* Wordmark — always top left, floats above the fade. */}
       <Link
         href="/"
@@ -29,6 +71,7 @@ export function SiteNav() {
             <li key={l.href}>
               <MagneticLink
                 href={l.href}
+                ariaCurrent={activeSection === l.href.slice(1) ? "location" : undefined}
                 strength={0.2}
                 className="group flex min-h-11 items-center gap-3"
               >
@@ -55,6 +98,7 @@ export function SiteNav() {
             <li key={l.href}>
               <MagneticLink
                 href={l.href}
+                ariaCurrent={activeSection === l.href.slice(1) ? "location" : undefined}
                 className="flex min-h-11 items-center font-mono text-[10px] uppercase tracking-[0.12em] text-text-meta transition-colors hover:text-accent"
               >
                 {l.label}

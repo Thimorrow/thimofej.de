@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { CinematicHome } from "@/components/CinematicHome";
 import { HeroIntro } from "@/components/HeroIntro";
+import { MagneticLink } from "@/components/MagneticLink";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -87,15 +88,29 @@ export default function Home() {
 
         <section id="more" data-morph="2" aria-labelledby="more-title" className="section-veil home-section more-section">
           <div className="section-inner">
-            <div className="chapter-heading"><h2 id="more-title">more</h2><span>02 / elsewhere</span></div>
-            <p className="elsewhere-copy">I also go by Thimorrow online. You can find me on <a className="inline-link" href="https://x.com/thimorrowr">X</a> and <a className="inline-link" href="https://github.com/thimorrow">GitHub</a>, or see more of my work in <a className="inline-link" href="#projects">my projects</a>.</p>
+            <div className="chapter-heading"><h2 id="more-title">a little more</h2><span>02 / elsewhere</span></div>
+            <p className="elsewhere-copy">I also go by Thimorrow online. Here&apos;s where you can find what I&apos;m building and thinking about.</p>
+            <div className="elsewhere-links">
+              <a href="https://github.com/thimorrow" className="elsewhere-link">
+                <span className="elsewhere-link-label">Code & projects</span>
+                <span className="elsewhere-link-name">GitHub<span aria-hidden="true">↗</span></span>
+                <span className="elsewhere-link-handle">@thimorrow</span>
+              </a>
+              <a href="https://x.com/thimorrowr" className="elsewhere-link">
+                <span className="elsewhere-link-label">Thoughts & updates</span>
+                <span className="elsewhere-link-name">X<span aria-hidden="true">↗</span></span>
+                <span className="elsewhere-link-handle">@thimorrowr</span>
+              </a>
+            </div>
           </div>
         </section>
 
         <section id="contact" data-morph="3" aria-labelledby="contact-title" className="section-veil contact-section">
           <div className="section-inner">
-            <h2 id="contact-title">Want to say hello?</h2>
-            <a className="contact-email" href="mailto:thimofej@yesterday-ai.de">thimofej@yesterday-ai.de<span aria-hidden="true">↗</span></a>
+            <p className="contact-eyebrow">03 / get in touch</p>
+            <h2 id="contact-title">Good things start<br />with a hello<span>.</span></h2>
+            <p className="contact-copy">Have an idea, a question, or just want to talk? I&apos;d love to hear from you.</p>
+            <MagneticLink className="contact-email" href="mailto:thimofej@yesterday-ai.de" strength={0.18}><span className="contact-address">thimofej@yesterday-ai.de</span><span className="contact-arrow" aria-hidden="true">↗</span></MagneticLink>
           </div>
         </section>
       </main>

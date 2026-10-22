@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 
 type QuickTo = ReturnType<typeof gsap.quickTo>;
 
@@ -10,21 +11,34 @@ export function MagneticLink({
   href,
   children,
   className,
+  ariaCurrent,
   strength = 0.4,
 }: {
   href: string;
   children: React.ReactNode;
   className?: string;
+  ariaCurrent?: "location";
   strength?: number;
 }) {
   const ref = useRef<HTMLAnchorElement>(null);
   const xTo = useRef<QuickTo | null>(null);
   const yTo = useRef<QuickTo | null>(null);
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    if (reduce && ref.current) gsap.set(ref.current, { x: 0, y: 0 });
+    return () => {
+      xTo.current?.tween.kill();
+      yTo.current?.tween.kill();
+      xTo.current = null;
+      yTo.current = null;
+    };
+  }, [reduce]);
 
   const onMove = (e: React.MouseEvent) => {
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce), (pointer: coarse)").matches) return;
+    if (reduce || window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
     if (!xTo.current)
       xTo.current = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3.out" });
     if (!yTo.current)
@@ -43,6 +57,7 @@ export function MagneticLink({
       ref={ref}
       href={href}
       className={className}
+      aria-current={ariaCurrent}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
     >
