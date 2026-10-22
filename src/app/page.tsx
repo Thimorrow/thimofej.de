@@ -1,11 +1,60 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { CinematicHome } from "@/components/CinematicHome";
 import { HeroIntro } from "@/components/HeroIntro";
 
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "Thimorrow",
+    locale: "en_US",
+    url: "/",
+  },
+};
+
+const profile = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://thimofej.de/#website",
+      url: "https://thimofej.de/",
+      name: "Thimofej Zapko",
+      alternateName: "Thimorrow",
+      publisher: { "@id": "https://thimofej.de/#person" },
+    },
+    {
+      "@type": "ProfilePage",
+      "@id": "https://thimofej.de/#profile",
+      url: "https://thimofej.de/",
+      name: "Thimofej Zapko | AI engineer & frontend developer",
+      isPartOf: { "@id": "https://thimofej.de/#website" },
+      mainEntity: { "@id": "https://thimofej.de/#person" },
+    },
+    {
+      "@type": "Person",
+      "@id": "https://thimofej.de/#person",
+      name: "Thimofej Zapko",
+      alternateName: "Thimorrow",
+      url: "https://thimofej.de/",
+      jobTitle: "AI engineer & frontend developer",
+      description: "Thimofej Zapko builds frontend experiences with AI and works as a frontend developer at yesterday.",
+      sameAs: ["https://github.com/thimorrow", "https://x.com/thimorrowr"],
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <CinematicHome>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(profile).replace(/</g, "\\u003c"),
+        }}
+      />
       <main id="main" tabIndex={-1}>
         <section id="top" data-morph="0" aria-labelledby="hero-heading" className="hero-section">
           <Image data-hero-poster src="/poster/hero-monogram.svg" alt="" width={620} height={620} priority unoptimized className="hero-poster" />

@@ -4,6 +4,7 @@ import Link from "next/link"
 export const metadata: Metadata = {
   title: "Academy app | Thimofej Zapko",
   description: "A learning platform Thimofej Zapko is building as a frontend developer at yesterday.",
+  alternates: { canonical: "/projects/academy" },
 }
 
 export default function ProjectOne() {

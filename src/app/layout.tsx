@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   applicationName: "Thimorrow",
   title: "Thimofej Zapko | AI engineer & frontend developer",
   description: "The personal website of Thimofej Zapko, an AI engineer and frontend developer working at yesterday.",
+  authors: [{ name: "Thimofej Zapko", url: "https://thimofej.de" }],
+  creator: "Thimofej Zapko",
+  verification: {
+    google: "b4v_POieUJdwiI53LDUv05w6yspsM4EVl4pwB6HR134",
+  },
   openGraph: {
     type: "website",
     siteName: "Thimorrow",
@@ -18,6 +23,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    creator: "@thimorrowr",
   },
 };
 

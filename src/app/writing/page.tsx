@@ -4,6 +4,7 @@ import Link from "next/link"
 export const metadata: Metadata = {
   title: "Writing | Thimofej Zapko",
   description: "Notes on design, software, and building frontend with AI.",
+  alternates: { canonical: "/writing" },
 }
 
 export default function Writing() {
