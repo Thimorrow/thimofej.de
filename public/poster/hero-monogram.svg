@@ -1,3 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 620" fill="none">
-  <path d="M90 175H285M187.5 175V445M340 175H535L340 445H535" stroke="#c6cdd8" stroke-width="22" stroke-linecap="square" stroke-linejoin="bevel"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620" fill="none">
+  <defs>
+    <linearGradient id="chrome" x1="120" y1="150" x2="460" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f2f5fa"/>
+      <stop offset=".32" stop-color="#c6cdd8"/>
+      <stop offset=".52" stop-color="#78869b"/>
+      <stop offset=".65" stop-color="#dce6f2"/>
+      <stop offset="1" stop-color="#8a93a6"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="310" y1="167" x2="310" y2="453" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff" stop-opacity=".65"/>
+      <stop offset=".48" stop-color="#fff" stop-opacity=".06"/>
+      <stop offset="1" stop-color="#21e6ff" stop-opacity=".4"/>
+    </linearGradient>
+  </defs>
+  <path d="M80 166h212v24h-94v264h-24V190H80Zm246 0h214v22L356 430h184v24H326v-22l184-242H326Z" fill="url(#chrome)"/>
+  <path d="M80.5 166.5h211v23h-94v264h-23v-264h-94Zm246 0h213v21.33L354.99 430.5H539.5v23h-213v-21.33L511.01 189.5H326.5Z" stroke="url(#edge)"/>
 </svg>

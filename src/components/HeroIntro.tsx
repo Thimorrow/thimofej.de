@@ -8,6 +8,7 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 import { onWorldReady, onArrive, onReplay } from "@/lib/intro";
 import { SoundToggle } from "./SoundToggle";
 import { ReplayIntro } from "./ReplayIntro";
+import { SiteIcon } from "./SiteIcon";
 
 gsap.registerPlugin(useGSAP, SplitText);
 
@@ -135,7 +136,7 @@ export function HeroIntro() {
         href="#projects"
         className="hero-work-link mt-12 inline-flex min-h-11 items-center gap-4 font-mono text-[10px] uppercase tracking-[0.2em] text-text-meta"
       >
-        <span aria-hidden className="hero-work-arrow">↓</span>
+        <span aria-hidden className="hero-work-arrow"><SiteIcon name="arrow-down" /></span>
         <span>things I&apos;ve built</span>
       </a>
       <div className="experience-controls">

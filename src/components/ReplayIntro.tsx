@@ -3,6 +3,7 @@
 import { requestReplay } from "@/lib/intro";
 import { scrollProgress } from "@/lib/scrollProgress";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { SiteIcon } from "./SiteIcon";
 
 // Lets the visitor watch the cinematic intro again. The flight auto-plays only
 // once ever (localStorage), so this is the only way back in. Hidden under
@@ -32,7 +33,7 @@ export function ReplayIntro() {
       aria-label="Replay the intro"
       className="intro-replay fixed bottom-4 left-4 z-40 min-h-11 border border-line/20 bg-void/90 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-text-meta transition-colors hover:text-accent"
     >
-      ↻ intro
+      <span className="experience-control-content"><SiteIcon name="replay" /><span>intro</span></span>
     </button>
   );
 }

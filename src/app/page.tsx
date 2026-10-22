@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CinematicHome } from "@/components/CinematicHome";
 import { HeroIntro } from "@/components/HeroIntro";
 import { MagneticLink } from "@/components/MagneticLink";
+import { SiteIcon } from "@/components/SiteIcon";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -81,7 +82,7 @@ export default function Home() {
               </div>
               <span className="project-year">26</span>
               <div className="project-copy"><h3>Academy app</h3><p>A learning platform I am building with the team at yesterday.</p><div className="project-meta"><span>SvelteKit</span><span>In progress</span></div></div>
-              <span className="project-arrow" aria-hidden="true">↗</span>
+              <SiteIcon name="arrow-up-right" className="project-arrow" />
             </Link>
           </div>
         </section>
@@ -93,12 +94,12 @@ export default function Home() {
             <div className="elsewhere-links">
               <a href="https://github.com/thimorrow" className="elsewhere-link">
                 <span className="elsewhere-link-label">Code & projects</span>
-                <span className="elsewhere-link-name">GitHub<span aria-hidden="true">↗</span></span>
+                <span className="elsewhere-link-name">GitHub<SiteIcon name="arrow-up-right" /></span>
                 <span className="elsewhere-link-handle">@thimorrow</span>
               </a>
               <a href="https://x.com/thimorrowr" className="elsewhere-link">
                 <span className="elsewhere-link-label">Thoughts & updates</span>
-                <span className="elsewhere-link-name">X<span aria-hidden="true">↗</span></span>
+                <span className="elsewhere-link-name">X<SiteIcon name="arrow-up-right" /></span>
                 <span className="elsewhere-link-handle">@thimorrowr</span>
               </a>
             </div>
@@ -110,7 +111,7 @@ export default function Home() {
             <p className="contact-eyebrow">03 / get in touch</p>
             <h2 id="contact-title">Good things start<br />with a hello<span>.</span></h2>
             <p className="contact-copy">Have an idea, a question, or just want to talk? I&apos;d love to hear from you.</p>
-            <MagneticLink className="contact-email" href="mailto:thimofej@yesterday-ai.de" strength={0.18}><span className="contact-address">thimofej@yesterday-ai.de</span><span className="contact-arrow" aria-hidden="true">↗</span></MagneticLink>
+            <MagneticLink className="contact-email" href="mailto:thimofej@yesterday-ai.de" strength={0.18}><span className="contact-address">thimofej@yesterday-ai.de</span><SiteIcon name="arrow-up-right" className="contact-arrow" /></MagneticLink>
           </div>
         </section>
       </main>
