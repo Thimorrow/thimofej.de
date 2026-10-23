@@ -1,5 +1,13 @@
 # Orbit-Labor: akzeptierter Zwischenstand
 
+## Veröffentlichung am 23. Oktober 2026
+
+Auf ausdrücklichen Auftrag „Mach live“ ist der Hero-Stand einschließlich stärkerem elastischem Nachlauf veröffentlicht. Code-Commit `f091e5ff58e6a6a9737990c503f8abaa99015e16` wurde mit der bestehenden Nutzeridentität auf `codex/feat/vgpu-homepage` gesichert und gepusht. Kein Merge nach `main`.
+
+Vercel-Produktion `dpl_2jSoHsmdPvmbwrzVatEzxfvxjs6T` meldet `READY`, genau diesen Commit und erfolgreiche Zuordnung von `thimofej.de` sowie `www.thimofej.de`, ohne Aliasfehler. Deployment: https://thimofej-881shdt3m-zapkothimofej-2616s-projects.vercel.app.
+
+Direkt auf https://thimofej.de geprüft: WebGPU-Szene bereit, Ausgangswinkel 2.45/0.28, drei aufeinanderfolgende Ziehbewegungen mit erneutem Greifen und jeweils 3 Radiant Drehung. Der ausgelieferte Bandversatz erreicht im Test -0.398, schwingt bis +0.029 zurück und endet bei 0. Keine erfassten Laufzeitfehler. Desktop und Mobilansicht 390×844 visuell geprüft, kein horizontaler Überlauf. Die folgenden „noch nicht veröffentlicht“-Angaben beschreiben jeweils den damaligen Zwischenstand und sind durch diesen Nachweis überholt.
+
 ## Hero: Referenzwinkel und wiederholtes Drehen (23. Oktober 2026)
 
 ### Nachlauf stärker und elastischer
