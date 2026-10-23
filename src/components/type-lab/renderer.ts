@@ -8,7 +8,7 @@ import { glyphEdges } from "./orbit-geometry";
 import { palettes, seedPhase, type Config } from "./config";
 import { unfoldTone } from './unfold-motion';
 
-type Story = {x:number;y:number;phase:number;spread:number;motion:number;typeScale:number};
+type Story = {time:number;x:number;y:number;phase:number;spread:number;motion:number;typeScale:number};
 
 let fontReady: Promise<FontFace> | undefined;
 
@@ -84,7 +84,7 @@ export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Conf
       const palette = palettes[c.palette];
       const tone=story?unfoldTone(presentation):0;
       const ink=palette.ink.map((value,i)=>Math.min(1,value+(palette.background[i]-value)*tone+Math.sin(Math.PI*tone)*0.4));
-      return { material:[c.roughness ?? 0.38,c.light ?? 0,c.thickness ?? 0.045,story?1:0], view: [aspect,presentation,c.mode,wall], motion: [c.time+(c.phase ?? 0),c.yaw,c.pitch,intro], shape: [c.depth,c.bend,c.scale,seedPhase(c)], ink: [...ink,1], paper: [...palette.background,1], story:[story?.x??0,story?.y??0,story?.phase??0,story?.spread??0], storyStyle:[story?.motion??0,story?.typeScale??1,0,0] };
+      return { material:[c.roughness ?? 0.38,c.light ?? 0,c.thickness ?? 0.045,story?1:0], view: [aspect,presentation,c.mode,wall], motion: [(story?.time ?? c.time)+(c.phase ?? 0),c.yaw,c.pitch,intro], shape: [c.depth,c.bend,c.scale,seedPhase(c)], ink: [...ink,1], paper: [...palette.background,1], story:[story?.x??0,story?.y??0,story?.phase??0,story?.spread??0], storyStyle:[story?.motion??0,story?.typeScale??1,0,0] };
     };
     const bindings={letters:glyphs,storyLetters,linearSampler:sampler(context,{minFilter:"linear",magFilter:"linear"}),edges:edgeBuffer};
     const textDraw=draw(context,{shader:orbitShader,vertices:192*12*6,instances:6,multisample:{alphaToCoverage:true},frontFace:"cw",set:{settings:uniforms(config,1),...bindings}});
@@ -111,7 +111,7 @@ export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Conf
         backdrop.set({background:{...backgroundUniforms,color:[...color,(c.backgroundStrength ?? 1)*(1-tone)],view:[aspect,(c.time+(c.phase ?? 0))*tuning.ambientSpeed,c.background ?? 0,cssWidth],wave0:wave(0),wave1:wave(1),wave2:wave(2),wave3:wave(3)}});
         fieldDraw.set({field:{view:[aspect,(c.time+(c.phase ?? 0))*3*tuning.ambientSpeed,0,0],shape:[tuning.ambientScale,tuning.ambientThickness,tuning.ambientMerge,0]}});
         const instances=story?18:6;
-        frame(context,f=>{if(c.background===2) f.pass(characterField,fieldDraw);f.pass(target,pass=>{pass.draw(backdrop);pass.draw(textDraw,{instances});if(edgeVertices) pass.draw(walls,{vertices:edgeVertices,instances});});});
+        frame(context,f=>{if(c.background===2 && tone<1) f.pass(characterField,fieldDraw);f.pass(target,pass=>{pass.draw(backdrop);pass.draw(textDraw,{instances});if(edgeVertices) pass.draw(walls,{vertices:edgeVertices,instances});});});
       },
       dispose() { context.dispose(); },
     };

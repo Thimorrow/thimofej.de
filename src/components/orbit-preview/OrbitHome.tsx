@@ -36,44 +36,52 @@ export function OrbitHome() {
   useEffect(() => {
     const el=root.current!;
     const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+    const panels=Array.from(el.querySelectorAll<HTMLElement>('.oh-panel')).map(section=>({
+      section,
+      reveals: (section.id==='academy'
+        ? [['.academy-work-heading','--work-title-reveal'],['.academy-work-visual','--work-image-reveal']]
+        : section.id==='ueber-mich'
+          ? [['.personal-photo-mount','--portrait-reveal'],['.personal-title','--name-reveal'],['.personal-age','--age-reveal']]
+          : []).map(([selector,property])=>({node:section.querySelector<HTMLElement>(selector),property})),
+    }));
     let frame=0;
+    let anchoredSection=location.hash.slice(1);
+    let anchorEntered=false;
     const update=()=>{
+      // Measure the page before changing any styles, avoiding repeated layout work.
+      const still=reduced.matches || pausedByUser.current;
+      const measurements=panels.map(({section,reveals})=>{
+        const bounds=section.getBoundingClientRect();
+        const anchor=section.id===anchoredSection;
+        if(anchor) {
+          const visible=bounds.bottom>0 && bounds.top<innerHeight;
+          if(visible) anchorEntered=true;
+          else if(anchorEntered) anchoredSection='';
+        }
+        return {section,bounds,reveals:reveals.map(({node,property})=>({
+          property,value:still || (anchor && anchorEntered) || !node ? 1 : portraitReveal(node.getBoundingClientRect().top,innerHeight),
+        }))};
+      });
       const distance=Math.max(1,innerHeight*0.95);
       const value=Math.min(1,Math.max(0,scrollY/distance));
       const eased=value*value*(3-2*value);
-      presentation.current=reduced.matches ? (scrollY>innerHeight*.8?1:0) : unfoldProgress(scrollY,innerHeight);
+      presentation.current=still ? (scrollY>innerHeight*.8?1:0) : unfoldProgress(scrollY,innerHeight);
       el.style.setProperty('--journey',String(eased));
       el.style.setProperty('--hero-opacity',String(1-Math.min(1,value*2)));
       el.style.setProperty('--scene-opacity','1');
       playing.current=!pausedByUser.current && !reduced.matches && scrollY<innerHeight*2.7;
-      for (const section of el.querySelectorAll<HTMLElement>('.oh-panel')) {
-        const bounds=section.getBoundingClientRect();
+      for (const {section,bounds,reveals} of measurements) {
         const progress=Math.max(-1,Math.min(1,(innerHeight/2-bounds.top)/(innerHeight/2+bounds.height/2)));
-        section.style.setProperty('--section-progress',String(reduced.matches || pausedByUser.current ? 0 : progress));
-        if(section.id==='academy') {
-          const still=reduced.matches || pausedByUser.current;
-          for(const [selector,property] of [['.academy-work-heading','--work-title-reveal'],['.academy-work-visual','--work-image-reveal']]) {
-            const item=section.querySelector(selector);
-            if(item) section.style.setProperty(property,String(still ? 1 : portraitReveal(item.getBoundingClientRect().top,innerHeight)));
-          }
-        }
-        if(section.id==='ueber-mich') {
-          const still=reduced.matches || pausedByUser.current;
-          for(const [selector,property] of [['.personal-photo-mount','--portrait-reveal'],['.personal-title','--name-reveal'],['.personal-age','--age-reveal']]) {
-            const item=section.querySelector(selector);
-            if(item) {
-              const top=item.getBoundingClientRect().top;
-              section.style.setProperty(property,String(still ? 1 : portraitReveal(top,innerHeight)));
-            }
-          }
-        }
+        section.style.setProperty('--section-progress',String(still ? 0 : progress));
+        for (const {property,value} of reveals) section.style.setProperty(property,String(value));
       }
     };
     const scroll=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(update);};
+    const anchor=()=>{anchoredSection=location.hash.slice(1);anchorEntered=false;scroll();};
     const preference=()=>{pausedByUser.current=reduced.matches;playing.current=!reduced.matches;setPaused(reduced.matches);el.dataset.paused=String(reduced.matches);update();};
     preference();
-    addEventListener('scroll',scroll,{passive:true});addEventListener('resize',scroll);reduced.addEventListener('change',preference);
-    return ()=>{cancelAnimationFrame(frame);removeEventListener('scroll',scroll);removeEventListener('resize',scroll);reduced.removeEventListener('change',preference);};
+    addEventListener('scroll',scroll,{passive:true});addEventListener('resize',scroll);addEventListener('hashchange',anchor);reduced.addEventListener('change',preference);
+    return ()=>{cancelAnimationFrame(frame);removeEventListener('scroll',scroll);removeEventListener('resize',scroll);removeEventListener('hashchange',anchor);reduced.removeEventListener('change',preference);};
   }, []);
 
   useEffect(()=>{dispatchEvent(new Event('scroll'));},[sceneReady]);
@@ -83,7 +91,7 @@ export function OrbitHome() {
     <div className="oh-scene"><TypeScene config={config} playing={playing} regenerate={regenerate} presentation={presentation} unfold={unfold} onReady={setSceneReady}/></div>
     <header className="oh-header">
       <a className="oh-wordmark" href="#anfang" aria-label="Thimofej, nach oben">thimofej<span aria-hidden="true">.</span></a>
-      <nav aria-label="Seitennavigation"><a href="#ueber-mich">Über mich</a><a href="mailto:thimofej@yesterday-ai.de">Kontakt <span aria-hidden="true">↗</span></a></nav>
+      <nav aria-label="Seitennavigation"><a href="#ueber-mich">Über mich</a><a href="#kontakt">Kontakt <span aria-hidden="true">↓</span></a></nav>
     </header>
     <section className="oh-hero" aria-labelledby="oh-name">
       <div className="oh-identity"><h1 id="oh-name">Thimofej<br/><span>Zapko.</span></h1></div>

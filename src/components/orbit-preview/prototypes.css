@@ -203,3 +203,28 @@
 .orbit-home[data-paused=true] .personal-portrait{transform:none!important;}
 
 .personal-accessible{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+
+/* Shared page rhythm: the personal composition leads into the work. */
+.play-caption {justify-content:flex-end;}
+.personal-layout {max-width:1100px;margin-block:clamp(32px,4vw,56px) 24px;}
+.play-personal {padding-top:clamp(48px,6vw,88px);padding-bottom:clamp(88px,9vw,128px);}
+.oh-text-link>span,.oh-social a>span {transition:transform 160ms cubic-bezier(.22,1,.36,1);}
+@media(hover:hover) and (pointer:fine){
+ .oh-text-link:hover>span,.oh-social a:hover>span{transform:translate(2px,-2px);}
+}
+@media(max-width:700px){
+ .play-personal{padding-block:64px 100px;}.personal-layout{margin-block:12px 0;}
+}
+@media(prefers-reduced-motion:reduce){
+ .oh-text-link>span,.oh-social a>span{transform:none!important;transition:none;}
+}
+
+.orbit-home[data-paused="true"][data-scene-ready="true"] .play-print {height:auto;}
+.orbit-home[data-paused="true"][data-scene-ready="true"] .play-print-stage {position:relative;min-height:100svh;}
+
+/* Keep the remix control legible as the print gives way to the portrait. */
+.orbit-home[data-scene-ready="true"] .play-caption {opacity:clamp(0,calc((.9 - var(--section-progress)) * 6),1);}
+.play-caption:focus-within {opacity:1!important;}
+.play-remix-button {background:var(--ink);padding:8px 12px;}
+@media(prefers-reduced-motion:reduce){.orbit-home[data-scene-ready="true"] .play-caption{opacity:1;}}
+.orbit-home[data-paused="true"] .play-caption {opacity:1;}

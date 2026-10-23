@@ -36,3 +36,7 @@
 }
 .orbit-home[data-paused=true] .academy-work{--work-title-rest:0;--work-image-rest:0;}
 .orbit-home[data-paused=true] .academy-work-sheet img{transform:none;}
+
+.academy-work {padding-top:clamp(48px,7vw,100px);}
+.academy-work-role {max-width:1320px;margin:0 auto;padding-top:16px;border-top:1px solid color-mix(in srgb,var(--paper) 40%,transparent);font:12px/1.5 var(--font-ibm-plex-mono),monospace;}
+@media(max-width:700px){.academy-work{padding-top:40px;}.academy-work-role{font-size:11px;}}

@@ -11,7 +11,6 @@ export function PersonalIntro() {
   };
 
   return <section className="play-personal oh-panel" id="ueber-mich" aria-labelledby="personal-title">
-    <div className="oh-section-line"><span>02 / Persönlich</span><span>Thimofej Zapko</span></div>
     <div className="personal-layout">
       <h2 className="personal-title" id="personal-title" aria-label="Ich bin Thimofej.">
         <span className="personal-kicker" aria-hidden="true">Ich bin</span>

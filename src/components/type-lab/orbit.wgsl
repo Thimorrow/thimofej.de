@@ -31,7 +31,7 @@ fn cameraDistance()->f32{return max(9.0,8.5/settings.view.x)+(1.0-smoothstep(0.0
   let strip=f32(ii/2u);
   let copy=(ii/2u)%3u!=1u;
   let unfolding=settings.material.w>0.5;
-  let opening=select(0.0,smoothstep(0.04,0.96,settings.view.y),unfolding);
+  let opening=select(0.0,smoothstep(0.04,0.88,settings.view.y),unfolding);
   let layer=select(strip,2.0-floor(strip/3.0),unfolding);
   var uv=vec2f(0);
   var edgeAngle=0.0;
@@ -63,22 +63,28 @@ fn cameraDistance()->f32{return max(9.0,8.5/settings.view.x)+(1.0-smoothstep(0.0
   if(unfolding){
     let separation=smoothstep(1.0,2.0,settings.view.y);
     let phase=settings.story.z;
-    let stagger=sin(strip*1.7+phase)*settings.story.w;
+    let fan=smoothstep(0.66,0.96,settings.view.y);
+    let rowFan=smoothstep(0.46,0.70,settings.view.y);
+    let stagger=sin(strip*1.7+phase)*settings.story.w*fan*min(1.0,settings.view.x);
     let local=uv.x-0.5;
     let pull=exp(-pow((local-settings.story.x*0.5)*3.0,2.0)-pow((4.0-strip)/5.0-settings.story.y,2.0)*2.0);
-    let wave=sin(uv.x*6.283185+strip*0.64+phase)*0.32;
-    let depth=(wave+pull*settings.story.x*1.8)*settings.storyStyle.x;
-    let fly=select(-1.0,1.0,strip>=4.0)*separation;
+    let wave=sin(uv.x*6.283185+strip*0.64+phase)*0.24;
+    let depth=(wave+pull*settings.story.x*1.8)*settings.storyStyle.x*fan;
+    let fly=sign(strip-4.0)*separation;
     let viewScale=cameraDistance()/9.0;
     // Open the cylinder by reducing its angular span at constant arc length.
     let span=max(0.002,6.283185*(1.0-opening));
     let width=mix(6.283185*(2.42+settings.shape.x*0.24)*settings.shape.z,settings.view.x*8.2*viewScale,opening);
-    let arcRadius=width/span+side*settings.material.z;
+    let arcRadius=width/span+side*settings.material.z*mix(settings.shape.z,1.0,opening);
     let phi=local*span;
-    // Same starting orientation, one full revolution less on the way to flat.
-    let arcTurn=(turn-3.14159265)*(1.0-opening);
-    let growth=select(1.0,smoothstep(0.24,0.64,settings.view.y),copy);
-    let flatY=((4.0-strip)*0.66+(0.5-uv.y)*0.82*settings.storyStyle.y*growth+0.1)*viewScale;
+    // Equivalent starting orientation, always the shortest turn into the page.
+    let startTurn=turn-3.14159265+arrival*(1.1-layer*0.3);
+    let arcTurn=atan2(sin(startTurn),cos(startTurn))*(1.0-opening);
+    let growth=select(1.0,mix(0.84,1.0,fan),copy);
+    // Each pair of new rows separates from its existing parent band.
+    let rowCenter=(layer-1.0)*1.98+(1.0-f32((ii/2u)%3u))*0.66*rowFan;
+    let printHeight=mix(0.82,0.98,smoothstep(0.85,1.6,settings.view.x));
+    let flatY=(rowCenter+(0.5-uv.y)*printHeight*settings.storyStyle.y*growth+0.1)*viewScale;
     let startY=((0.5-uv.y)*1.65*growth+(layer-1.0)*(1.65+arrival*0.9))*settings.shape.z;
     var arc=vec3f(sin(phi)*arcRadius,mix(startY,flatY,opening),(cos(phi)-smoothstep(0.0,1.0,opening))*arcRadius);
     var arcNormal=vec3f(sin(phi),0,cos(phi))*side;
@@ -87,12 +93,10 @@ fn cameraDistance()->f32{return max(9.0,8.5/settings.view.x)+(1.0-smoothstep(0.0
     arcNormal=rz(rx(arcNormal,tilt*(1.0-opening)),roll*(1.0-opening));
     arc=rx(ry(arc,(settings.motion.y-0.25)*(1.0-opening)),settings.motion.z*(1.0-opening));
     arcNormal=rx(ry(arcNormal,(settings.motion.y-0.25)*(1.0-opening)),settings.motion.z*(1.0-opening));
-    arc+=vec3f(stagger*0.5+fly*settings.view.x*4.0,sin(uv.x*3.14159)*depth*0.25,depth+separation*(strip-4.0)*0.4)*viewScale*opening;
-    if(opening>0.0){p=arc;n=normalize(arcNormal+vec3f(-cos(uv.x*6.283185+strip*.64+phase)*0.2*settings.storyStyle.x*opening,0,0));}
+    arc+=vec3f(stagger*0.5+fly*settings.view.x*4.0,sin(uv.x*3.14159)*depth*0.25,depth)*viewScale*opening;
+    if(opening>0.0){p=arc;n=normalize(arcNormal+vec3f(-cos(uv.x*6.283185+strip*.64+phase)*0.2*settings.storyStyle.x*opening*fan,0,0));}
     else{p*=settings.shape.z;}
-    p=ry(p,separation*(strip-4.0)*0.11);
-    n=ry(n,separation*(strip-4.0)*0.11);
-    if(copy){visibility=select(0.0,1.0,settings.view.y>0.24);}
+    if(copy){visibility=fan;}
     if(wall>0.5){visibility*=1.0-smoothstep(0.04,0.2,settings.view.y);}
     if(ii%2u==1u && wall<0.5 && settings.view.y>0.3){visibility=0.0;}
     visibility*=1.0-smoothstep(1.72,2.0,settings.view.y);
@@ -120,16 +124,20 @@ fn lightResponse(n:vec3f,v:vec3f,l:vec3f,rough:f32,base:vec3f)->vec3f{
 @fragment fn fs_main(i:Out)->@location(0) vec4f{
   let uv=vec2f(fract(i.uv.x),i.uv.y);
   var mask=textureSample(letters,linearSampler,uv).r;
-  let inkMask=textureSample(storyLetters,linearSampler,uv).r;
-  let stroke=select(3.5,8.0,settings.view.x<0.85);
-  let texel=vec2f(stroke/2048.0,stroke/384.0);
-  let inside=min(min(textureSample(storyLetters,linearSampler,uv+vec2f(texel.x,0)).r,textureSample(storyLetters,linearSampler,uv-vec2f(texel.x,0)).r),min(textureSample(storyLetters,linearSampler,uv+vec2f(0,texel.y)).r,textureSample(storyLetters,linearSampler,uv-vec2f(0,texel.y)).r));
-  if(settings.material.w>0.5 && settings.view.y>0.001){
-    let change=smoothstep(0.36+uv.x*0.12,0.64+uv.x*0.12,settings.view.y);
-    let erosion=smoothstep(0.75,1.0,settings.view.y);
-    let outlined=select(inkMask,inkMask*(1.0-smoothstep(1.0-erosion,1.04-erosion,inside)),u32(i.strip)%2u==1u);
+  if(settings.material.w>0.5 && settings.view.y>0.48){
+    // Retire the second ring repetition as the first word opens into the page.
+    let inkMask=textureSample(storyLetters,linearSampler,uv).r*select(0.0,1.0,i.uv.x<=1.0);
+    var outlined=inkMask;
+    if(settings.view.y>0.84){
+      let stroke=select(4.5,8.0,settings.view.x<0.85);
+      let texel=vec2f(stroke/2048.0,stroke/384.0);
+      let inside=min(min(textureSample(storyLetters,linearSampler,uv+vec2f(texel.x,0)).r,textureSample(storyLetters,linearSampler,uv-vec2f(texel.x,0)).r),min(textureSample(storyLetters,linearSampler,uv+vec2f(0,texel.y)).r,textureSample(storyLetters,linearSampler,uv-vec2f(0,texel.y)).r));
+      let erosion=smoothstep(0.84,1.0,settings.view.y);
+      outlined=select(inkMask,inkMask*(1.0-smoothstep(1.0-erosion,1.04-erosion,inside)),u32(i.strip)%2u==1u);
+    }
+    let change=smoothstep(0.48,0.66,settings.view.y);
     let changed=mix(mask,outlined,change);
-    mask=mix(smoothstep(0.42,0.58,changed),changed,smoothstep(0.78,1.0,settings.view.y));
+    mask=mix(smoothstep(0.42,0.58,changed),changed,smoothstep(0.84,1.0,settings.view.y));
   }
   if((i.wall<0.5 && mask<0.05) || i.visibility<0.02){discard;}
   var n=normalize(i.normal);
@@ -154,6 +162,14 @@ fn lightResponse(n:vec3f,v:vec3f,l:vec3f,rough:f32,base:vec3f)->vec3f{
   if(i.wall>0.5){c*=0.78;}
   c=c/(vec3f(1.0)+c);
   var color=pow(c,vec3f(1.0/2.2));
-  if(settings.material.w>0.5){color=mix(color,settings.ink.xyz,smoothstep(0.42,0.95,settings.view.y)*0.78);}
-  return vec4f(color,select(smoothstep(0.1,0.9,mask),1.0,i.wall>0.5)*i.visibility);
+  if(settings.material.w>0.5){color=mix(color,settings.ink.xyz,smoothstep(0.18,0.72,settings.view.y)*0.92);}
+  var opacity=i.visibility;
+  if(settings.material.w>0.5){
+    // Fade pigment into the paper instead of dithering a nearly transparent
+    // surface through multisample coverage while the new rows appear.
+    let paper=mix(settings.paper.xyz,vec3f(0.141,0.102,0.086),smoothstep(0.12,0.72,settings.view.y));
+    color=mix(paper,color,i.visibility);
+    opacity=1.0;
+  }
+  return vec4f(color,select(smoothstep(0.1,0.9,mask),1.0,i.wall>0.5)*opacity);
 }

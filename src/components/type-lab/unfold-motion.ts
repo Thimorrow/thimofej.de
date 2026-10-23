@@ -13,6 +13,11 @@ export function unfoldProgress(scroll: number, viewport: number) {
 }
 
 export function unfoldTone(progress: number) {
-  const t=Math.max(0,Math.min(1,(progress-.12)/.76));
+  const t=Math.max(0,Math.min(1,(progress-.12)/.60));
   return t*t*(3-2*t);
+}
+
+/** Reach the same pattern without cycling through unnecessary intermediate waves. */
+export function nearestUnfoldPhase(current: number, target: number) {
+  return current + Math.atan2(Math.sin(target - current), Math.cos(target - current));
 }

@@ -1,0 +1,66 @@
+.contact-finale {
+  --contact-x: 70%;
+  --contact-y: 42%;
+  position: relative;
+  isolation: isolate;
+  background: var(--paper);
+  color: var(--ink);
+  padding-top: clamp(100px, 15svh, 180px);
+  padding-bottom: 0;
+}
+.contact-raster {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  opacity: .15;
+  mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 65%, transparent);
+}
+.contact-raster span {
+  white-space: nowrap;
+  font: 10px/1 var(--font-ibm-plex-mono), monospace;
+  letter-spacing: .42em;
+}
+.contact-raster span:nth-child(even) {transform: translateX(-80px);}
+.contact-layout {max-width: 1320px; margin-inline: auto;}
+.contact-finale h2 {margin: 0; font: 450 clamp(120px, 25vw, 380px)/1.12 var(--font-fraunces), Georgia, serif; letter-spacing: -.065em;}
+.contact-hello {display: flex; align-items: center; justify-content: space-between; gap: 32px; padding-block: 12px 30px;}
+.contact-stop {font-style: italic;}
+.contact-word {position: relative; display: inline-flex;}
+.contact-letter {display: inline-block; transition: transform 350ms cubic-bezier(.23,1,.32,1);}
+.finale-arrow {width: clamp(60px, 10vw, 144px); height:auto; aspect-ratio:1; flex-shrink: 0; stroke: currentColor; stroke-width: 2; transition: transform 200ms cubic-bezier(.22,1,.36,1);}
+.contact-details {display: flex; justify-content: space-between; align-items: center; gap: 28px; padding-block: 42px 100px;}
+.finale-email {min-height: 44px; display: inline-flex; align-items: center; font-size: clamp(17px, 1.7vw, 24px); text-decoration: underline!important; text-decoration-thickness: 1px!important; text-underline-offset: 8px; overflow-wrap: anywhere;}
+.contact-footer {border-top: 1px solid color-mix(in srgb, var(--ink) 35%, transparent); display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-block: 20px max(88px, calc(60px + env(safe-area-inset-bottom))); font: 11px/1.5 var(--font-ibm-plex-mono),monospace;}
+.contact-footer a {display: inline-flex; gap: 24px; align-items: center; min-height: 44px;}
+.contact-hello:focus-visible {outline-offset: 10px;}
+.oh-content .contact-hello:active {opacity: .8;}
+@media (hover:hover) and (pointer:fine) {
+  .contact-raster {mask-image: radial-gradient(ellipse 250px 180px at var(--contact-x) var(--contact-y), #000, #0003 75%), linear-gradient(to bottom, transparent, #0004 22%, #0004 65%, transparent); opacity: .24; transition: opacity 350ms ease-out;}
+  .contact-finale[data-engaged="true"] .contact-raster {opacity: .65;}
+  .oh-content .contact-hello:hover {opacity: 1;}
+  .contact-hello:hover .finale-arrow {transform: translate(6px,-6px);}
+}
+@media (max-width:700px) {
+  .contact-finale {padding-top: 90px; padding-bottom: 0;}
+  .contact-finale h2 {font-size: 25vw;}
+  .contact-hello {gap: 18px; padding-bottom: 20px;}
+  .finale-arrow {width: 12vw; stroke-width: 1.5;}
+  .contact-details {align-items: flex-start; flex-direction: column; gap: 24px; padding-block: 32px 64px;}
+  .contact-footer {font-size: 10px; gap: 16px;}
+  .contact-footer a {gap: 10px;}
+  .contact-raster span {font-size: 8px; letter-spacing: .3em;}
+}
+@media (prefers-reduced-motion: reduce) {
+  .contact-raster {mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 65%, transparent); opacity: .1!important; transition: none;}
+  .finale-arrow {transition: none; transform: none!important;}
+  .contact-letter {transition: none; transform: none!important;}
+}
+.orbit-home[data-paused="true"] .contact-raster {opacity: .1; mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 65%, transparent);}
+.orbit-home[data-paused="true"] .finale-arrow {transform: none;}
+.orbit-home[data-paused="true"] .contact-letter {transform: none!important;}

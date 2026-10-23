@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Cross-document opt-in must be available before route-specific CSS arrives. */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 160ms; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
 /* Design tokens — dark only: Midnight + Chrome + electric cyan, with one
    engineered amber. See PLAN.md §2.1. */
 @theme {

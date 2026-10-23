@@ -31,7 +31,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${spectral.variable} ${mono.variable}`}>
+    <html lang="de" className={`${fraunces.variable} ${spectral.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );

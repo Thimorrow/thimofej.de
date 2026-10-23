@@ -43,3 +43,10 @@
  .oh-footer{padding:24px;gap:20px;}.oh-pause{left:auto;right:20px;transform:none;bottom:16px;}
 }
 @media(prefers-reduced-motion:reduce){.oh-person{padding-top:100px;}.oh-contact span{transition:none;}}
+
+@media(prefers-reduced-motion:reduce){
+ ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important;}
+}
+.orbit-home .oh-pause {bottom:max(20px,env(safe-area-inset-bottom));}
+.orbit-home .oh-pause:focus-visible {outline-offset:4px;}
+.orbit-home .oh-pause:active {scale:.96;}

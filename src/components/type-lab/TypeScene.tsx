@@ -4,7 +4,7 @@ import { createTypeRenderer } from "./renderer";
 import { coast, follow } from "./orbit-motion";
 import { advanceWaves, createWave, insideSculpture, type Wave } from "./background-wave";
 import type { Config } from "./config";
-import type { UnfoldInput } from './unfold-motion';
+import { nearestUnfoldPhase, type UnfoldInput } from './unfold-motion';
 
 export function TypeScene({ config, playing, regenerate, presentation, unfold, onReady }: { unfold?: MutableRefObject<UnfoldInput>; onReady?: (ready:boolean)=>void; presentation?: MutableRefObject<number>; config: MutableRefObject<Config>; playing: MutableRefObject<boolean>; regenerate: () => void }) {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -19,6 +19,7 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
     let renderer: Awaited<ReturnType<typeof createTypeRenderer>> | undefined;
     let lastX = 0, lastY = 0, down = false, travel=0, lastMove=0;
     let targetYaw=config.current.yaw,targetPitch=config.current.pitch;
+    let orbitTime=config.current.time;
     let pointerX=0,pointerY=0,printPhase=(unfold?.current.tuning.current.seed??0)%1000/100;
     let vx=0,vy=0,observedYaw=config.current.yaw,observedPitch=config.current.pitch;
     const orbit=config.current.mode===1;
@@ -46,7 +47,12 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
           config.current.pitch=follow(config.current.pitch,targetPitch,dt);
         }
         observedYaw=config.current.yaw;observedPitch=config.current.pitch;
-        if (playing.current && !reduced && (!down || backgroundGesture) && (!unfold || (presentation?.current ?? 0)<1)) config.current.time += dt*config.current.speed;
+        if (playing.current && !reduced && (!down || backgroundGesture)) {
+          if (!unfold || (presentation?.current ?? 0)<1) config.current.time += dt*config.current.speed;
+          // The scroll gesture owns the sculpture after opening begins. Keep the
+          // background clock independent so stopping mid-unfold holds its shape.
+          if (!unfold || (presentation?.current ?? 0)<=0.04) orbitTime += dt*config.current.speed;
+        }
         if (playing.current && !reduced) waves=advanceWaves(waves,dt,config.current.tuning?.clickLifetime ?? 4.5);
         const intro = reduced || !playing.current || config.current.time > 10 ? 1 : orbit ? Math.min(age/2.8,1) : 1-Math.pow(1-Math.min(age/2.1,1),4);
         const input=unfold?.current;
@@ -54,9 +60,9 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
         if(input && tuning) {
           const smooth=(from:number,to:number)=>reduced || !playing.current ? to : follow(from,to,dt);
           pointerX=smooth(pointerX,playing.current?input.x:0);pointerY=smooth(pointerY,playing.current?input.y:0);
-          printPhase=smooth(printPhase,tuning.seed%1000/100);
+          printPhase=smooth(printPhase,nearestUnfoldPhase(printPhase,tuning.seed%1000/100));
         }
-        const story=tuning?{x:pointerX,y:pointerY,phase:printPhase,spread:tuning.spread,motion:reduced || !playing.current?0:tuning.motion,typeScale:tuning.typeScale}:undefined;
+        const story=tuning?{time:orbitTime,x:pointerX,y:pointerY,phase:printPhase,spread:tuning.spread,motion:reduced || !playing.current?0:tuning.motion,typeScale:tuning.typeScale}:undefined;
         try { const signature=JSON.stringify(config.current)+intro+JSON.stringify(waves)+(presentation?.current ?? 0)+JSON.stringify(story); if (signature !== drawn) { renderer.render(config.current,intro,waves,presentation?.current ?? 0,story); drawn=signature; } } catch(e) { fail(e instanceof Error ? e.message : "Renderfehler"); return; }
       }
       raf = requestAnimationFrame(tick);

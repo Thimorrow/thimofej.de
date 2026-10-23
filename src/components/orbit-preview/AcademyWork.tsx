@@ -3,7 +3,7 @@ import './academy-work.css';
 
 export function AcademyWork() {
   return <section className="academy-work oh-panel" id="academy" aria-labelledby="academy-work-title">
-    <div className="oh-section-line"><span>03 / Eine Arbeit</span><span>Frontend bei yesterday</span></div>
+    <p className="academy-work-role">Frontend bei yesterday</p>
     <a className="academy-work-link" href="/projects/academy" aria-label="yesterday Academy: meine Arbeit und die Produktdemo ansehen">
       <div className="academy-work-heading">
         <span className="academy-work-by">yesterday</span>
