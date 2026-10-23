@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import { createTypeRenderer } from "./renderer";
-import { coast, createBandLag, follow, rotateYaw } from "./orbit-motion";
+import { coast, createBandLag, follow, rotateYaw, touchDragIntent } from "./orbit-motion";
 import { advanceWaves, createWave, insideSculpture, type Wave } from "./background-wave";
 import type { Config } from "./config";
 import { nearestUnfoldPhase, type UnfoldInput } from './unfold-motion';
@@ -18,6 +18,7 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
     let waves: Wave[] = [], waveIndex = 0, backgroundGesture = false;
     let renderer: Awaited<ReturnType<typeof createTypeRenderer>> | undefined;
     let lastX = 0, lastY = 0, down = false, travel=0, lastMove=0;
+    let touchIntent: ReturnType<typeof touchDragIntent> = "pending";
     let targetYaw=config.current.yaw,targetPitch=config.current.pitch;
     let bandLag=0;
     const bandSpring=createBandLag();
@@ -48,11 +49,11 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
             targetPitch=Math.max(-1,Math.min(1,targetPitch+y.distance));
           } else if (!down) {vx=0;vy=0;targetYaw=config.current.yaw;targetPitch=config.current.pitch;}
           const previousYaw=config.current.yaw;
-          config.current.yaw=follow(config.current.yaw,targetYaw,dt);
-          config.current.pitch=follow(config.current.pitch,targetPitch,dt);
+          config.current.yaw=follow(config.current.yaw,targetYaw,dt,down && !backgroundGesture);
+          config.current.pitch=follow(config.current.pitch,targetPitch,dt,down && !backgroundGesture);
           rotationVelocity=dt>0 ? (config.current.yaw-previousYaw)/dt : 0;
         }
-        bandLag=bandSpring.step(rotationVelocity,dt,orbit && !reduced && playing.current);
+        bandLag=bandSpring.step(rotationVelocity,dt,orbit && !reduced && playing.current,down && !backgroundGesture);
         observedYaw=config.current.yaw;observedPitch=config.current.pitch;
         if (playing.current && !reduced && (!down || backgroundGesture)) {
           if (!unfold || (presentation?.current ?? 0)<1) config.current.time += dt*config.current.speed;
@@ -86,6 +87,7 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
         waves=[...waves.slice(-3),createWave(x,y,waveIndex++,config.current.time)];
       }
       down=true;moved=false;travel=0;vx=0;vy=0;
+      touchIntent="pending";
       targetYaw=config.current.yaw;targetPitch=config.current.pitch;
       lastX=e.clientX;lastY=e.clientY;lastMove=e.timeStamp;
       el.setPointerCapture(e.pointerId);
@@ -93,14 +95,22 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
     const move = (e: PointerEvent) => {
       if (!down || !e.isPrimary) return;
       const dx=e.clientX-lastX,dy=e.clientY-lastY;
+      // The homepage shares vertical touch with the document. The full-screen
+      // laboratory still owns both axes and keeps its tilt control.
+      const scrollGesture=e.pointerType==="touch" && presentation!==undefined;
+      if(scrollGesture && !backgroundGesture && touchIntent==="pending") {
+        touchIntent=touchDragIntent(dx,dy);
+        if(touchIntent==="pending") return;
+        if(touchIntent==="scroll") backgroundGesture=true;
+      }
       travel+=Math.hypot(dx,dy);moved=travel>5;
       if(backgroundGesture){lastX=e.clientX;lastY=e.clientY;return;}
       const seconds=Math.max(0.008,(e.timeStamp-lastMove)/1000);
       vx=Math.max(-1.6,Math.min(1.6,dx*0.005/seconds));
-      vy=Math.max(-0.8,Math.min(0.8,dy*0.003/seconds));
+      vy=scrollGesture ? 0 : Math.max(-0.8,Math.min(0.8,dy*0.003/seconds));
       const yaw=rotateYaw(config.current.yaw,targetYaw,dx*0.005);
       config.current.yaw=yaw.current;targetYaw=yaw.target;observedYaw=yaw.current;
-      targetPitch=Math.max(-1,Math.min(1,targetPitch+dy*0.003));
+      if(!scrollGesture) targetPitch=Math.max(-1,Math.min(1,targetPitch+dy*0.003));
       if (!orbit || reduced) {config.current.yaw=targetYaw;config.current.pitch=targetPitch;observedYaw=targetYaw;observedPitch=targetPitch;}
       lastX=e.clientX;lastY=e.clientY;lastMove=e.timeStamp;
     };
@@ -108,6 +118,7 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
       if(!down || !e.isPrimary) return;
       down=false;
       if(e.type==="pointercancel" || e.timeStamp-lastMove>80 || reduced) {vx=0;vy=0;}
+      if(e.type==="pointercancel") {targetYaw=config.current.yaw;targetPitch=config.current.pitch;}
       if(el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
       if(!moved && e.type!=="pointercancel") {
         if(!backgroundGesture) regenerate();

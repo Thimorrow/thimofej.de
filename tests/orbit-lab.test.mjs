@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { coast, createBandLag, follow, rotateYaw } from '../src/components/type-lab/orbit-motion.ts';
+import { coast, createBandLag, follow, rotateYaw, touchDragIntent } from '../src/components/type-lab/orbit-motion.ts';
 import { glyphEdges } from '../src/components/type-lab/orbit-geometry.ts';
 import { defaults, validConfig, seedPhase } from '../src/components/type-lab/config.ts';
 
@@ -52,19 +52,63 @@ test('coasting through the angle seam preserves direction and remaining distance
   }
 });
 
+test('a held sculpture follows each drag and reversal without chasing the pointer',()=>{
+  for(const hz of [30,60,144]) {
+    let current=3.1,target=current;
+    for(const delta of [0.3,0.2,-0.1,-0.4,0.2]) {
+      const next=rotateYaw(current,target,delta);
+      current=follow(next.current,next.target,1/hz,true);target=next.target;
+      assert.equal(current,target);
+      assert.ok(Math.abs((current-next.current)-delta)<1e-12);
+    }
+  }
+});
+
+test('release unloads the existing bend instead of adding a second pull from coasting',()=>{
+  const still=createBandLag(),coasting=createBandLag();
+  for(let i=0;i<30;i++) {still.step(4,1/60,true,true);coasting.step(4,1/60,true,true);}
+  const before=still.step(4,1/60,true,true);
+  coasting.step(4,1/60,true,true);
+  const released=still.step(0,1/60,true,false);
+  assert.equal(released,coasting.step(8,1/60,true,false));
+  assert.ok(Math.abs(released-before)<0.02);
+  for(let i=0;i<120;i++) {
+    assert.equal(still.step(0,1/60,true,false),coasting.step(8,1/60,true,false));
+  }
+});
+
 test('band lag visibly trails a drag, rebounds gently and settles at different refresh rates',()=>{
   const run=hz=>{
     const lag=createBandLag();let value=0;
     for(let i=0;i<hz;i++) value=lag.step(3,1/hz);
-    assert.ok(value < -0.3 && value > -0.4);
+    assert.ok(value < -0.14 && value > -0.18);
     let rebound=0;
-    for(let i=0;i<hz*2;i++) {value=lag.step(0,1/hz);rebound=Math.max(rebound,value);}
-    assert.ok(rebound>0.02 && rebound<0.08);
+    for(let i=0;i<hz*2;i++) {value=lag.step(0,1/hz,true,false);rebound=Math.max(rebound,value);}
+    assert.ok(rebound>0.004 && rebound<0.012);
     assert.equal(Math.abs(value),0);
     return rebound;
   };
   assert.ok(Math.abs(run(30)-run(144))<0.002);
   run(60);
+});
+
+test('band resistance stays progressive beyond a normal drag instead of hitting a hard stop',()=>{
+  const settled=speed=>{
+    const lag=createBandLag();let value=0;
+    for(let i=0;i<120;i++) value=lag.step(speed,1/60);
+    return Math.abs(value);
+  };
+  assert.ok(settled(4)>settled(2)+0.025);
+  assert.ok(settled(20)<0.19);
+  assert.ok(Math.abs(settled(-4)-settled(4))<1e-10);
+});
+
+test('touch distinguishes a tap, horizontal rotation and native vertical scrolling',()=>{
+  assert.equal(touchDragIntent(3,4),'pending');
+  assert.equal(touchDragIntent(14,3),'rotate');
+  assert.equal(touchDragIntent(-14,-3),'rotate');
+  assert.equal(touchDragIntent(3,14),'scroll');
+  assert.equal(touchDragIntent(10,10),'scroll');
 });
 
 test('band lag survives fast reversals and clears momentum for pause or reduced motion',()=>{

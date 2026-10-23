@@ -1,5 +1,28 @@
 # Orbit-Labor: akzeptierter Zwischenstand
 
+## Korrektur: direkter Griff statt doppelter Verzögerung (23. Oktober 2026, lokal)
+
+Nutzerrückmeldung zum vorigen lokalen Stand: Der elastische Effekt fühlt sich während des Festhaltens schlecht an, erst nach Loslassen besser. Die vorherige Abstimmung ist damit nicht gestalterisch akzeptiert.
+
+- Während eines tatsächlichen Skulptur-Griffs folgt die Grunddrehung jetzt direkt dem Zielwinkel; die bisherige exponentielle Verzögerung entfällt in dieser Phase. Nach Loslassen bleiben das vorhandene Ausrollen und seine Dämpfung erhalten.
+- Die separate Bandverformung ist kleiner: Ziel `-0.18 * tanh(angularVelocity * 0.09 / 0.18)` während des Griffs. Loslassen setzt nur das Federziel auf 0, ohne Position oder Federgeschwindigkeit zurückzusetzen. Die nachlaufende Grunddrehung erzeugt keinen neuen Bandzug. Dadurch gibt es keinen zusätzlichen Kraftaufbau beim Loslassen. Federparameter 260/23 bleiben. Vorige mobile Korrekturen unverändert.
+- Zwei Regressionstests reproduzierten zuvor das Hinterherlaufen beim Griff und den neuen Zug während des Ausrollens. Jetzt alle 38 Tests, TypeScript und betroffenes ESLint erfolgreich. Browser: zwölf Ziehschritte von jeweils 15 px ergeben jeweils 0.075 Radiant ohne verbleibenden Zielabstand, auch über den Winkelsprung bei ±π. Stillhalten verändert den Grundwinkel nicht; Gegenbewegung, Loslassen und 15 aufeinanderfolgende Nullwerte der Feder geprüft. Maximaler Bandparameter im Durchlauf 0.145. Touch bei 390×844: 120 px ergeben 0.6 Radiant, ohne Neigung, Seitenscrollen oder horizontalen Überlauf. Pause und reduzierte Bewegung geprüft, keine erfassten Laufzeitfehler.
+- Lokale Vorschau weiterhin http://localhost:3000/. Persönliche Abnahme offen; kein Commit, Push oder Deployment.
+
+## Elastischer Nachlauf und mobile Bedienung (23. Oktober 2026, lokal)
+
+Auftrag: zuerst den elastischen Effekt mit `emil-animations` verbessern, danach die Handybedienung mit `emil-mobile-native`. `emil-ask-emil` als vorgeschriebenen Router und `ego-browser` für die lokale Prüfung verwendet. Keine neue Veröffentlichung beauftragt.
+
+- Nachlauf: bestehende Motion-Feder schneller und kontrollierter abgestimmt (Steifigkeit 260, Dämpfung 23, Masse 1). Die bisher hart begrenzte Anregung ist durch stetig zunehmenden Widerstand ersetzt: `-0.42 * tanh(angularVelocity * 0.22 / 0.42)`. Kräftige Gesten bleiben unterscheidbar, die Feder erhält ihre Geschwindigkeit bei Gegenbewegungen und schwingt einmal klein zurück. Physikparameter bewusst erhalten, da die installierte Motion-Version bei zeitbasierten Federn keine übernommene Geschwindigkeit verwendet. Shader, Ausgangswinkel und akzeptierte Hintergrundwerte unverändert.
+- Homepage-Touch: erst nach 8 px zwischen horizontalem Drehen und vertikalem/diagonalem Scrollen unterscheiden. Horizontales Ziehen verändert nur den Drehwinkel; native Scrollabbrüche verwerfen das verbleibende Drehziel. Das Labor behält seine Bedienung auf beiden Achsen. Die Homepage erlaubt zusätzlich ausdrücklich Pinch-Zoom auf der Zeichenfläche.
+- Mobile Oberfläche: `viewport-fit=cover`, Tastaturanpassung und passende mandarinfarbene Browserleiste für beide Systemeinstellungen. Safe-Area-Abstände für Header, Hauptinhalte, Pause und Academy-Seite. Weiter-Link und Pause überschneiden sich weder im Hoch- noch im Querformat. Eigene Druckrückmeldung, mindestens 44 px hohe Headerlinks, Hover nur mit präzisem Hover-Zeigegerät; Text und E-Mail bleiben auswählbar. Bestehende svh-Höhen und natives Dokument-Scrollen erhalten.
+
+Prüfstand:
+- TypeScript, betroffenes ESLint, alle 36 Tests und Produktionsbuild erfolgreich. Neue Regressionstests für progressive Federanregung und Touch-Gestenabsicht, bestehende Federprüfungen auf kleinen Rückschwung angepasst. Weiterhin 16 bekannte CSS-Keyframe-Warnungen in der unveränderten `catalog.css`. Der eingeschränkte Buildlauf blieb ohne Ergebnis und wurde beendet; anschließender Build außerhalb der Sandbox erfolgreich.
+- Lokaler WebGPU-Browser: wiederholtes Greifen, schnelle Gegenbewegung und vollständiges Abklingen (15 aufeinanderfolgende Messwerte mit Bandversatz 0), Pause und reduzierte Bewegung. Desktop-Durchlauf maximaler Bandparameter -0.428/+0.446 während der Gegenbewegungen, keine erfassten Laufzeitfehler. Touch-Durchlauf: horizontales Drehen um 0.7 Radiant bei unverändertem Neigungswinkel und Scrollposition 0; anschließendes vertikales Wischen scrollt 234.5 px, ohne Dreh-/Neigungsänderung.
+- Desktop 1440 px, mobile Emulation 320×760 / 390×844 und Querformat 844×390 visuell geprüft. Kein horizontaler Überlauf; Weiter-/Pause-Flächen getrennt. Kontakt und Academy mobil geprüft. Simulierter WebGPU-Ausfall bei 320 px lässt Schriftalternative und Kontakt erreichbar; sichtbarer Tastaturfokus auf dem Sprunglink bestätigt. Browseremulation musste pro CLI-Aufruf neu gesetzt werden; frühere Messung ohne aktive Emulation wurde verworfen.
+- Kein echtes Handy getestet. Safari-Adressleiste, reale Displayausschnitte, Zweifingerzoom, Softwaretastatur und tatsächliches Touchgefühl brauchen Hardwareabnahme. Gestalterische Nutzerabnahme des Federgefühls offen. Lokale Vorschau: http://localhost:3000/. Kein Commit, Push, Merge oder Deployment in diesem Auftrag.
+
 ## Veröffentlichung am 23. Oktober 2026
 
 Auf ausdrücklichen Auftrag „Mach live“ ist der Hero-Stand einschließlich stärkerem elastischem Nachlauf veröffentlicht. Code-Commit `f091e5ff58e6a6a9737990c503f8abaa99015e16` wurde mit der bestehenden Nutzeridentität auf `codex/feat/vgpu-homepage` gesichert und gepusht. Kein Merge nach `main`.
