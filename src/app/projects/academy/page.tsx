@@ -21,7 +21,7 @@ export default function AcademyProject() {
     <main id="main" className="page-wrap detail-page academy-page">
       <header className="site-header detail-header">
         <Link className="name" href="/">Thimorrow<span className="name-dot">.</span></Link>
-        <Link className="back-link" href="/#projects">Back to work <span aria-hidden="true">↗</span></Link>
+        <Link className="back-link" href="/#academy">Back to work <span aria-hidden="true">↗</span></Link>
       </header>
       <article className="detail-content academy-content">
         <div className="academy-intro">
@@ -60,7 +60,7 @@ export default function AcademyProject() {
         </section>
         <section className="academy-outro" aria-labelledby="more-title"><p className="eyebrow">Explore further</p><h2 id="more-title">See the bigger picture.</h2><p>Discover the Academy and the programme it supports on yesterday&apos;s website.</p><a className="academy-visit" href="https://academy.yesterday-ai.de/" target="_blank" rel="noopener noreferrer">academy.yesterday-ai.de <span aria-hidden="true">↗</span><span className="academy-sr"> (opens in a new tab)</span></a></section>
       </article>
-      <footer className="site-footer"><Link className="inline-link" href="/#projects">← All work</Link><span>A team project at yesterday</span></footer>
+      <footer className="site-footer"><Link className="inline-link" href="/#academy">← All work</Link><span>A team project at yesterday</span></footer>
     </main>
   );
 }

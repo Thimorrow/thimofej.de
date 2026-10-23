@@ -10,7 +10,7 @@ Stand: 23. Oktober 2026. Diese Datei fasst den aktuellen Chat zusammen und ist d
 
 Nutzerentscheidung vom 23. Oktober 2026: Die neue Ansicht aus dem Orbit-Labor soll die bisherige Homepage ersetzen. Labor und Seitenvorschau sind damit die Entwicklungsgrundlage für die künftige Hauptansicht, nicht nur ein dauerhaft separates Experiment.
 
-**Noch nicht umstellen.** Erst wenn das Gesamtergebnis für den Nutzer akzeptabel ist und er die Übernahme ausdrücklich freigibt, die neue Ansicht in die Homepage übernehmen. Die bisherige vorläufige Zufriedenheit mit Raster, ruhiger Welle und Klickanimation ist keine Abnahme der gesamten Seite. Bis dahin `/lab/type`, `/lab/home` und die bestehende Homepage getrennt erhalten. Eine Veröffentlichung benötigt weiterhin den entsprechenden Auftrag.
+**Übernahme inzwischen beauftragt.** Nach dem Auftrag zum Push hat der Nutzer am 23. Oktober 2026 ausdrücklich „mach es zur neuen Homepage“ angewiesen. Damit ist die frühere Wartevorgabe für die Übernahme aufgehoben: `/` verwendet die aktuelle Spielraum-Fassung. `/lab/type` bleibt Labor, `/lab/home` eine nicht indexierte Vorschau derselben Komponente. Git-Push, Merge und Produktionsbereitstellung weiterhin getrennt nachweisen.
 
 ## Aktueller Zustand
 
@@ -180,3 +180,9 @@ Prüfstand: Desktop, 820px, 390px und 320px, auch größere Schrift; kein horizo
 Der Nutzer hat Commit und Push des aktuellen Arbeitsstands auf `codex/feat/vgpu-homepage` beauftragt. Keine Übernahme in die öffentliche Homepage oder Zusammenführung nach `main` beauftragt.
 
 Vor dem Commit erneut erfolgreich: TypeScript, ESLint für Labor, Seitenvorschau und ihre Tests, alle 28 Tests sowie vollständiger Produktionsbuild. Der erste Build blieb in der Sandbox ohne Ergebnis und wurde gezielt beendet; der anschließende reguläre lokale Build war erfolgreich. Er meldete 16 CSS-Warnungen zu verschachtelten `@keyframes` in der unveränderten Academy-Demo-Datei `src/components/academy/catalog/catalog.css`. Keine neue Browserprüfung im Rahmen der Git-Sicherung; die oben dokumentierte gestalterische Abnahme bleibt offen.
+
+### Übernahme als neue Homepage
+
+Während der Git-Sicherung hat der Nutzer ausdrücklich „mach es zur neuen Homepage“ beauftragt. Die aktuelle Spielraum-Fassung wird deshalb in `src/app/page.tsx` als Startseite unter `/` eingebunden. Der vorhandene Profil-JSON-LD-Block, die kanonische Adresse und die Google-Verifikation bleiben erhalten. Seitenbeschreibung und Open-Graph-Sprache passen nun zum deutschen Inhalt. Die beiden Rücklinks auf der Academy-Projektseite führen zum neuen Abschnitt `/#academy`. `/lab/home` bleibt nicht indexierte Vorschau derselben Komponente; das Labor bleibt erhalten. Keine neue Gestaltung oder Änderung an den abgestimmten Animationen.
+
+Erneut geprüft: TypeScript, ESLint für beide geänderten Seiten und vollständiger Produktionsbuild erfolgreich; weiterhin die 16 CSS-Warnungen aus der unveränderten Academy-Demo. Die zuvor geprüften 28 Tests bleiben unverändert. Browser auf `/`: Desktop 1440×900 und Mobil 390×844 mit WebGPU, Hero vorwärts/rückwärts, persönliche Vorstellung samt geladenem Foto, Academy-Link und Rücknavigation nach `/#academy`, Pause und reduzierte Bewegung. WebGPU-Ausfall auf Desktop und bei 320px geprüft: Schriftalternative, Vorstellung und Kontakt erreichbar, keine horizontalen Überläufe oder aufgezeichneten Laufzeitfehler im Ausfalltest. Sichtbarer Tastaturfokus auf dem Sprunglink geprüft. Kanonische Adresse `https://thimofej.de/`, Profilangaben und fehlende Indexierungssperre im Browser geprüft. Keine Produktionsbereitstellung aus diesen lokalen Prüfungen ableiten.
