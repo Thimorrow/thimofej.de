@@ -3,19 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TypeScene } from '../type-lab/TypeScene';
 import { defaults, seedPhase, type Config } from '../type-lab/config';
+import { createWave } from '../type-lab/background-wave';
 import { backgroundDefaults } from '../type-lab/background-tuning';
 import { Spielraum } from './Spielraum';
 import { printDefaults } from './print-config';
-import { unfoldProgress, type UnfoldInput } from '../type-lab/unfold-motion';
+import { queuePrintWave, unfoldProgress, type UnfoldInput } from '../type-lab/unfold-motion';
 import { portraitReveal } from './portrait-motion';
 import './orbit-home.css';
 import './prototypes.css';
 
 export function OrbitHome() {
   const root = useRef<HTMLElement>(null);
-  const [seed, setSeed] = useState(printDefaults.seed);
   const print = useRef({...printDefaults});
-  const unfold = useRef<UnfoldInput>({x:0,y:0,tuning:print});
+  const unfold = useRef<UnfoldInput>({x:0,y:0,tuning:print,waves:[]});
   const [sceneReady,setSceneReady]=useState(false);
   const pausedByUser = useRef(false);
   const config = useRef<Config>({...defaults(1), tuning: {...backgroundDefaults}});
@@ -23,9 +23,11 @@ export function OrbitHome() {
   const presentation = useRef(0);
   const [paused, setPaused] = useState(false);
   const movePrint = useCallback((x:number,y:number)=>{unfold.current.x=x;unfold.current.y=y;},[]);
-  const remix = useCallback(() => {
-    print.current.seed=crypto.getRandomValues(new Uint32Array(1))[0];
-    setSeed(print.current.seed);
+  const printWaveIndex = useRef(0);
+  const pulsePrint = useCallback((x:number,y:number) => {
+    if (!playing.current || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const input=unfold.current;
+    input.waves=queuePrintWave(input.waves,createWave(x,y,printWaveIndex.current++,config.current.time));
   }, []);
   const regenerate = useCallback(() => {
     const c=config.current;
@@ -97,7 +99,7 @@ export function OrbitHome() {
       <div className="oh-identity"><h1 id="oh-name">Thimofej<br/><span>Zapko.</span></h1></div>
       <a href="#person" className="oh-scroll" aria-label="Mehr über Thimofej"><span>Weiter</span><span aria-hidden="true">↓</span></a>
     </section>
-    <Spielraum seed={seed} regenerate={remix} onPrintPointer={movePrint}/>
+    <Spielraum seed={printDefaults.seed} onPrintPulse={pulsePrint} onPrintPointer={movePrint} interactive={sceneReady && !paused}/>
     <button className="oh-pause" onClick={()=>{pausedByUser.current=!pausedByUser.current;playing.current=!pausedByUser.current;setPaused(pausedByUser.current);root.current!.dataset.paused=String(pausedByUser.current);dispatchEvent(new Event('scroll'));}} aria-label={paused?'Animation abspielen':'Animation pausieren'} title={paused?'Animation abspielen':'Animation pausieren'}>{paused?'▷':'Ⅱ'}</button>
   </main>;
 }

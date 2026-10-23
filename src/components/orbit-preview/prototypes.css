@@ -42,9 +42,6 @@
 .play-print-rows {display:flex;flex-direction:column;overflow:hidden;width:100%;height:clamp(380px,67svh,740px);padding:8px 0;}
 .play-print-row {display:flex;align-items:center;white-space:nowrap;transform-origin:center;min-height:0;flex:1;--strip-height:.44;font:900 calc(clamp(66px,13.5vw,215px) * var(--type-scale))/1 Arial,Helvetica,sans-serif;letter-spacing:-.085em;transform:translateX(calc((var(--offset) * var(--spread) + var(--direction) * var(--section-progress) * 7 * var(--motion) + var(--direction) * var(--pointer) * 12 * var(--motion)) * 1%)) scaleX(var(--stretch)) scaleY(var(--strip-height));}
 .play-print-row:nth-child(even) {color:var(--ink);-webkit-text-stroke:1.5px var(--paper);}
-.play-remix {position:absolute;right:0;bottom:0;display:flex;align-items:center;gap:28px;border-bottom:1px solid currentColor;min-height:44px;font-size:14px;}
-.play-caption {display:flex;justify-content:space-between;gap:24px;font:11px/1.5 var(--font-ibm-plex-mono),monospace;}
-.play-seed {font-variant-numeric:tabular-nums;}
 
 
 
@@ -77,7 +74,7 @@
 .orbit-home .oh-pause {left:auto;right:calc(24px + env(safe-area-inset-right,0px));transform:none;background:var(--paper);bottom:calc(20px + env(safe-area-inset-bottom,0px));}
 .orbit-home[data-paused=true] .oh-panel {--section-progress:0!important;--motion:0;}
 @media(hover:hover) and (pointer:fine){
- .oh-content a:hover{opacity:.8;}.poster-preview:hover{opacity:1;}.poster-preview:hover img{transform:scale(1.025);}.poster-contact h2 a:hover span{transform:translate(8px,-8px);}.play-field:hover .play-remix{opacity:.65;}
+ .oh-content a:hover{opacity:.8;}.poster-preview:hover{opacity:1;}.poster-preview:hover img{transform:scale(1.025);}.poster-contact h2 a:hover span{transform:translate(8px,-8px);}
 }
 @media(max-width:700px){
  .oh-panel{padding:28px 22px 64px;}.oh-section-line{font-size:10px;gap:16px;}.oh-section-line>span:last-child{max-width:19ch;text-align:right;}
@@ -86,7 +83,7 @@
  .poster-work-heading{margin:64px 0 32px;gap:12px;}.poster-work h2{font-size:calc(15vw * var(--type-scale));}.poster-work h2 span{padding-left:0;}.oh-round-link{width:48px;height:48px;font-size:30px;}
  .poster-work-detail{margin:0 0 32px;align-items:start;flex-direction:column;gap:16px;}.poster-preview{margin:0;}.poster-preview img{width:165%;max-width:none;margin-left:-26%;}.poster-preview>span{position:relative;right:auto;bottom:auto;padding:16px;justify-content:space-between;}
  .poster-contact h2{font-size:calc(26vw * var(--type-scale));margin:70px 0 36px;}.poster-contact-bottom{align-items:flex-start;flex-direction:column;padding-bottom:44px;gap:12px;}.oh-social{gap:24px;}.oh-end{font-size:10px;gap:16px;padding-bottom:72px;}.poster-contact,.play-contact{padding-bottom:0;}
- .play-print{padding-bottom:24px;}.play-field{margin:54px 0 24px;}.play-print-row{font-size:20vw;--strip-height:1;}.play-print-rows{padding:12px 0;}.play-caption{font-size:9px;gap:16px;}
+ .play-print{padding-bottom:24px;}.play-field{margin:54px 0 24px;}.play-print-row{font-size:20vw;--strip-height:1;}.play-print-rows{padding:12px 0;}
  
 
  .play-contact h2{font-size:calc(25vw * var(--type-scale));margin:64px 0 48px;}
@@ -103,12 +100,8 @@
 .orbit-home[data-scene-ready="true"] .play-print-rows {visibility:hidden;}
 .orbit-home[data-scene-ready="true"] .play-field {flex:1;margin:0;padding:0;min-height:0;}
 .orbit-home[data-scene-ready="true"] .play-field .play-print-rows {height:100%;}
-.orbit-home[data-scene-ready="true"] .play-remix {right:0;bottom:26px;}
-.orbit-home[data-scene-ready="true"] .play-caption {padding-bottom:58px;}
 @media(max-width:700px){
  .orbit-home[data-scene-ready="true"] .play-print-stage{padding:24px 22px;}
- .orbit-home[data-scene-ready="true"] .play-caption{padding-bottom:74px;}
- .orbit-home[data-scene-ready="true"] .play-remix{bottom:24px;}
 }
 @media(prefers-reduced-motion:reduce){
  .orbit-home[data-scene-ready="true"] .play-print{height:auto;}
@@ -153,9 +146,6 @@
 }
 
 .orbit-home[data-paused=true] .play-greeting span{transform:none!important;}
-.play-caption{align-items:center;}
-.play-remix-button{display:flex;align-items:center;justify-content:space-between;gap:28px;min-height:44px;padding:0;background:none;border:0;border-bottom:1px solid currentColor;color:inherit;font:13px Arial,sans-serif;cursor:pointer;}
-.play-remix-button:active{opacity:.6;}
 .orbit-home[data-scene-ready="true"] .play-print-stage>.oh-section-line{opacity:clamp(0,calc((var(--section-progress) - .18) * 5),1);}
 @media(prefers-reduced-motion:reduce){.orbit-home[data-scene-ready="true"] .play-print-stage>.oh-section-line{opacity:1;}}
 .orbit-home[data-paused=true] .play-print-stage>.oh-section-line{opacity:1;}
@@ -205,7 +195,6 @@
 .personal-accessible{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
 
 /* Shared page rhythm: the personal composition leads into the work. */
-.play-caption {justify-content:flex-end;}
 .personal-layout {max-width:1100px;margin-block:clamp(32px,4vw,56px) 24px;}
 .play-personal {padding-top:clamp(48px,6vw,88px);padding-bottom:clamp(88px,9vw,128px);}
 .oh-text-link>span,.oh-social a>span {transition:transform 160ms cubic-bezier(.22,1,.36,1);}
@@ -222,12 +211,6 @@
 .orbit-home[data-paused="true"][data-scene-ready="true"] .play-print {height:auto;}
 .orbit-home[data-paused="true"][data-scene-ready="true"] .play-print-stage {position:relative;min-height:100svh;}
 
-/* Keep the remix control legible as the print gives way to the portrait. */
-.orbit-home[data-scene-ready="true"] .play-caption {opacity:clamp(0,calc((.9 - var(--section-progress)) * 6),1);}
-.play-caption:focus-within {opacity:1!important;}
-.play-remix-button {background:var(--ink);padding:8px 12px;}
-@media(prefers-reduced-motion:reduce){.orbit-home[data-scene-ready="true"] .play-caption{opacity:1;}}
-.orbit-home[data-paused="true"] .play-caption {opacity:1;}
 
 /* Landscape cutouts must clear content as well as the header. */
 .orbit-home .oh-panel:not(.play-print),
@@ -242,3 +225,6 @@
   padding-right:max(22px,env(safe-area-inset-right,0px));
  }
 }
+
+.play-field:disabled {cursor:default;}
+.orbit-home .play-field:focus-visible {outline-color:var(--paper);outline-offset:-2px;}

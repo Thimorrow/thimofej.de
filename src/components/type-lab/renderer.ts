@@ -8,7 +8,7 @@ import { glyphEdges } from "./orbit-geometry";
 import { palettes, seedPhase, type Config } from "./config";
 import { unfoldTone } from './unfold-motion';
 
-type Story = {time:number;x:number;y:number;phase:number;spread:number;motion:number;typeScale:number};
+type Story = {waves:Wave[];time:number;x:number;y:number;phase:number;spread:number;motion:number;typeScale:number};
 
 let fontReady: Promise<FontFace> | undefined;
 
@@ -82,9 +82,18 @@ export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Conf
     let aspect = 1, cssWidth=1;
     const uniforms = (c: Config, intro: number, wall = 0, presentation = 0, story?:Story, bandLag=0) => {
       const palette = palettes[c.palette];
+      const t={...backgroundDefaults,...c.tuning};
+      const wave=(index:number)=>{
+        const w=story?.waves[index];
+        return w ? [w.x,w.y,w.age,w.variation] : [0,0,-1,0];
+      };
       const tone=story?unfoldTone(presentation):0;
       const ink=palette.ink.map((value,i)=>Math.min(1,value+(palette.background[i]-value)*tone+Math.sin(Math.PI*tone)*0.4));
-      return { material:[c.roughness ?? 0.38,c.light ?? 0,c.thickness ?? 0.045,story?1:0], view: [aspect,presentation,c.mode,wall], motion: [(story?.time ?? c.time)+(c.phase ?? 0),c.yaw,c.pitch,intro], shape: [c.depth,c.bend,c.scale,seedPhase(c)], ink: [...ink,1], paper: [...palette.background,1], story:[story?.x??0,story?.y??0,story?.phase??0,story?.spread??0], storyStyle:[story?.motion??0,story?.typeScale??1,bandLag,0] };
+      return { textWave0:wave(0),textWave1:wave(1),textWave2:wave(2),textWave3:wave(3),
+        pulseShape:[t.clickSpeed,t.clickWidth,t.clickWiden,t.clickWarp],
+        pulseLife:[t.clickDecay,t.clickLifetime,t.clickArcs,t.clickEcho],
+        pulseRebound:[t.reboundDelay,t.reboundDistance,t.reboundStrength,t.reboundDuration],
+        pulseForce:[t.clickKick,t.refraction,0,0], material:[c.roughness ?? 0.38,c.light ?? 0,c.thickness ?? 0.045,story?1:0], view: [aspect,presentation,c.mode,wall], motion: [(story?.time ?? c.time)+(c.phase ?? 0),c.yaw,c.pitch,intro], shape: [c.depth,c.bend,c.scale,seedPhase(c)], ink: [...ink,1], paper: [...palette.background,1], story:[story?.x??0,story?.y??0,story?.phase??0,story?.spread??0], storyStyle:[story?.motion??0,story?.typeScale??1,bandLag,0] };
     };
     const bindings={letters:glyphs,storyLetters,linearSampler:sampler(context,{minFilter:"linear",magFilter:"linear"}),edges:edgeBuffer};
     const textDraw=draw(context,{shader:orbitShader,vertices:192*12*6,instances:6,multisample:{alphaToCoverage:true},frontFace:"cw",set:{settings:uniforms(config,1),...bindings}});

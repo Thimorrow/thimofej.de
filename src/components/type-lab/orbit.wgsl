@@ -7,6 +7,14 @@ struct Settings {
   material: vec4f,
   story: vec4f,
   storyStyle: vec4f,
+  textWave0: vec4f,
+  textWave1: vec4f,
+  textWave2: vec4f,
+  textWave3: vec4f,
+  pulseShape: vec4f,
+  pulseLife: vec4f,
+  pulseRebound: vec4f,
+  pulseForce: vec4f,
 };
 @group(0) @binding(0) var<uniform> settings: Settings;
 @group(0) @binding(1) var letters: texture_2d<f32>;
@@ -26,6 +34,38 @@ fn ry(p:vec3f,a:f32)->vec3f{return vec3f(cos(a)*p.x+sin(a)*p.z,p.y,-sin(a)*p.x+c
 fn rx(p:vec3f,a:f32)->vec3f{return vec3f(p.x,cos(a)*p.y-sin(a)*p.z,sin(a)*p.y+cos(a)*p.z);}
 fn rz(p:vec3f,a:f32)->vec3f{return vec3f(cos(a)*p.x-sin(a)*p.y,sin(a)*p.x+cos(a)*p.y,p.z);}
 fn cameraDistance()->f32{return max(9.0,8.5/settings.view.x)+(1.0-smoothstep(0.0,1.0,settings.motion.w))*2.0;}
+// The hero's expanding pressure front and directional after-impulse,
+// applied to the ink coverage instead of moving the letter geometry.
+fn textImpulse(p:vec2f,wave:vec4f)->f32 {
+  if(wave.z<0.0){return 0.0;}
+  let age=wave.z;
+  let angle=wave.w*6.283185;
+  let d=p-vec2f(wave.x*settings.view.x,wave.y);
+  let radius=length(d);
+  let direction=d/max(radius,0.001);
+  let theta=atan2(d.y,d.x);
+  let front=(1.12+wave.w*0.16)*settings.pulseShape.x*age+settings.pulseForce.x*0.3*(1.0-exp(-age*7.0));
+  let warp=(sin(theta*3.0+angle)*0.045+sin(theta*5.0-angle)*0.022)*min(age*2.0,1.0)*settings.pulseShape.w;
+  let width=(settings.pulseShape.y+age*settings.pulseShape.z)*2.4;
+  let offset=radius-front+warp;
+  let envelope=exp(-pow(offset/(width*1.5),2.0));
+  let shoulder=exp(-pow((offset+width*2.0)/(width*2.2),2.0))*0.20*(settings.pulseLife.w/2.4);
+  let drift=0.5+0.5*sin(p.x*3.7+p.y*2.4+angle)*cos(p.y*4.1-p.x*1.6);
+  let arcs=mix(1.0-settings.pulseLife.z,1.0,smoothstep(0.15,0.85,drift));
+  let release=exp(-age*settings.pulseLife.x)*(1.0-smoothstep(settings.pulseLife.y*0.62,settings.pulseLife.y,age));
+  var pressure=(envelope-shoulder)*release*(1.0-exp(-age*35.0))*arcs;
+  let elapsed=age-settings.pulseRebound.x;
+  if(elapsed>0.0 && elapsed<settings.pulseRebound.w){
+    let progress=elapsed/settings.pulseRebound.w;
+    let axis=vec2f(cos(angle),sin(angle));
+    let facing=pow(smoothstep(-0.25,1.0,dot(direction,axis)),1.5);
+    let afterFront=settings.pulseRebound.y*(1.0-pow(1.0-progress,3.0));
+    let afterEnvelope=exp(-pow((radius-afterFront)/(0.10+progress*0.07),2.0));
+    let life=smoothstep(0.0,0.16,progress)*(1.0-smoothstep(0.32,1.0,progress));
+    pressure+=afterEnvelope*facing*life*settings.pulseRebound.z;
+  }
+  return pressure;
+}
 @vertex fn vs_main(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->Out {
   let wall=settings.view.w;
   let strip=f32(ii/2u);
@@ -126,6 +166,14 @@ fn lightResponse(n:vec3f,v:vec3f,l:vec3f,rough:f32,base:vec3f)->vec3f{
 @fragment fn fs_main(i:Out)->@location(0) vec4f{
   let uv=vec2f(fract(i.uv.x),i.uv.y);
   var mask=textureSample(letters,linearSampler,uv).r;
+  var pigment=1.0;
+  let screen=i.world.xy*2.1/(cameraDistance()-i.world.z);
+  let inkWave=settings.material.w>0.5 && settings.view.y>0.84 && settings.storyStyle.x>0.0
+    && max(max(settings.textWave0.z,settings.textWave1.z),max(settings.textWave2.z,settings.textWave3.z))>=0.0;
+  var pressure=0.0;
+  if(inkWave){
+    pressure=textImpulse(screen,settings.textWave0)+textImpulse(screen,settings.textWave1)+textImpulse(screen,settings.textWave2)+textImpulse(screen,settings.textWave3);
+  }
   if(settings.material.w>0.5 && settings.view.y>0.48){
     // Retire the second ring repetition as the first word opens into the page.
     let inkMask=textureSample(storyLetters,linearSampler,uv).r*select(0.0,1.0,i.uv.x<=1.0);
@@ -135,7 +183,14 @@ fn lightResponse(n:vec3f,v:vec3f,l:vec3f,rough:f32,base:vec3f)->vec3f{
       let texel=vec2f(stroke/2048.0,stroke/384.0);
       let inside=min(min(textureSample(storyLetters,linearSampler,uv+vec2f(texel.x,0)).r,textureSample(storyLetters,linearSampler,uv-vec2f(texel.x,0)).r),min(textureSample(storyLetters,linearSampler,uv+vec2f(0,texel.y)).r,textureSample(storyLetters,linearSampler,uv-vec2f(0,texel.y)).r));
       let erosion=smoothstep(0.84,1.0,settings.view.y);
-      outlined=select(inkMask,inkMask*(1.0-smoothstep(1.0-erosion,1.04-erosion,inside)),u32(i.strip)%2u==1u);
+      let contour=inkMask*(1.0-smoothstep(1.0-erosion,1.04-erosion,inside));
+      let odd=u32(i.strip)%2u==1u;
+      outlined=select(inkMask,contour,odd);
+      if(inkWave){
+        let fill=smoothstep(0.015,0.36,max(pressure,0.0));
+        pigment=mix(select(1.0,contour,odd),select(contour,1.0,odd),fill);
+        outlined=inkMask;
+      }
     }
     let change=smoothstep(0.48,0.66,settings.view.y);
     let changed=mix(mask,outlined,change);
@@ -172,6 +227,13 @@ fn lightResponse(n:vec3f,v:vec3f,l:vec3f,rough:f32,base:vec3f)->vec3f{
     let paper=mix(settings.paper.xyz,vec3f(0.141,0.102,0.086),smoothstep(0.12,0.72,settings.view.y));
     color=mix(paper,color,i.visibility);
     opacity=1.0;
+  }
+  if(inkWave){
+    // Blend pigment, not alpha: multisample coverage would stipple the fill.
+    let glow=exp(-dot(screen-vec2f(-0.25,0.35),screen-vec2f(-0.25,0.35))*1.1);
+    let shadow=exp(-pow(screen.x/0.55,2.0)-pow((screen.y+0.61)/0.075,2.0))*0.08;
+    let paper=vec3f(0.141,0.102,0.086)*(0.96+glow*0.08-shadow);
+    color=mix(paper,color,pigment);
   }
   return vec4f(color,select(smoothstep(0.1,0.9,mask),1.0,i.wall>0.5)*opacity);
 }

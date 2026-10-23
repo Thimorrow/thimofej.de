@@ -4,7 +4,7 @@ import { createTypeRenderer } from "./renderer";
 import { coast, createBandLag, follow, rotateYaw, touchDragIntent } from "./orbit-motion";
 import { advanceWaves, createWave, insideSculpture, type Wave } from "./background-wave";
 import type { Config } from "./config";
-import { nearestUnfoldPhase, type UnfoldInput } from './unfold-motion';
+import { advancePrintWaves, nearestUnfoldPhase, type UnfoldInput } from './unfold-motion';
 
 export function TypeScene({ config, playing, regenerate, presentation, unfold, onReady }: { unfold?: MutableRefObject<UnfoldInput>; onReady?: (ready:boolean)=>void; presentation?: MutableRefObject<number>; config: MutableRefObject<Config>; playing: MutableRefObject<boolean>; regenerate: () => void }) {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -64,13 +64,14 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
         if (playing.current && !reduced) waves=advanceWaves(waves,dt,config.current.tuning?.clickLifetime ?? 4.5);
         const intro = reduced || !playing.current || config.current.time > 10 ? 1 : orbit ? Math.min(age/2.8,1) : 1-Math.pow(1-Math.min(age/2.1,1),4);
         const input=unfold?.current;
+        if(input) input.waves=advancePrintWaves(input.waves,dt,playing.current && !reduced,presentation?.current ?? 0,config.current.tuning?.clickLifetime ?? 4.5);
         const tuning=input?.tuning.current;
         if(input && tuning) {
           const smooth=(from:number,to:number)=>reduced || !playing.current ? to : follow(from,to,dt);
           pointerX=smooth(pointerX,playing.current?input.x:0);pointerY=smooth(pointerY,playing.current?input.y:0);
           printPhase=smooth(printPhase,nearestUnfoldPhase(printPhase,tuning.seed%1000/100));
         }
-        const story=tuning?{time:orbitTime,x:pointerX,y:pointerY,phase:printPhase,spread:tuning.spread,motion:reduced || !playing.current?0:tuning.motion,typeScale:tuning.typeScale}:undefined;
+        const story=tuning?{waves:input!.waves,time:orbitTime,x:pointerX,y:pointerY,phase:printPhase,spread:tuning.spread,motion:reduced || !playing.current?0:tuning.motion,typeScale:tuning.typeScale}:undefined;
         try { const signature=JSON.stringify(config.current)+intro+JSON.stringify(waves)+(presentation?.current ?? 0)+JSON.stringify(story)+bandLag; if (signature !== drawn) { renderer.render(config.current,intro,waves,presentation?.current ?? 0,story,bandLag); drawn=signature; } } catch(e) { fail(e instanceof Error ? e.message : "Renderfehler"); return; }
       }
       raf = requestAnimationFrame(tick);
