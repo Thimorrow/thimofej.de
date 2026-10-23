@@ -61,7 +61,7 @@ export function OrbitHome() {
           else if(anchorEntered) anchoredSection='';
         }
         return {section,bounds,reveals:reveals.map(({node,property})=>({
-          property,value:still || (anchor && anchorEntered) || !node ? 1 : portraitReveal(node.getBoundingClientRect().top,innerHeight),
+          property,value:still || (anchor && anchorEntered) || !node ? 1 : portraitReveal(node.getBoundingClientRect().top,innerHeight,section.id==='ueber-mich' ? .55 : .28),
         }))};
       });
       const distance=Math.max(1,innerHeight*0.95);

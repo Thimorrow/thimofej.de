@@ -1,5 +1,11 @@
 # Orbit-Labor: akzeptierter Zwischenstand
 
+## Persönliche Vorstellung: früherer Endzustand (23. Oktober 2026, lokal)
+
+Nutzerrückmeldung anhand der Ansicht mit vollständig sichtbarem Namen, Foto und Alter: Hier soll bereits alles im Endzustand sein. Der Einstieg bleibt bei 77% Bildschirmhöhe; Name, Foto, Alter und die daran gekoppelte Bio schließen ihren Aufbau jetzt bei 55% statt 28% ab. Die Messung folgt weiterhin der jeweiligen Elementposition und bleibt rückwärts scrollbar. Academy verwendet weiterhin die bisherigen 77%/28%; Hero und akzeptierte Hintergrundwerte unverändert.
+
+Geprüft: lokale Desktop- und 390×844-Ansicht mit WebGPU, sichtbare Zwischenphase, wiederholter Vorwärts-/Rückwärtslauf und vollständig zusammengesetztes Foto samt ausgerichteter 15 bei der Screenshot-Position (Fotooberkante etwa 46% Bildschirmhöhe). Alle betroffenen Transformationen dort im Endzustand; kein horizontaler Überlauf. Pause, reduzierte Bewegung und Abschnittssprung geprüft. TypeScript, betroffenes ESLint und alle 41 Tests einschließlich Timing-Regressionstest erfolgreich. Für diese begrenzte Timingkorrektur kein neuer Produktionsbuild, Commit, Push oder Deployment. Gestalterische Nutzerabnahme offen.
+
 ## Tintenanimation veröffentlicht (23. Oktober 2026)
 
 Auf „Mach live“ wurde die gewählte Tintenanimation als `770fad872ecb9baeae5162af32864026958ed0fd` auf `codex/feat/vgpu-homepage` gesichert und gepusht. Bestehende Git-Identität Thimorrow erhalten. Vollständiges ESLint zusätzlich erfolgreich; TypeScript, 40 Tests und Produktionsbuild für diese Fassung bereits lokal geprüft.

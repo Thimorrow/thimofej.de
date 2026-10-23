@@ -51,7 +51,7 @@ test('the shared GPU shader exposes the separate identity texture and complete p
   assert.ok(settings.layout.members.some(member=>member.name==='storyStyle'));
 });
 
-test('personal elements wait until visible and reverse consistently without hiding anchor visits',()=>{
+test('section elements wait until visible and reverse consistently without hiding anchor visits',()=>{
   for(const viewport of [640,844,1080]) {
     assert.equal(portraitReveal(viewport,viewport),0);
     assert.equal(portraitReveal(viewport*.77,viewport),0);
@@ -63,5 +63,21 @@ test('personal elements wait until visible and reverse consistently without hidi
     const values=tops.map(top=>portraitReveal(top,viewport));
     assert.ok(values.every((value,i)=>value>=0&&value<=1&&(!i||value>=values[i-1])));
     assert.deepEqual([...tops].reverse().map(top=>portraitReveal(top,viewport)).reverse(),values);
+  }
+});
+
+test('personal composition settles by the reading position without moving its entry earlier',()=>{
+  for(const viewport of [640,844,866,1080]) {
+    const reveal=top=>portraitReveal(top,viewport,.55);
+    assert.equal(reveal(viewport),0);
+    assert.equal(reveal(viewport*.77),0);
+    assert.ok(reveal(viewport*.66)>0 && reveal(viewport*.66)<1);
+    for(const position of [.55,.50,.46,.28,0,-1]) assert.equal(reveal(viewport*position),1);
+    // The Academy keeps its longer build while the personal composition is complete.
+    assert.ok(portraitReveal(viewport*.46,viewport)<1);
+    const tops=Array.from({length:101},(_,i)=>(100-i)*viewport/100);
+    const values=tops.map(reveal);
+    assert.ok(values.every((value,i)=>value>=0&&value<=1&&(!i||value>=values[i-1])));
+    assert.deepEqual([...tops].reverse().map(reveal).reverse(),values);
   }
 });
