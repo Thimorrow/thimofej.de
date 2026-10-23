@@ -1,8 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
   <title id="title">Thimofej Zapko</title>
-  <desc id="desc">A white T and cyan Z on midnight blue</desc>
-  <rect width="64" height="64" rx="14" fill="#070a12"/>
-  <rect x=".5" y=".5" width="63" height="63" rx="13.5" fill="none" stroke="#25343f"/>
-  <path d="M10 17h24v6h-9v25h-7V23h-8z" fill="#e8ecf4"/>
-  <path d="M37 17h17v6L42 42h13v6H34v-6l13-19H37z" fill="#21e6ff"/>
+  <desc id="desc">Dunkles t auf mandarinfarbenem Grund</desc>
+  <rect width="64" height="64" rx="14" fill="#e95b30"/>
+  <path d="M24 16 36 11v13h12v6H36v14c0 4 2 6 5 6 3 0 5-2 7-4v6c-3 3-7 5-12 5-8 0-12-4-12-12V30h-8v-6h8Z" fill="#241a16"/>
 </svg>
