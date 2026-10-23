@@ -1,25 +1,27 @@
-import Image from 'next/image';
+import AcademyDemo from '../academy/AcademyDemo';
 import './academy-work.css';
 
 export function AcademyWork() {
   return <section className="academy-work oh-panel" id="academy" aria-labelledby="academy-work-title">
-    <p className="academy-work-role">Frontend bei yesterday</p>
-    <a className="academy-work-link" href="/projects/academy" aria-label="yesterday Academy: meine Arbeit und die Produktdemo ansehen">
-      <div className="academy-work-heading">
-        <span className="academy-work-by">yesterday</span>
-        <h2 id="academy-work-title" className="academy-work-title" aria-label="Academy" data-title="Academy"><span className="academy-work-ink">Academy</span></h2>
-        <span className="academy-work-arrow" aria-hidden="true">↗</span>
-      </div>
-      <div className="academy-work-note">
-        <p>Die Lernplattform, an der ich mit dem Team arbeite.</p>
-        <span className="academy-work-visit">Die Arbeit ansehen <span aria-hidden="true">↗</span></span>
-      </div>
-      <div className="academy-work-visual">
-        <div className="academy-work-sheet">
-          <Image className="academy-work-desktop" src="/lab-home/academy-catalog.png" alt="Produktdemo der Academy mit Missionskatalog und Lernaufgaben" width={1414} height={688} sizes="72vw"/>
-          <Image className="academy-work-mobile" src="/lab-home/academy-mobile.png" alt="Mobile Academy-Produktdemo: Lernaufgabe Dein Personal Handbook" width={612} height={968} sizes="290px"/>
+    <div className="academy-work-inner">
+      <p className="academy-work-role">Frontend bei yesterday <span>Ein Teamprojekt</span></p>
+      <div className="academy-work-intro">
+        <div className="academy-work-heading">
+          <span className="academy-work-by">yesterday</span>
+          <h2 id="academy-work-title" className="academy-work-title" aria-label="Academy" data-title="Academy"><span className="academy-work-ink">Academy</span></h2>
+        </div>
+        <div className="academy-work-note">
+          <p>KI lernen.<br/>An der eigenen Arbeit.</p>
+          <a className="academy-work-link" href="/projects/academy">Meine Arbeit ansehen <span aria-hidden="true">↗</span></a>
         </div>
       </div>
-    </a>
+      <div className="academy-work-visual">
+        <div className="academy-work-sheet"><AcademyDemo loop /></div>
+      </div>
+      <div className="academy-work-bottom">
+        <p>Ich arbeite mit dem Team an der Oberfläche.<br/>Vom Finden einer Mission bis zum fertigen Dokument.</p>
+        <span>Automatische Produktdemo · ohne Live-KI</span>
+      </div>
+    </div>
   </section>;
 }

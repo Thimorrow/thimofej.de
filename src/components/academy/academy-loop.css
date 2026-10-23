@@ -1,0 +1,41 @@
+/* The same product surface, with a deterministic, hands-free presentation. */
+.academy-loop { border-radius:12px; }
+.academy-loop-toolbar { position:relative; display:flex; justify-content:space-between; align-items:center; gap:16px; min-height:60px; padding:8px 20px; background:#f4e9dc; color:#241a16; font:12px/1.5 var(--font-ibm-plex-mono),monospace; }
+.academy-loop-phase { display:flex; align-items:center; gap:14px; }
+.academy-loop-phase>span { color:#765b4c; font-variant-numeric:tabular-nums; }
+.academy-loop-toolbar button { display:flex; align-items:center; justify-content:center; gap:12px; min-height:44px; min-width:88px; border:0; background:transparent; cursor:pointer; }
+.academy-loop-toolbar button:active { opacity:.6; }
+.academy-loop-toolbar button:focus-visible { outline:2px solid #241a16; outline-offset:0; }
+.academy-loop-progress { position:absolute; bottom:0; left:0; width:100%; height:2px; background:#b63816; transform-origin:left; }
+.academy-loop .demo-shell { height:660px; overflow:hidden; }
+.academy-loop .demo-catalog-layout { min-height:0; }
+.academy-loop .session-shell.demo-workspace { height:548px; }
+.academy-loop .demo-chat-actions>.btn,.academy-loop .demo-suggestions,.academy-loop .demo-input-hint,.academy-loop .ai-disclaimer,.academy-loop .demo-mobile-switch,.academy-loop .demo-topbar .actions,.academy-loop .artifact-header .btn,.academy-loop .artifact-footer,.academy-loop .demo-complete .btn { display:none; }
+.academy-loop .chat-input-textarea:disabled { opacity:1; }
+.academy-loop .demo-workspace.demo-show-result { grid-template-columns:210px minmax(0,1fr); }
+.academy-loop .demo-show-result>.chat-pane { display:none; }
+.academy-loop .demo-show-result>.artifact-panel { display:flex; }
+@media(hover:hover) and (pointer:fine) { .academy-loop-toolbar button:hover { text-decoration:underline; text-underline-offset:4px; } }
+@media(max-width:1100px) { .academy-loop .demo-workspace.demo-show-result { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:700px) {
+  .academy-loop-toolbar { padding-inline:12px; font-size:10px; gap:8px; }
+  .academy-loop-phase { gap:8px; }
+  .academy-loop-toolbar button { min-width:74px; gap:8px; }
+  .academy-loop .demo-shell { height:620px; }
+  .academy-loop .session-shell.demo-workspace { height:506px; }
+  .academy-loop .demo-mission-grid>li:not(:first-child) { display:none; }
+  .academy-loop .demo-catalog-note,.academy-loop .controls-bar,.academy-loop .demo-catalog-count { display:none; }
+}
+.academy-loop .chat-scroll-body { padding-top:16px; }
+.academy-loop .chat-scroll-body::after { height:16px; margin-top:-16px; }
+.academy-loop .demo-show-result .artifact-sections { max-width:720px; margin-inline:auto; }
+.academy-loop .demo-show-result .artifact-header { justify-content:center; }
+.academy-loop .demo-show-result .artifact-title { text-align:center; }
+@media(max-width:700px) {
+  .academy-loop .chat-scroll-body>.chat-track,.academy-loop .message-list { padding-inline:4px; }
+  .academy-loop .message-row { gap:8px; }
+  .academy-loop .message-avatar-slot { width:24px; flex-basis:24px; }
+  .academy-loop .message-body { font-size:14px; }
+  .academy-loop .demo-catalog-content .screen-inner { padding:16px; }
+  .academy-loop .demo-catalog-content .page-head { margin-bottom:16px; }
+}

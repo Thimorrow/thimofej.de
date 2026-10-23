@@ -1,5 +1,23 @@
 # Orbit-Labor: akzeptierter Zwischenstand
 
+## Academy-Überarbeitung und automatischer Loop (24. Oktober 2026, lokal)
+
+Auftrag: Academy auf Homepage und Detailseite verbessern; zusätzliche Nutzeranweisung, die Demo selbstständig als Loop laufen zu lassen.
+
+- Homepage: größere echte Produktansicht statt statischem Screenshot, klar getrennter Projektlink, gemeinsame dunkle Academy-Komposition mit Mandarine und heller Leseschrift. Bestehende scrollgesteuerte Titelfüllung und Produktaufbau erhalten, Bildbewegung ruhiger ausgerichtet. Persönlicher Abschnitt, Hero und akzeptierte Hintergrundparameter unverändert.
+- Detailseite: gleiche Gestaltung, Produkt früher im Seitenverlauf, kompakte Rollenangaben und drei konkrete Beiträge zu Katalog, Chat und Dokument. Zusätzliche Detailarbeit separat kurz genannt. Keine neuen Leistungsbehauptungen oder Abhängigkeiten.
+- Beide eingebetteten Demos verwenden dieselbe vorhandene Academy-Oberfläche im automatischen Modus. Rund 37 Sekunden: Katalog, vier Fragen mit sichtbar geschriebenen Beispielantworten, fertiges Dokument mit automatischem Durchscrollen, sauberer Neustart. Fester lokaler Ablauf ohne Live-KI. Mitmach-Demo unter `/projects/academy/demo` weiter erreichbar.
+- Eigene Pause, automatische Unterbrechung außerhalb des sichtbaren Bereichs und in inaktiven Tabs. Reduzierte Bewegung startet pausiert. Globale Homepage-Pause hält auch den Loop an; der lokale Schalter zeigt dann „Seite pausiert“. Automatische Wechsel verschieben keinen Tastaturfokus, die Demo-Oberfläche ist im Loop nicht interaktiv; Bedienung über den äußeren Player und die separate Mitmach-Demo.
+- Prüfungen: TypeScript, betroffenes ESLint, alle 43 Tests und Produktionsbuild erfolgreich. Zwei neue Ablaufprüfungen sichern Schreiben/Senden, vollständiges Ergebnis, Wiederholungen und Dokument-Scrollverlauf. Weiterhin 16 vorhandene CSS-Keyframe-Warnungen aus der unveränderten `catalog/catalog.css`.
+- Browser: 1440, 820, 390 und 320 Pixel; keine horizontalen Seitenüberläufe in den geprüften Ansichten. Vollständiger mobiler Loop bis zum zweiten Katalogdurchlauf, Texteingabephase und Ergebnis visuell geprüft. Lokale Pause hält den Fortschritt stabil; globale Pause inklusive Beschriftung, Offscreen-Stillstand, reduzierte Bewegung, sichtbarer 2px-Tastaturfokus und Enter geprüft. Projektlink und Rücklink zu vollständig aufgebautem `/#academy` funktionieren. Eigene Antwort in der interaktiven Mobil-Demo erscheint im Ergebnis. Keine aufgezeichneten Laufzeitfehler im instrumentierten Homepage-Abschlusslauf.
+- Vorschau: http://localhost:3000/#academy und http://localhost:3000/projects/academy. Nur lokal umgesetzt; kein Commit, Push oder Deployment. Echtes Handy und gestalterische Nutzerabnahme offen. Bereits vorhandene Änderungen in dieser Statusdatei erhalten.
+
+## Persönliches Timing veröffentlicht (23. Oktober 2026)
+
+Auf „Mach push“ als `ae1af16c610dce90ce05864383bae4fae59152e9` auf `codex/feat/vgpu-homepage` gesichert und gepusht. Anschließend auf „auf live pls“ veröffentlicht: Vercel-Produktion `dpl_EfXRqkTx3hcdZ8um6qwgZXu3rVDS` ist `READY`, weist genau diesen Commit aus und ist ohne Aliasfehler `thimofej.de` sowie `www.thimofej.de` zugeordnet. Produktionsbuild erfolgreich (rund 20 Sekunden). Die direkte Promotion der Vorschau wurde von Vercel mit 422 abgelehnt; stattdessen denselben Stand für Produktion neu gebaut. Deployment: https://thimofej-fcicniw29-zapkothimofej-2616s-projects.vercel.app.
+
+Direkt auf https://thimofej.de geprüft: WebGPU bereit, Desktop und 390×844, vollständiges Foto sowie ausgerichteter Name und 15 an der vorgegebenen Scrollposition, wiederholter Vorwärts-/Rückwärtslauf ohne Zustandsabweichung und kein horizontaler Überlauf. Keine erfassten Laufzeitfehler während des zusätzlichen instrumentierten Scrolllaufs. Die nachfolgenden lokalen Angaben beschreiben den vorherigen Prüfstand und sind hinsichtlich Commit, Push und Veröffentlichung überholt.
+
 ## Persönliche Vorstellung: früherer Endzustand (23. Oktober 2026, lokal)
 
 Nutzerrückmeldung anhand der Ansicht mit vollständig sichtbarem Namen, Foto und Alter: Hier soll bereits alles im Endzustand sein. Der Einstieg bleibt bei 77% Bildschirmhöhe; Name, Foto, Alter und die daran gekoppelte Bio schließen ihren Aufbau jetzt bei 55% statt 28% ab. Die Messung folgt weiterhin der jeweiligen Elementposition und bleibt rückwärts scrollbar. Academy verwendet weiterhin die bisherigen 77%/28%; Hero und akzeptierte Hintergrundwerte unverändert.

@@ -6,6 +6,9 @@ import { appendAnswer, missions, resultMarkdown, type DemoMission } from './miss
 import { ArtifactPanel, Glyph, MissionCard, StatusFilter, StepRail } from './CatalogParts';
 import './catalog/catalog.css';
 import './academy-demo.css';
+import './academy-loop.css';
+import { demoLoopFrame } from './demo-loop';
+import { useDemoLoop } from './use-demo-loop';
 
 type Filter = 'all' | 'started' | 'completed';
 
@@ -13,22 +16,27 @@ function TomoFace() {
   return <Image unoptimized src="/projects/academy/catalog/tomo-face-chat.svg" alt="" width={28} height={28} />;
 }
 
-export default function AcademyDemo() {
+export default function AcademyDemo({ loop = false }: { loop?: boolean }) {
+  const { root: loopRoot, time: loopTime, paused: loopPaused, pagePaused, running: loopRunning, toggle: toggleLoop } = useDemoLoop(loop);
+  const frame = demoLoopFrame(loopTime, missions[0]);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selectedMission, setSelected] = useState<string | null>(null);
   const [runs, setRuns] = useState<Record<string, string[]>>({});
-  const [draft, setDraft] = useState('');
+  const [inputDraft, setDraft] = useState('');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
-  const [mobileView, setMobileView] = useState<'chat' | 'result' | 'steps'>('chat');
+  const [interactiveView, setMobileView] = useState<'chat' | 'result' | 'steps'>('chat');
   const [tour, setTour] = useState(false);
   const [feedback, setFeedback] = useState('');
   const log = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const mounted = useRef(false);
+  const selected = loop ? frame.selected : selectedMission;
+  const draft = loop ? frame.draft : inputDraft;
+  const mobileView = loop ? frame.view : interactiveView;
   const mission = missions.find(m => m.id === selected);
-  const answers = mission ? (runs[mission.id] ?? []) : [];
+  const answers = loop ? frame.answers : mission ? (runs[mission.id] ?? []) : [];
   const count = answers.length;
   const complete = !!mission && count >= mission.steps.length;
   const step = mission?.steps[count];
@@ -39,17 +47,29 @@ export default function AcademyDemo() {
   });
 
   useEffect(() => {
-    if (mounted.current) heading.current?.focus({ preventScroll: true });
+    if (mounted.current && !loop) heading.current?.focus({ preventScroll: true });
     mounted.current = true;
-  }, [selected]);
+  }, [selected, loop]);
 
   useEffect(() => {
     if (input.current) { input.current.style.height = 'auto'; input.current.style.height = `${input.current.scrollHeight}px`; }
   }, [draft, selected]);
 
   useEffect(() => {
-    if (log.current) log.current.scrollTop = log.current.scrollHeight;
+    const node = log.current;
+    if (!node) return;
+    const follow = () => { node.scrollTop = node.scrollHeight; };
+    follow();
+    const observer = new ResizeObserver(follow);
+    observer.observe(node);
+    return () => observer.disconnect();
   }, [selected, count]);
+
+  useEffect(() => {
+    if (!loop) return;
+    const document = loopRoot.current?.querySelector<HTMLElement>('.artifact-scroll');
+    if (document) document.scrollTop = frame.resultProgress * (document.scrollHeight - document.clientHeight);
+  }, [loop, loopRoot, frame.resultProgress]);
 
   useEffect(() => {
     if (!tour || !mission || complete) return;
@@ -99,9 +119,10 @@ export default function AcademyDemo() {
   };
 
   return (
-    <div className="academy-modules ad-app" data-theme={theme} lang="de">
-      <div className="demo-disclosure"><details><summary>Interaktive Produktdemo</summary><p>Module aus academy-design, verbunden mit einem festen Demo-Ablauf ohne Live-KI. Deine Eingaben bleiben in diesem Browser und werden beim Neuladen zurückgesetzt.</p></details><button type="button" className="btn btn-ghost" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? 'Dunkel anzeigen' : 'Hell anzeigen'}</button></div>
-      <div className="demo-shell" data-app="academy">
+    <div ref={loopRoot} className={`academy-modules ad-app${loop ? ' academy-loop' : ''}`} data-theme={theme} lang="de" data-loop-phase={loop ? frame.phase : undefined} data-loop-running={loop ? loopRunning : undefined}>
+      {loop && <div className="academy-loop-toolbar"><span className="academy-loop-phase"><span aria-hidden="true">{frame.selected ? frame.view === 'result' ? '03' : '02' : '01'}</span>{frame.phase}</span><button type="button" onClick={toggleLoop} disabled={pagePaused} title={pagePaused ? 'Mit der Wiedergabetaste der Seite fortsetzen' : undefined} aria-label={pagePaused ? 'Academy-Demo: Seite pausiert' : loopPaused ? 'Academy-Demo abspielen' : 'Academy-Demo pausieren'}>{pagePaused ? 'Seite pausiert' : loopPaused ? 'Abspielen' : 'Pause'} <span aria-hidden="true">{pagePaused || loopPaused ? '▷' : 'Ⅱ'}</span></button><span className="academy-loop-progress" aria-hidden="true" style={{ transform: `scaleX(${frame.progress})` }}/></div>}
+      {!loop && <div className="demo-disclosure"><details><summary>Interaktive Produktdemo</summary><p>Module aus academy-design, verbunden mit einem festen Demo-Ablauf ohne Live-KI. Deine Eingaben bleiben in diesem Browser und werden beim Neuladen zurückgesetzt.</p></details><button type="button" className="btn btn-ghost" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? 'Dunkel anzeigen' : 'Hell anzeigen'}</button></div>}
+      <div className="demo-shell" data-app="academy" inert={loop ? true : undefined}>
         {!mission ? (
           <div className="demo-catalog-layout">
             <aside className="sidebar demo-sidebar" data-component="app-sidebar" data-app="academy" data-state="expanded" data-mobile-open="false" aria-label="Academy-Navigation">
@@ -137,7 +158,7 @@ export default function AcademyDemo() {
           </>
         )}
       </div>
-      <div className="demo-status-announcement" role="status">{feedback || (complete ? 'Mission abgeschlossen. Dein Ergebnis ist bereit.' : mission ? `Phase ${count + 1} / ${mission.steps.length} · ${step?.title}` : 'Wähle eine von drei Missionen.')}</div>
+      {!loop && <div className="demo-status-announcement" role="status">{feedback || (complete ? 'Mission abgeschlossen. Dein Ergebnis ist bereit.' : mission ? `Phase ${count + 1} / ${mission.steps.length} · ${step?.title}` : 'Wähle eine von drei Missionen.')}</div>}
     </div>
   );
 }

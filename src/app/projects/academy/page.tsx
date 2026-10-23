@@ -5,63 +5,62 @@ import "./academy-project.css";
 
 export const metadata: Metadata = {
   title: "yesterday Academy | Thimofej Zapko",
-  description: "Mein Frontend-Beitrag zur yesterday Academy: vom Missionskatalog über den Chat bis zum Ergebnis. Ein Teamprojekt mit interaktiver Produktdemo.",
+  description: "Mein Frontend-Beitrag zur yesterday Academy: vom Missionskatalog über den Chat bis zum Ergebnis. Ein Teamprojekt mit einer automatisch laufenden Produktdemo.",
   alternates: { canonical: "/projects/academy" },
   openGraph: { locale: "de_DE" },
 };
 
 const contributions = [
-  { title: "Die nächste Mission finden.", text: "Ich habe am zeitlich geordneten Missionskatalog mit Heute-Markierung gearbeitet und daran, dass die Seitenleiste zeigt, wer angemeldet ist." },
-  { title: "Im Gespräch bleiben.", text: "Den vollständigen Chatverlauf zugänglich machen, das Eingabefeld mit dem Entwurf wachsen lassen und lange Prompts sauber umbrechen: kleine Änderungen an einem zentralen Ort." },
-  { title: "Das Ergebnis mitnehmen.", text: "Dokumente mit einem Klick kopieren und Kapitel im Ergebnis klar voneinander trennen. Damit die Arbeit nach der Mission weitergehen kann." },
-  { title: "Auch dazwischen aufpassen.", text: "Einheitliche Buttons und Tooltips, verständlichere Fehler bei Direktlinks und Dialoge, deren Höhe beim Laden stabil bleibt. Diese Details gehören für mich zur Oberfläche dazu." },
+  { title: "Orientierung, bevor es losgeht.", label: "Missionskatalog", text: "Ein zeitlich geordneter Katalog mit Heute-Markierung. Und eine Seitenleiste, die zeigt, wer angemeldet ist. Daran habe ich im Team gearbeitet." },
+  { title: "Platz für das Gespräch.", label: "Chat mit Tomo", text: "Der vollständige Chatverlauf bleibt zugänglich. Das Eingabefeld wächst mit dem Entwurf, lange Prompts brechen sauber um." },
+  { title: "Ein Ergebnis zum Mitnehmen.", label: "Dokumente", text: "Kapitel klar voneinander trennen und Dokumente mit einem Klick kopieren. Damit die Arbeit nach der Mission weitergehen kann." },
 ];
 
 export default function AcademyProject() {
   return (
     <main id="main" className="academy-page" lang="de">
+      <a className="academy-skip" href="#preview">Zur Produktdemo</a>
       <header className="academy-header academy-frame">
-        <Link className="academy-wordmark" href="/">Thimorrow.</Link>
+        <Link className="academy-wordmark" href="/">thimofej.</Link>
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- Native navigation preserves the cross-document page transition. */}
-        <a className="academy-back" href="/#academy"><span aria-hidden="true">↖</span> Zurück</a>
+        <a className="academy-back" href="/#academy"><span aria-hidden="true">↖</span> Zurück zum Spielraum</a>
       </header>
       <article>
         <section className="academy-intro academy-frame" aria-labelledby="academy-title">
-          <h1 id="academy-title" className="academy-title"><span>yesterday</span><span>Academy.</span></h1>
-          <div className="academy-intro-bottom">
-            <dl className="academy-meta">
-              <div><dt>Mein Beitrag</dt><dd>Frontend im Team</dd></div>
-              <div><dt>In der App</dt><dd>SvelteKit · TypeScript</dd></div>
-            </dl>
+          <div className="academy-intro-top">
+            <h1 id="academy-title" className="academy-title"><span>yesterday</span><span>Academy.</span></h1>
             <div className="academy-intro-copy">
-              <p className="academy-lede">KI lernen an der eigenen Arbeit.</p>
-              <p>Zwischen den Trainingstagen bearbeiten Teams eigene Aufgaben, begleitet von KI-Tutor Tomo. Ich entwickle mit dem Team die Oberfläche dafür: vom Missionskatalog bis zum Dokument.</p>
-              <a className="academy-text-link" href="#preview">Selbst ausprobieren <span aria-hidden="true">↓</span></a>
+              <p className="academy-lede">KI lernen.<br/>An der eigenen Arbeit.</p>
+              <p>Teams bearbeiten eigene Aufgaben, begleitet von KI-Tutor Tomo. Ich arbeite mit dem Team an der Oberfläche dafür.</p>
+              <a className="academy-text-link" href="#beitrag">Mein Beitrag <span aria-hidden="true">↓</span></a>
             </div>
           </div>
+          <dl className="academy-meta">
+            <div><dt>Meine Rolle</dt><dd>Frontend im Team</dd></div>
+            <div><dt>Produkt</dt><dd>Lernplattform mit KI-Tutor</dd></div>
+            <div><dt>In der App</dt><dd>SvelteKit · TypeScript</dd></div>
+          </dl>
         </section>
-        <section id="preview" className="academy-preview" aria-labelledby="preview-title">
+        <section id="preview" className="academy-preview academy-frame" aria-label="Automatische Produktdemo der Academy">
+          <div className="academy-demo-preview"><AcademyDemo loop /></div>
+          <div className="academy-preview-bottom">
+            <p className="academy-caption">Ein Beispiel vom Katalog bis zum Dokument.<br/>Automatischer Demo-Ablauf mit Beispieldaten, ohne Live-KI.</p>
+            <Link className="academy-text-link" href="/projects/academy/demo">Selbst ausprobieren <span aria-hidden="true">↗</span></Link>
+          </div>
+        </section>
+        <section id="beitrag" className="academy-story" aria-labelledby="contribution-title">
           <div className="academy-frame">
-            <div className="academy-preview-heading">
-              <div><p className="academy-kicker">Ein Blick ins Produkt</p><h2 id="preview-title" className="academy-section-title">Vom Gespräch zum Ergebnis.</h2></div>
-              <Link className="academy-text-link" href="/projects/academy/demo">Demo im Vollformat <span aria-hidden="true">↗</span></Link>
-            </div>
-            <div className="academy-demo-preview"><AcademyDemo /></div>
-            <p className="academy-caption">Interaktive Nachbildung mit festem Demo-Ablauf, ohne Live-KI. Deine Eingaben bleiben in diesem Browser und gehen beim Neuladen verloren.</p>
+            <div className="academy-story-heading"><p className="academy-kicker">Mein Beitrag</p><h2 id="contribution-title" className="academy-section-title">Vom Katalog<br/>zum Dokument.</h2><p>Vom Finden der richtigen Mission bis zum fertigen Dokument: An diesen Stellen habe ich die Oberfläche mitentwickelt.</p></div>
+            <ol className="academy-contributions">{contributions.map((item, index) => <li key={item.title}><div className="academy-contribution-label"><span>0{index + 1}</span><span>{item.label}</span></div><h3>{item.title}</h3><p>{item.text}</p></li>)}</ol>
+            <div className="academy-details"><span>Und dazwischen?</span><p>Einheitliche Buttons und Tooltips, verständlichere Fehler bei Direktlinks und Dialoge, die beim Laden nicht springen.</p></div>
           </div>
-        </section>
-        <section className="academy-story academy-frame" aria-labelledby="contribution-title">
-          <div className="academy-story-heading">
-            <p className="academy-kicker">Mein Beitrag</p>
-            <h2 id="contribution-title" className="academy-section-title">Vom Katalog bis zum Kopieren.</h2>
-          </div>
-          <ol className="academy-contributions">{contributions.map((item, index) => <li key={item.title}><span aria-hidden="true">0{index + 1}</span><div><h3>{item.title}</h3><p>{item.text}</p></div></li>)}</ol>
         </section>
       </article>
       <footer className="academy-footer academy-frame">
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- Native navigation preserves the cross-document page transition. */}
-        <a className="academy-back" href="/#academy"><span aria-hidden="true">↖</span> Zurück zum Spielraum</a>
+        <div><p className="academy-kicker">yesterday Academy</p><p className="academy-footer-title">Selbst einen Blick reinwerfen.</p></div>
         <a className="academy-text-link" href="https://academy.yesterday-ai.de/" target="_blank" rel="noopener noreferrer">Zur Academy <span aria-hidden="true">↗</span><span className="academy-sr"> (öffnet einen neuen Tab)</span></a>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- Native navigation preserves the cross-document page transition. */}
+        <a className="academy-back academy-footer-back" href="/#academy"><span aria-hidden="true">↖</span> Zurück zum Spielraum</a>
       </footer>
     </main>
   );
