@@ -1,5 +1,13 @@
 # Orbit-Labor: akzeptierter Zwischenstand
 
+## Direkter Griff und Handyverbesserungen veröffentlicht (23. Oktober 2026)
+
+Auftrag „push live“ ausgeführt. Code-Commit `b2f60185628e276bca288928d7933774820b135c` mit bestehender Nutzeridentität auf `codex/feat/vgpu-homepage` gepusht; kein Merge nach `main`. Lokale Typprüfung, betroffenes ESLint, 38 Tests und Produktionsbuild zuvor erfolgreich; die 16 bekannten Academy-CSS-Warnungen bestehen.
+
+Vercel-Produktion `dpl_N9myeqmzrJroW7zL5qTEBFKoGLKP` ist `READY`, weist exakt diesen Commit aus und ist ohne Aliasfehler `thimofej.de` und `www.thimofej.de` zugeordnet. Deployment: https://thimofej-f90uv664f-zapkothimofej-2616s-projects.vercel.app. Produktionsbuild bei Vercel rund 18 Sekunden.
+
+Direkt auf https://thimofej.de geprüft: WebGPU bereit, acht Ziehschritte von je 15 px führen unmittelbar zu je 0.075 Radiant Drehung; nach Loslassen 15 aufeinanderfolgende Messwerte mit Bandversatz 0. Desktop und 390×844 visuell geprüft, kein horizontaler Überlauf, Weiter und Pause ohne Überschneidung; neue Viewport-Einstellungen ausgeliefert. Keine erfassten Browserfehler; Vercel lieferte für dieses Deployment im abgefragten 10-Minuten-Fenster keine Fehler-/Fatal-Logs. Echtes Handy und subjektives Federgefühl bleiben eine gesonderte Nutzerabnahme. Die nachfolgenden lokalen Angaben dokumentieren die Zwischenstände vor dieser Veröffentlichung.
+
 ## Korrektur: direkter Griff statt doppelter Verzögerung (23. Oktober 2026, lokal)
 
 Nutzerrückmeldung zum vorigen lokalen Stand: Der elastische Effekt fühlt sich während des Festhaltens schlecht an, erst nach Loslassen besser. Die vorherige Abstimmung ist damit nicht gestalterisch akzeptiert.
