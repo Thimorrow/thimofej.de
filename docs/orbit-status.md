@@ -1,5 +1,13 @@
 # Orbit-Labor: akzeptierter Zwischenstand
 
+## Tintenanimation veröffentlicht (23. Oktober 2026)
+
+Auf „Mach live“ wurde die gewählte Tintenanimation als `770fad872ecb9baeae5162af32864026958ed0fd` auf `codex/feat/vgpu-homepage` gesichert und gepusht. Bestehende Git-Identität Thimorrow erhalten. Vollständiges ESLint zusätzlich erfolgreich; TypeScript, 40 Tests und Produktionsbuild für diese Fassung bereits lokal geprüft.
+
+Vercel-Produktion `dpl_EmBL72rZDvGkPfscRURNgg5oTRWP` ist `READY`, weist genau diesen Commit aus und ist ohne Aliasfehler `thimofej.de` sowie `www.thimofej.de` zugeordnet. Deployment: https://thimofej-2vz58vqee-zapkothimofej-2616s-projects.vercel.app.
+
+Direkt auf https://thimofej.de geprüft: WebGPU bereit, „Neu mischen“ entfernt, Tintenwelle in mehreren sichtbaren Klickphasen, Pause und Touch bei 390×844. Keine erfassten Browserfehler und kein horizontaler Überlauf. Die lokalen Nicht-veröffentlicht-Angaben unten beschreiben den vorherigen Zwischenstand und sind für diese Änderung überholt. Eine während des Releases separat entstandene lokale Änderung in `src/app/layout.tsx` wurde nicht in diesen Release aufgenommen.
+
 ## Thimorrow: Tinte gewählt und lokal integriert (23. Oktober 2026)
 
 - Auftrag: „Neu mischen“ entfernen und den Hero-Klickimpuls auf das Schriftfeld übertragen.
