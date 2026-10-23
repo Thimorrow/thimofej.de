@@ -1,0 +1,182 @@
+# Orbit-Labor: akzeptierter Zwischenstand
+
+Stand: 23. Oktober 2026. Diese Datei fasst den aktuellen Chat zusammen und ist der Einstieg für die Fortsetzung. Frühere Versuche in `orbit-direction.md` sind teilweise überholt.
+
+## Entscheidung des Nutzers
+
+„Fürs Erste bin ich damit zufrieden.“ Raster und ruhige Welle gefallen; die Klickanimation ist „auch schon not bad“. Diesen Stand als Grundlage erhalten. Keine weitere ungefragte Überarbeitung der Animation. Das ist eine vorläufige gestalterische Abnahme des Labors, keine Freigabe für Veröffentlichung oder Homepage-Umbau.
+
+## Ziel für die spätere Übernahme
+
+Nutzerentscheidung vom 23. Oktober 2026: Die neue Ansicht aus dem Orbit-Labor soll die bisherige Homepage ersetzen. Labor und Seitenvorschau sind damit die Entwicklungsgrundlage für die künftige Hauptansicht, nicht nur ein dauerhaft separates Experiment.
+
+**Noch nicht umstellen.** Erst wenn das Gesamtergebnis für den Nutzer akzeptabel ist und er die Übernahme ausdrücklich freigibt, die neue Ansicht in die Homepage übernehmen. Die bisherige vorläufige Zufriedenheit mit Raster, ruhiger Welle und Klickanimation ist keine Abnahme der gesamten Seite. Bis dahin `/lab/type`, `/lab/home` und die bestehende Homepage getrennt erhalten. Eine Veröffentlichung benötigt weiterhin den entsprechenden Auftrag.
+
+## Aktueller Zustand
+
+- Vorschau: http://127.0.0.1:3000/lab/type, bei laufendem lokalem Entwicklungsserver. Start mit `npm run dev`.
+- Orbit ist gewählt. Räumliche Schrift mit Licht, Material, Drag und gedämpftem Nachlauf, umgesetzt mit vgpu/WebGPU.
+- Mandarine/Tinte bleibt. Graphit-Auswahl und sichtbare Überschrift „Orbit“ sind entfernt.
+- Festes Zeichenraster mit THIMOFEJ, ZAPKO und THIMORROW. Ruhige Bewegung entsteht durch langsam fließende Lichtformen.
+- Hintergrundklick: Ausbreitung rundum, danach ein kurzer gerichteter Nachimpuls innerhalb der ersten Welle. Die ruhige Welle wird dabei lokal weicher und schwächer und kehrt anschließend zurück.
+- Keine Herzen oder sonstigen Symbolformen. Klicks auf die Schrift variieren die Schrift; Ziehen dreht sie. Die Trennung zum Hintergrund verwendet eine angenäherte Hülle der Schrift, keine pixelgenaue Trefferprüfung.
+- DialKit im Dark Mode, 27 Regler. Zwei getrennte Random-Aktionen: ruhige Welle bzw. Klickwelle einschließlich Nachimpuls. Raster und Zusammenspiel werden durch Random nicht geändert.
+- Zurücksetzen stellt die akzeptierten Standardwerte her. JSON-Export und Speicherung im Browser sind vorhanden. Browserwerte können die Standardwerte überschreiben (`tz-background-tuning`).
+- Folio bleibt als ungenutzter Quellcode archiviert. Echo ist aus der UI entfernt und in `echo-idea.md` beschrieben.
+
+## Akzeptierte Einstellungen
+
+Alle 27 vom Nutzer übermittelten Zahlenwerte sind als Standardwerte in `src/components/type-lab/background-tuning.ts` übernommen. Sie werden von DialKit, Renderer und Zurücksetzen gemeinsam verwendet.
+
+Unabhängige Momentaufnahme: [orbit-background-accepted-2026-10-23.json](orbit-background-accepted-2026-10-23.json).
+
+Wichtige Werte: Rasterdeckkraft 0.085, ruhige Welle 0.22, Tempo 0.55, weiche Kanten 2, Mitte zurücknehmen 0.65; Klickdeckkraft 1.15, Abklingen 0.8, Verformung 2.6, Unregelmäßigkeit 0.75; Verdrängung 0.21, Rückkehrtempo 3.6. Schrift und Material stehen separat in `src/components/type-lab/orbit-preset.json`.
+
+## Referenz und Grenzen
+
+Maßgebliche Referenz: https://x.com/mdnlabs/status/2110417510314967075. Im Browser abgespielt und über Screenshots bis zu 100-ms-Abständen untersucht. Bei der Analyse mehrere Klicks auseinanderhalten. Die Aufnahme zeigt keine Maustasten-Markierung; der genaue Originalalgorithmus ist unbekannt. Unsere Umsetzung ist eine visuelle Nachbildung, keine belegte identische Kopie.
+
+Frühere Referenz: https://x.com/shivasainix/status/2110622613827682570.
+
+## Prüfstand
+
+- Live im Browser geprüft: WebGPU-Darstellung, einzelne Klicks und überlagerte Wellen, dunkles DialKit, getrennte Random-Aktionen mit Vergleich der tatsächlich geänderten Werte, Speicherung, Neuladen, Export und Ein-/Ausblenden.
+- Nach den letzten Funktionsänderungen: TypeScript, betroffenes ESLint und neun relevante Tests erfolgreich.
+- Nach Übernahme der akzeptierten Werte: alle 27 Werte exakt gegen die Nutzervorgabe verglichen, Validierung und TypeScript erfolgreich.
+- Kein erneuter vollständiger Produktionsbuild nach den letzten Animationsänderungen. Keine CI- oder Produktionsbestätigung.
+- Änderungen liegen lokal, teilweise noch als unversionierte Dateien vor. In diesem Auftrag kein Commit, Push oder Deployment. Die Homepage wurde nicht auf das Labor umgestellt.
+
+## Fortsetzung
+
+Zuerst diese Datei und die aktuellen Projektregeln lesen. Den akzeptierten Stand erhalten und auf die nächste konkrete Rückmeldung warten. Falls später veröffentlicht werden soll, zuerst den endgültigen Stand vollständig bauen und prüfen; Veröffentlichung separat beauftragen lassen.
+
+## Erste Seitenvorschau (durch die Prototypen unten abgelöst)
+
+Die danach beauftragte erste Ansicht und der erste Scrollübergang sind separat unter `/lab/home` umgesetzt. Komponenten: `src/components/orbit-preview/OrbitHome.tsx` und `orbit-home.css`. Das Labor `/lab/type` bleibt bestehen; die öffentliche Homepage ist unverändert.
+
+Die Vorschau nutzt die akzeptierten Standardwerte ohne lokale DialKit-Overrides, eine kleine Navigation und eine persönliche Vorstellung aus den vorhandenen Seiteninhalten. Beim Scrollen verkleinert und verschiebt sich die Schrift, während das Zeichenfeld bestehen bleibt. Auf schmalen Ansichten rückt die Schrift nach oben; bei reduzierter Bewegung entfällt diese räumliche Scrollbewegung. Der Renderer erhält einen optionalen Präsentationswert, standardmäßig 0, sodass die Labordarstellung unverändert bleibt.
+
+Geprüft: Vorschau HTTP 200, WebGPU-Darstellung, Desktop-Scrollübergang, Navigation, 390-Pixel-Ansicht ohne horizontalen Überlauf, TypeScript, betroffenes ESLint und 23 Tests. Noch kein Produktionsbuild/Deployment und keine menschliche Abnahme dieser neuen Seitenvorschau.
+
+## Zwei neue Fortsetzungen unter `/lab/home` (23. Oktober 2026)
+
+Auftrag: Den vorhandenen Hero erhalten, den restlichen bisherigen Seitenentwurf verwerfen. Nach Einsatz von `emil-get-creative` und einem Richtungsabgleich hat der Nutzer ausdrücklich zwei Prototypen bestellt: einen mit bewegter Plakattypografie und einen mit mehr visuellen Experimenten. **Inzwischen ist Spielraum als Richtung gewählt; siehe Fortsetzung unten. Keine Abnahme der gesamten Seite.**
+
+- `/lab/home?v=1`: **Plakat**. Dunkle, große persönliche Vorstellung; mandarinenfarbener Academy-Abschnitt mit einer Aufnahme der vorhandenen lokalen Produktdemo; dunkler Kontaktabschluss. Keine erfundenen Arbeiten. Der Academy-Beitrag ist als Teamarbeit / Frontend gekennzeichnet.
+- `/lab/home?v=2`: **Spielraum**. Reproduzierbare, per Klick neu mischbare Schriftkomposition; Zeilen reagieren auf Maus und Scrollen. Danach persönliche typografische Komposition mit rotierendem TZ, knapper Academy-Verweis und Kontakt.
+- Beide verwenden denselben bestehenden Hero inklusive akzeptierter Material- und Hintergrundwerte. `TypeScene`, Shader, `background-tuning.ts`, Preset und `/lab/type` wurden in diesem Auftrag nicht geändert. Die öffentliche Homepage bleibt getrennt.
+- Umschalten unten oder mit `1` / `2` und Pfeiltasten. `R` startet den Hero neu. Beim Wechsel nach dem Hero beginnt die neue Fortsetzung am ersten Abschnitt. URL merkt die Variante.
+- „Regler“ öffnet Dark-DialKit: Schriftgröße, Freiraum, Schriftversatz und Bewegung. Werte betreffen nur die Fortsetzungen. „Entwurf speichern“ schreibt Variante und vollständige Einstellungen inklusive Seed über den lokalen, in Produktion gesperrten Endpunkt `/lab/home/save` nach `src/components/orbit-preview/saved/`. Kopie in die Zwischenablage wird versucht; bei nicht verfügbarer Dateispeicherung gibt es JSON-Download. Die kleine Vergleichsliste behält gespeicherte Stände solange die Seite geöffnet bleibt. QA-Speicherdateien wurden entfernt, sie sind keine Nutzerentscheidung.
+
+### Gestaltungsgrundlage
+
+Aus „halbwegs guten Hero“ und „den Rest ... von neu“ abgeleitete, anschließend als zwei Prototypen beauftragte Regeln: Hero bewahren; Schrift als Komposition; Mandarine/Tinte; klar unterschiedliche Szenen; inputgebundene Bewegung mit lesbaren Ruhephasen; keine Kartenwand oder dekorativen Endlosschleifen.
+
+Referenzen: [Studio Dumbar / Cities in Motion](https://studiodumbar.com/work/cities-in-motion) für bewegliche Raster und [COLLINS / S.F. Symphony](https://wearecollins.com/story/sfsymphony/) für typografischen Rhythmus. Keine identische Nachbildung. Das ist eine eigene gestalterische Ableitung.
+
+### Dateien und Prüfstand
+
+`OrbitHome.tsx` enthält den gemeinsamen Hero und Umschalter, `Plakat.tsx` und `Spielraum.tsx` die Richtungen. `prototypes.css`, `PageDials.tsx`, `print-config.ts`, die lokale Speicherroute und `tests/page-prototypes.test.mjs` ergänzen den Vergleich. Das Academy-Bild unter `public/lab-home/academy-catalog.png` ist aus der bestehenden lokalen Demo aufgenommen, kein Screenshot eines live geprüften Produkts.
+
+- Browser: Desktop 1500×829, Mobil 390×844, schmal 320px auch mit maximaler Schriftgröße/Freiraum; keine horizontalen Seiten- oder Überschriftenüberläufe. Alle Abschnitte angesehen.
+- Geprüft: Umschalten, Tastatur, mehrfaches Mischen, Maus-/Scrollreaktion, Pause auch über Variantenwechsel, Replay, Regler einschließlich Pfeiltasten ohne versehentlichen Variantenwechsel, Zurücksetzen und JSON-Dateispeicherung. Ungültige Speicheranfrage: HTTP 400.
+- Reduzierte Bewegung im Browser emuliert: Schriftbild bleibt bei Maus/Scroll ruhig. Fehlendes WebGPU simuliert: bestehender Fehlerzustand, persönliche Inhalte und Kontakt weiterhin erreichbar.
+- Keine Runtime-/Log-Fehlereinträge im instrumentierten Interaktionsdurchlauf. Kurze Desktop-Stichprobe mit 90 Frame-Callbacks: Median 8,3 ms, keine Pause über 50 ms; keine allgemeine Leistungszusage.
+- TypeScript, betroffenes ESLint und 25 Tests erfolgreich. `npm run build` ebenfalls erfolgreich, einschließlich `/lab/home` und Speicherroute. Der erste Build blieb in der eingeschränkten Sandbox ohne Ergebnis und wurde beendet; der reguläre lokale Lauf war erfolgreich. Sichtbarer Tastaturfokus und Variantenwahl nach Neuladen zusätzlich geprüft. Kein Commit, Push, Deployment oder menschliche Abnahme.
+
+## Spielraum: räumlicher Übergang und weitere Ausarbeitung
+
+Nutzerentscheidung: „Spielraum ist absolut geiler“, es fehlt aber noch der starke Wow-Moment. Danach ausdrücklich den Hero-Ausstieg und den Rest verbessern, mit kreativen Ideen und `emil-get-creative`. Die erste räumliche Verwandlung wurde während der Umsetzung positiv aufgenommen: „geiler anfang wenn das polished ist und zu Thimorrow übergeht“. Das ist Zustimmung zur Richtung, keine Abnahme der fertigen Seite und keine Veröffentlichungsfreigabe.
+
+- `/lab/home` öffnet jetzt standardmäßig **Spielraum**. `?v=1` bleibt als frühere Plakat-Vergleichsrichtung erreichbar.
+- Ein durchgehender WebGPU-Canvas trägt den Hero in den Schriftabschnitt. Die drei Ringe öffnen sich entlang ihrer Bogenlänge und verzweigen in neun Bänder. Die Schrift wechselt dabei von THIMOFEJ zu THIMORROW. Hintergrundraster und Licht wechseln kontrolliert in die dunkle Fläche; im ausgebreiteten Zustand wechseln volle und konturierte Schriftzeilen.
+- Der Ablauf folgt nativem Scrollen ohne Scroll-Sperre. Zwischen 1,1 und 1,6 Bildschirmhöhen bleibt die Schrift ausgefaltet; danach öffnen sich die Bänder seitlich für die persönliche Vorstellung. Der gesamte Übergang ist rückwärts scrollbar.
+- Mausposition gibt den ausgefalteten Bändern räumliche Tiefe mit gedämpftem Nachlauf. Mischen wechselt reproduzierbar den Seed. In der ruhenden Schriftfläche läuft die Hero-Zeit nicht unnötig weiter.
+- Der Original-Hero bei Präsentationswert 0 und `/lab/type` verwenden weiterhin dieselben Einstellungen und Materialwerte. Die gemeinsame Renderpipeline und `TypeScene` haben einen optionalen Unfold-Zweig erhalten; Shader, Renderer und TypeScene wurden deshalb in dieser Fortsetzung verändert. `background-tuning.ts`, akzeptierte JSON-Werte und Orbit-Preset bleiben unverändert. Lokale Browser-Overrides im ursprünglichen Labor wurden nicht zurückgesetzt.
+- Vorstellung: räumlich kippender, doppelt gerandeter TZ-Stempel. Academy: echte vorhandene Demo als sich beim Scrollen öffnender Ausschnitt; auf Touch und bei reduziertem Bewegungswunsch direkt sichtbar. Kontakt: reagierende Einzelbuchstaben im „Hallo“-Mail-Link, mit Rückkehr beim Verlassen. Alle Inhalte bleiben ohne Hover bedienbar.
+- Bei fehlendem WebGPU bleibt die vorhandene DOM-Schriftkomposition als Alternative sichtbar. Reduzierte Bewegung zeigt eine statische Schriftfläche ohne lange angeheftete Scrollstrecke; Texte und Links bleiben sichtbar.
+
+Prüfungen dieser Fortsetzung: WebGPU-Shader im Browser ausgeführt, mehrere Übergangsphasen visuell angesehen, rasches Vor-/Zurückscrollen, wiederholtes Mischen, Pause, Regler/Pfeiltasten, dynamische Kontaktbuchstaben samt Rückkehr, reduzierte Bewegung und WebGPU-Ausfall. Mobil 390×844 und schmal 320px mit maximaler Schriftgröße ohne Dokument-/Textüberlauf. Ursprüngliches `/lab/type` erneut gerendert. TypeScript, betroffenes ESLint, 27 Tests und vollständiger Produktionsbuild erfolgreich. Keine Runtime-/Log-Fehlereinträge im instrumentierten Interaktionslauf. Kein Commit, Push, Deployment oder finale menschliche Abnahme.
+
+Nächster Schritt: Den zusammenhängenden Ablauf vom Hero aus ansehen und die noch offene gestalterische Abnahme einholen. Kein weiterer Richtungs-Picker nötig; Spielraum weiter ausarbeiten. Übernahme in die öffentliche Homepage weiterhin nur nach expliziter Freigabe.
+
+### Korrektur: Übergang zurücknehmen
+
+Nutzerfeedback danach: „Jetzt ist der Übergang schon too much“. Maßgeblicher aktueller Stand: direkte Interpolation von der bestehenden Skulptur in das THIMORROW-Schriftfeld. Das großräumige Aufrollen entlang einer expandierenden Bogenlänge, zusätzliche Drehungen, der helle Zwischenfarbwert und das seitliche Auseinanderfliegen sind entfernt. Zusätzliche Schriftzeilen entstehen erst später im Übergang. Der Schriftabschnitt ist wieder eine Bildschirmhöhe lang; keine zusätzliche halbe Bildschirmhöhe zum Anheften. Der Rest der Seite bleibt erhalten.
+
+Diese Korrektur ersetzt die oben beschriebene Bogenlängen-/Ausstiegs-Choreografie. Browser: Desktop und 390px, Vor-/Rückwärtsscrollen, mehrere Zwischenphasen; keine Browserfehler im instrumentierten Desktop-Lauf. TypeScript, betroffenes ESLint und 27 Tests erfolgreich. Kein erneuter vollständiger Produktionsbuild für diese begrenzte Korrektur, kein Deployment und weiterhin keine gestalterische Gesamtabnahme.
+
+### Aktuell: Mittelweg zwischen beiden Übergängen
+
+Nächster Nutzerwunsch: „mach die mitte von jetzt und davor“. Die direkte Formverwandlung erhält in der mittleren Phase eine begrenzte räumliche Betonung: maximal etwa 14 Grad zusätzliche Drehung, 8 Prozent Größenakzent und etwas Tiefe. Alle Zusätze laufen an beiden Endpunkten auf null, damit Hero und fertiges Schriftfeld unverändert bleiben. Eine wörtliche 50/50-Mischung der gegenläufigen Geometrien zog die Schrift zu stark zusammen und wurde nach Sichtprüfung verworfen. Zusätzliche Zeilen entstehen zeitlich zwischen den beiden vorherigen Fassungen; der Schriftabschnitt umfasst 125 statt 100 bzw. 150 Bildschirmhöhen-Prozent. Der Farbblitz und das seitliche Auseinanderfliegen bleiben entfernt. Restliche Abschnitte unverändert.
+
+Geprüft: WebGPU auf Desktop und bei 390px, mehrere Phasen, Vor-/Rückwärtsscrollen, keine Browserfehler oder horizontalen Überläufe; 27 Tests erfolgreich. Kein neuer Produktionsbuild für diese reine Shader-/CSS-Abstimmung, keine Veröffentlichung, gestalterische Bewertung offen.
+
+### Aktuell: stärkere Fassung wiederhergestellt
+
+Nach „mach noch meh“ folgte vor einer weiteren Verstärkung „ok mach eifnach wie es davor war“. Wiederhergestellt ist die stärkere Fassung von vor dem Zurücknehmen: vollständiges räumliches Aufrollen, Wechsel zu THIMORROW, hellerer Materialübergang, seitliches Öffnen zur Vorstellung und 150svh Schriftabschnitt. Die späteren Reduktions- und Mittelweg-Abstimmungen sind damit abgelöst. Die übrigen Seitenabschnitte bleiben erhalten.
+
+Geprüft: WebGPU-Phasen Aufrollen, fertige Schrift und Ausstieg im Browser ohne Runtime-/Log-Fehler; TypeScript, betroffenes ESLint und vier relevante Prototyp-/Shader-Tests erfolgreich. Kein neuer Produktionsbuild oder Deployment.
+
+### Letzte zusätzliche Umdrehung entfernt
+
+Nutzer: „die eine Letze drehung zu viel“. Nur den Drehwinkel beim Aufrollen um eine volle Umdrehung reduziert (`turn - π` statt `turn + π`, jeweils mit dem Öffnungsfortschritt abgebaut). Die Ausgangsorientierung ist dadurch identisch; die Schrift gelangt mit einer Umdrehung weniger zum gleichen THIMORROW-Endzustand. Restliche Geometrie, Farben, Dauer, seitlicher Ausstieg und Seitenabschnitte unverändert. Im WebGPU-Browser vorwärts/rückwärts und in Zwischenphasen geprüft, keine Runtime-/Log-Fehler; vier relevante Tests erfolgreich. Kein neuer Produktionsbuild oder Deployment.
+
+### Persönliche Vorstellung mit Foto und Alter
+
+Der Nutzer hat den zuletzt abgestimmten Übergang mit „Ich mag es“ bestätigt. Diesen Übergang bewahren. Anschließend ausdrücklich „Code Form und ich“ komplett neu gestalten, zeigen, dass er 15 ist, und ein Foto verwenden. Das bereitgestellte Foto stammt aus `/Users/thimofejzapko/Downloads/589508867_17928695358178806_5087251624761772373_n.jpg`.
+
+- Der bisherige Code/Form-Block und der TZ-Stempel sind durch `#ueber-mich` ersetzt: großes Porträt, „Ich bin Thimofej.“, eine eigenständige „15“ mit „Jahre alt.“, kurze Vorstellung und GitHub-Link.
+- Alter 15 ist eine ausdrückliche Nutzerauskunft vom 23. Oktober 2026. Kein Geburtstag bekannt; Alter nicht aus dem Foto abgeleitet und keine automatische Altersberechnung erfunden. Bei späterer Veröffentlichung/Aktualisierung erneut beachten.
+- Foto liegt als `public/lab-home/thimofej-portrait.jpg` vor. Original 1080×1080, unverändert kopiert und per SHA-256 verglichen. Darstellung über Next Image mit responsive Größen; nur CSS-Ausschnitt (Desktop 4:5, mobil quadratisch). Keine Retusche oder generierte Veränderung, keine aus dem Bild abgeleiteten Erfolgs-/Eventbehauptungen.
+- Desktop: Porträt und Text nebeneinander. Mobil: Porträt, darunter Name/Alter nebeneinander und kurze Bio. Keine zusätzliche Bewegung im Fotoabschnitt. Alte About-/Stempel-CSS-Regeln entfernt.
+- Navigation „Über mich“ und Skip-Link führen in Spielraum direkt zu `#ueber-mich`; der Weiter-Link am Hero führt weiterhin durch das Schriftspiel. Hero, akzeptierter Übergang, Academy und Kontakt unverändert.
+
+Prüfstand: Bild geladen und Ausschnitt auf Desktop sowie 390px visuell geprüft, 320px mit maximaler Schriftgröße ohne Text-/Seitenüberlauf; Navigation und reduzierte Bewegung geprüft. Keine Runtime-/Log-Fehler im instrumentierten Browserlauf. TypeScript, betroffenes ESLint und 27 Tests erfolgreich. Kein neuer Produktionsbuild oder Deployment. Die neue persönliche Sektion wartet auf gestalterische Rückmeldung.
+
+### Persönliche Vorstellung: kompakteres Foto und Scrollaufbau
+
+Nächster Auftrag: den neuen persönlichen Abschnitt gut animieren und gestalten; ergänzende Korrektur: das Foto soll nicht riesig sein.
+
+- Porträt auf Desktop maximal 320×400px, im mittleren Layout maximal 260px breit, mobil quadratisch mit maximal 230px Breite (bei 320px Bildschirmbreite etwa 198px). Die Gesamtkomposition ist auf 1000px begrenzt; Name, Alter und Bio haben mehr Raum.
+- Drei deckungsgleiche Bildausschnitte setzen sich beim Scrollen zum vollständigen Foto zusammen. Der Aufbau folgt der Scrollposition und funktioniert rückwärts; vor dem Lesen ist das Foto geschlossen. Die Streifen verwenden dieselbe Bildgeometrie, damit im Ruhebild kein versetzter Ausschnitt entsteht.
+- Dezente Mausneigung mit Rückkehr beim Verlassen. Auf Touch entfällt die Mausreaktion. Pause und reduzierte Bewegung zeigen das vollständige, unbewegte Foto. Direkter Abschnittsaufruf bleibt vollständig sichtbar.
+- Umsetzung in `PersonalIntro.tsx`, `portrait-motion.ts`, `Spielraum.tsx`, `OrbitHome.tsx` und `prototypes.css`; relevanter Test für Fortschritt, Rückwärtslauf und direkte Abschnittsaufrufe ergänzt. Der akzeptierte Hero-Übergang bleibt unverändert.
+
+Prüfstand: Desktop sowie 390px und 320px mit maximaler Schriftgröße visuell geprüft, keine horizontalen Seiten-/Überschriftenüberläufe. Mehrfacher Vor-/Rückwärtslauf, Mausreaktion/Rückkehr, Pause, reduzierte Bewegung und Bildladen beim direkten Abschnittsaufruf geprüft. Keine Runtime-/Log-Fehler im instrumentierten Bewegungsdurchlauf. TypeScript, betroffenes ESLint und 28 Tests erfolgreich. Kein neuer Produktionsbuild, Commit, Push oder Deployment. Gestalterische Abnahme weiterhin offen.
+
+### Name und Alter als gemeinsame bewegte Komposition
+
+Nutzerfeedback: Abschnitt insgesamt kreativer machen, ausdrücklich auch Name und 15. Die kompakte Fotogröße bleibt eine Vorgabe.
+
+- Neues Raster: großer Name über der Komposition, darunter kleines Porträt, Alter und Bio. Desktop-Foto 280×350px; auf kleinen Mobilansichten Foto und Alter nebeneinander, Bio darunter. Tablet erhält zwei Spalten. Vorhandene Fraunces und Farbwelt bleiben bestehen.
+- Name richtet sich beim Scrollen Buchstabe für Buchstabe räumlich auf. Die Ziffern 1 und 5 bewegen sich aus entgegengesetzten Richtungen in ihre gemeinsame Leseposition. Bio und Trennlinie schließen den Aufbau ab. Keine Endlosschleifen oder zusätzliche Scrollstrecke.
+- Name und Alter erhalten Fortschritte aus ihrer tatsächlichen Bildschirmposition, damit ihre Bewegung beim Eintritt sichtbar ist. Derselbe vorhandene Scroll-Listener steuert alles; keine zusätzliche Bibliothek. Vorwärts und rückwärts exakt positionsabhängig; Endzustand ohne Transformation. Pause und reduzierte Bewegung stellen die vollständige Komposition ruhig dar. Überschrift und Alter behalten zusammenhängende zugängliche Texte.
+- Änderungen in `PersonalIntro.tsx`, `OrbitHome.tsx` und `prototypes.css`. Hero, akzeptierter Übergang, Academy und Kontakt nicht verändert.
+
+Geprüft: Desktop, 820px, 390px und 320px, auch maximale Schriftgröße; keine horizontalen Seitenüberläufe. Mehrere sichtbare Animationsphasen und wiederholter Rückwärtslauf, ruhiger Endzustand, Pause und reduzierte Bewegung geprüft. Keine Runtime-/Log-Fehler im instrumentierten Lauf. TypeScript, betroffenes ESLint und 28 Tests erfolgreich. Kein erneuter Produktionsbuild oder Deployment. Kreative Richtung umgesetzt, Nutzerabnahme offen.
+
+### Korrektur: Animationen später beginnen
+
+Nutzer: „Die animationen kommen zu früh rein bei der section“. Startschwelle von 92% auf 72% der Bildschirmhöhe verschoben; Abschluss bei 28%. Das Foto richtet seinen Fortschritt nun nach seiner eigenen Position statt nach dem Abschnittsanfang. Den zusätzlichen Vorlauf der 15 um ein Viertel der Bildschirmhöhe entfernt. Dadurch beginnen Name, Foto und Alter erst, nachdem das jeweilige Element sichtbar eingetreten ist.
+
+Desktop und 390px: Start, Mitte, Abschluss und Rückwärtslauf im Browser geprüft; keine Runtime-/Log-Fehler. TypeScript, betroffenes ESLint und fünf relevante Tests erfolgreich. Kein Build oder Deployment für diese Timingkorrektur.
+
+Feinabstimmung danach: Auf „ein kleines bisschen früher“ beginnt der Aufbau jetzt bei 77% statt 72% Bildschirmhöhe, also etwa 42px früher auf einem 844px hohen Bildschirm. Abschluss weiterhin bei 28%; eigene Elementpositionen und Animationen bleiben erhalten. Fortschritt in Desktop-/Mobilbrowser geprüft; TypeScript, betroffenes ESLint und fünf relevante Tests erfolgreich.
+
+### Academy neu gestaltet; nur noch ein Entwurf
+
+Nutzer bestätigt das zuletzt abgestimmte persönliche Timing: „Ja so passt es“. Anschließend Academy gestalterisch an den Rest angleichen. Währenddessen zusätzliche Anweisung: Plakat, Optionen, Reload und Regler entfernen.
+
+- Academy ist jetzt eine dunkle, asymmetrische Projektfläche. Die große Fraunces-Schrift wird beim Scrollen von Kontur zu gefüllter Schrift, die Produktansicht kommt leicht gedreht herein und richtet sich aus. Versetzter Rahmen verbindet sie mit der persönlichen Foto-Komposition. Der Einstieg verwendet die akzeptierte Schwelle von 77% Bildschirmhöhe und berücksichtigt die Position der jeweiligen Elemente.
+- Desktop zeigt den vorhandenen Missionskatalog, mobil eine vollständig aufgenommene Lernaufgabe der vorhandenen lokalen Produktdemo. Neues Asset `public/lab-home/academy-mobile.png`: Browseraufnahme der ersten Missionskarte bei 390px, keine Aufnahme des Live-Produkts. Texte bleiben auf die belegte Frontend-Teamarbeit beschränkt. Gesamter Projektblock führt zu `/projects/academy`.
+- Neue Dateien `AcademyWork.tsx` und `academy-work.css`; alte Academy-Regeln aus `prototypes.css` entfernt. Persönlicher Abschnitt und akzeptierte Übergangsgeometrie unverändert.
+- `/lab/home` rendert nur noch Spielraum. Variantenwähler, Replay, Regler und zugehörige Tastenkürzel entfernt; `?v=1` aktiviert keine andere Variante mehr. Frühere Plakat-/Regler-Quelldateien und gespeicherte Konfigurationen sind nicht mehr eingebunden. Pause für Bewegung und das interaktive Schriftspiel bleiben verfügbar. Keine Übernahme in die öffentliche Homepage.
+
+Prüfstand: Desktop, 820px, 390px und 320px, auch größere Schrift; kein horizontaler Seitenüberlauf. Vorwärts-/Rückwärtsscrollen, Titelkontur/Füllung, Produktbewegung, Pause, reduzierte Bewegung und sichtbarer Tastaturfokus geprüft. Enter auf dem Projektlink erreicht `/projects/academy`. Entfernte Bedienelemente und Tastenkürzel auch mit `?v=1` geprüft; keine Runtime-/Log-Fehler im instrumentierten Durchlauf. TypeScript, betroffenes ESLint und 28 Tests erfolgreich. Kein neuer Produktionsbuild oder Deployment. Academy wartet auf gestalterische Abnahme.
+
+### Git-Sicherung am 23. Oktober 2026
+
+Der Nutzer hat Commit und Push des aktuellen Arbeitsstands auf `codex/feat/vgpu-homepage` beauftragt. Keine Übernahme in die öffentliche Homepage oder Zusammenführung nach `main` beauftragt.
+
+Vor dem Commit erneut erfolgreich: TypeScript, ESLint für Labor, Seitenvorschau und ihre Tests, alle 28 Tests sowie vollständiger Produktionsbuild. Der erste Build blieb in der Sandbox ohne Ergebnis und wurde gezielt beendet; der anschließende reguläre lokale Build war erfolgreich. Er meldete 16 CSS-Warnungen zu verschachtelten `@keyframes` in der unveränderten Academy-Demo-Datei `src/components/academy/catalog/catalog.css`. Keine neue Browserprüfung im Rahmen der Git-Sicherung; die oben dokumentierte gestalterische Abnahme bleibt offen.
