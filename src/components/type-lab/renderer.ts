@@ -80,11 +80,11 @@ export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Conf
     const fieldDraw=draw(context,{shader:fieldShader,vertices:3,depth:false,set:{field:{view:[1,0,0,0],shape:[1,0.58,0.65,0]}}});
 
     let aspect = 1, cssWidth=1;
-    const uniforms = (c: Config, intro: number, wall = 0, presentation = 0, story?:Story) => {
+    const uniforms = (c: Config, intro: number, wall = 0, presentation = 0, story?:Story, bandLag=0) => {
       const palette = palettes[c.palette];
       const tone=story?unfoldTone(presentation):0;
       const ink=palette.ink.map((value,i)=>Math.min(1,value+(palette.background[i]-value)*tone+Math.sin(Math.PI*tone)*0.4));
-      return { material:[c.roughness ?? 0.38,c.light ?? 0,c.thickness ?? 0.045,story?1:0], view: [aspect,presentation,c.mode,wall], motion: [(story?.time ?? c.time)+(c.phase ?? 0),c.yaw,c.pitch,intro], shape: [c.depth,c.bend,c.scale,seedPhase(c)], ink: [...ink,1], paper: [...palette.background,1], story:[story?.x??0,story?.y??0,story?.phase??0,story?.spread??0], storyStyle:[story?.motion??0,story?.typeScale??1,0,0] };
+      return { material:[c.roughness ?? 0.38,c.light ?? 0,c.thickness ?? 0.045,story?1:0], view: [aspect,presentation,c.mode,wall], motion: [(story?.time ?? c.time)+(c.phase ?? 0),c.yaw,c.pitch,intro], shape: [c.depth,c.bend,c.scale,seedPhase(c)], ink: [...ink,1], paper: [...palette.background,1], story:[story?.x??0,story?.y??0,story?.phase??0,story?.spread??0], storyStyle:[story?.motion??0,story?.typeScale??1,bandLag,0] };
     };
     const bindings={letters:glyphs,storyLetters,linearSampler:sampler(context,{minFilter:"linear",magFilter:"linear"}),edges:edgeBuffer};
     const textDraw=draw(context,{shader:orbitShader,vertices:192*12*6,instances:6,multisample:{alphaToCoverage:true},frontFace:"cw",set:{settings:uniforms(config,1),...bindings}});
@@ -98,11 +98,11 @@ export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Conf
     signal.throwIfAborted();
     return {
       resize(width: number,height: number) { const dpr = Math.min(devicePixelRatio,1.75); aspect = width/height; cssWidth=width; characterField.resize([Math.max(1,Math.ceil(width/7)),Math.max(1,Math.ceil(height/10))]); target.resize([Math.max(1,Math.round(width*dpr)),Math.max(1,Math.round(height*dpr))]); },
-      render(c: Config,intro = 1,waves: Wave[] = [],presentation = 0,story?:Story) {
+      render(c: Config,intro = 1,waves: Wave[] = [],presentation = 0,story?:Story,bandLag=0) {
         if (lastText !== c.text) writeText(c.text);
         target.clearColor = [...palettes[c.palette].background,1];
-        textDraw.set({settings: uniforms(c,intro,0,presentation,story)});
-        walls.set({settings:uniforms(c,intro,1,presentation,story)});
+        textDraw.set({settings: uniforms(c,intro,0,presentation,story,bandLag)});
+        walls.set({settings:uniforms(c,intro,1,presentation,story,bandLag)});
         const wave = (i: number) => waves[i] ? [waves[i].x,waves[i].y,waves[i].age,waves[i].variation] : [0,0,-1,0];
         const tuning={...backgroundDefaults,...c.tuning};
         const tone=story?unfoldTone(presentation):0;

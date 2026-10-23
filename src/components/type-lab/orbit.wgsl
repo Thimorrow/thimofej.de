@@ -48,7 +48,8 @@ fn cameraDistance()->f32{return max(9.0,8.5/settings.view.x)+(1.0-smoothstep(0.0
   }
   let reveal=smoothstep(layer*0.12,0.70+layer*0.12,settings.motion.w);
   let arrival=1.0-reveal;
-  let turn=settings.motion.x*0.18+layer*0.56+settings.shape.w*0.18;
+  // The upper bands trail the hand, then settle back into their resting spacing.
+  let turn=settings.motion.x*0.18+layer*0.56+settings.shape.w*0.18+(layer+0.3)*settings.storyStyle.z;
   let angle=uv.x*6.283185+turn+arrival*(1.1-layer*0.3);
   let radius=2.42+settings.shape.x*0.24+side*settings.material.z;
   let y=(0.5-uv.y)*1.65+(layer-1.0)*(1.65+arrival*0.9);
@@ -91,8 +92,9 @@ fn cameraDistance()->f32{return max(9.0,8.5/settings.view.x)+(1.0-smoothstep(0.0
     arc=ry(arc,arcTurn);arcNormal=ry(arcNormal,arcTurn);
     arc=rz(rx(arc,tilt*(1.0-opening)),roll*(1.0-opening));
     arcNormal=rz(rx(arcNormal,tilt*(1.0-opening)),roll*(1.0-opening));
-    arc=rx(ry(arc,(settings.motion.y-0.25)*(1.0-opening)),settings.motion.z*(1.0-opening));
-    arcNormal=rx(ry(arcNormal,(settings.motion.y-0.25)*(1.0-opening)),settings.motion.z*(1.0-opening));
+    let facing=atan2(sin(settings.motion.y-0.25),cos(settings.motion.y-0.25))*(1.0-opening);
+    arc=rx(ry(arc,facing),settings.motion.z*(1.0-opening));
+    arcNormal=rx(ry(arcNormal,facing),settings.motion.z*(1.0-opening));
     arc+=vec3f(stagger*0.5+fly*settings.view.x*4.0,sin(uv.x*3.14159)*depth*0.25,depth)*viewScale*opening;
     if(opening>0.0){p=arc;n=normalize(arcNormal+vec3f(-cos(uv.x*6.283185+strip*.64+phase)*0.2*settings.storyStyle.x*opening*fan,0,0));}
     else{p*=settings.shape.z;}

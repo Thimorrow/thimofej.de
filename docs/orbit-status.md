@@ -1,5 +1,22 @@
 # Orbit-Labor: akzeptierter Zwischenstand
 
+## Hero: Referenzwinkel und wiederholtes Drehen (23. Oktober 2026)
+
+### Nachlauf stärker und elastischer
+
+Anschließender Nutzerwunsch: Nachlauf deutlicher und etwas elastischer. Verstärkung von 0.10 auf 0.18 pro Drehgeschwindigkeit, Zielbegrenzung von 0.22 auf 0.36 Radiant. Statt exponentiellem Folgen verwendet der Bandversatz jetzt eine unterdämpfte Feder aus der bereits installierten Motion-Bibliothek (Steifigkeit 190, Dämpfung 16). Sie läuft auf der vorhandenen Szenenuhr, erhält Geschwindigkeit bei Richtungswechseln und schwingt kurz über die Grundstellung. Pause und reduzierte Bewegung setzen auch die Federgeschwindigkeit zurück. Blickwinkel, Steuerung und Hintergrundwerte unverändert.
+
+Geprüft: TypeScript, ESLint, 34 Tests und Produktionsbuild erfolgreich; weiterhin die bestehenden 16 Academy-CSS-Warnungen. Neue Tests für sanftes Überschwingen und vollständiges Abklingen bei 30/60/144 Hz, schnelle Richtungswechsel und Zurücksetzen ohne Restschwung. Desktop-Ziehen, Gegenbewegung und Touch bei 390×844 im WebGPU-Browser geprüft. Gemessener Bandparameter im Desktop-Durchlauf: maximaler Ausschlag -0.397, Rückschwingung +0.029, anschließend exakt 0; reduzierte Bewegung ebenfalls 0. Keine erfassten Laufzeitfehler oder mobiler horizontaler Überlauf. Keine Veröffentlichung; gestalterische Abnahme offen.
+
+Aktueller Auftrag: den aufrechteren, leicht schrägen Blickwinkel aus dem Nutzerbild übernehmen; nach Loslassen und erneutem Greifen beliebig in derselben Richtung weiterdrehen. Stillhalten außerhalb der Skulptur soll keine automatische Drehung auslösen. Zusätzlich ist ein passendes gestalterisches Detail beauftragt.
+
+- Orbit-Preset: `yaw: 2.45`, `pitch: 0.28`. Im Desktopbrowser mit der Bildreferenz abgeglichen. Gilt für die Homepage und die Standardwerte des Labors; vorhandene gespeicherte Laborwerte können weiterhin abweichen.
+- Der horizontale Anschlag bei ±3.14 ist entfernt. Sichtbarer Winkel und Zielwinkel werden gemeinsam um volle Umdrehungen zurückgesetzt, ohne Sprung oder Richtungswechsel. Damit bleiben auch gespeicherte Winkel begrenzt und gültig. Die vertikale Neigungsgrenze bleibt erhalten.
+- Zusätzlicher Griff-Effekt: obere Schriftbänder reagieren mit leichtem versetztem Nachlauf auf die tatsächliche Drehbewegung. Beim Stillhalten kehren sie zur Grundstellung zurück; Pause und reduzierte Bewegung deaktivieren diesen Zusatz. Keine neue Bibliothek und keine Änderung an den akzeptierten Hintergrundwerten.
+- Der Scrollübergang verwendet auch für den Benutzerwinkel den kürzesten äquivalenten Drehweg, statt vorherige Umdrehungen zurückzuspulen.
+
+Prüfstand: TypeScript, betroffenes ESLint, alle 32 Tests einschließlich neuer Regressionstests und Produktionsbuild erfolgreich. Weiterhin 16 bestehende CSS-Keyframe-Warnungen in der unveränderten Academy-Demo. Browser: Desktop 1440px, sechs echte Ziehfolgen mit je 3 Radiant, insgesamt 9 Radiant pro Richtung, erneutes Greifen und jeweils kein Weiterdrehen beim Stillhalten; keine erfassten Laufzeitfehler. Die höherliegende Browser-Mausautomatisierung lieferte zunächst nicht alle Ziehschritte aus; erfolgreiche Prüfung anschließend über direkte Browser-Eingabeereignisse. Nachlauf und Scroll-Zwischenphasen visuell geprüft, Übergang vorwärts und zurück. Mobil 390×844 ohne horizontalen Überlauf, drei wiederholte Touch-Drehungen und vertikales Touch-Scrollen geprüft. Nach aktivierter reduzierter Bewegung bleiben Szenenzeit und Drehwinkel stabil. Lokale Vorschau auf Port 3001; kein Commit, Push oder Deployment. Gestalterische Abnahme durch den Nutzer noch offen.
+
 Stand: 23. Oktober 2026. Diese Datei fasst den aktuellen Chat zusammen und ist der Einstieg für die Fortsetzung. Frühere Versuche in `orbit-direction.md` sind teilweise überholt.
 
 ## Entscheidung des Nutzers

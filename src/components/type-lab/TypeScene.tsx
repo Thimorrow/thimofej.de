@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import { createTypeRenderer } from "./renderer";
-import { coast, follow } from "./orbit-motion";
+import { coast, createBandLag, follow, rotateYaw } from "./orbit-motion";
 import { advanceWaves, createWave, insideSculpture, type Wave } from "./background-wave";
 import type { Config } from "./config";
 import { nearestUnfoldPhase, type UnfoldInput } from './unfold-motion';
@@ -19,6 +19,8 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
     let renderer: Awaited<ReturnType<typeof createTypeRenderer>> | undefined;
     let lastX = 0, lastY = 0, down = false, travel=0, lastMove=0;
     let targetYaw=config.current.yaw,targetPitch=config.current.pitch;
+    let bandLag=0;
+    const bandSpring=createBandLag();
     let orbitTime=config.current.time;
     let pointerX=0,pointerY=0,printPhase=(unfold?.current.tuning.current.seed??0)%1000/100;
     let vx=0,vy=0,observedYaw=config.current.yaw,observedPitch=config.current.pitch;
@@ -37,15 +39,20 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
         if (config.current.yaw!==observedYaw || config.current.pitch!==observedPitch) {
           targetYaw=config.current.yaw;targetPitch=config.current.pitch;vx=0;vy=0;
         }
+        let rotationVelocity=0;
         if (orbit && !reduced) {
           if (!down && playing.current) {
             const x=coast(vx,dt),y=coast(vy,dt); vx=x.velocity;vy=y.velocity;
-            targetYaw=Math.max(-3.14,Math.min(3.14,targetYaw+x.distance));
+            const yaw=rotateYaw(config.current.yaw,targetYaw,x.distance);
+            config.current.yaw=yaw.current;targetYaw=yaw.target;
             targetPitch=Math.max(-1,Math.min(1,targetPitch+y.distance));
           } else if (!down) {vx=0;vy=0;targetYaw=config.current.yaw;targetPitch=config.current.pitch;}
+          const previousYaw=config.current.yaw;
           config.current.yaw=follow(config.current.yaw,targetYaw,dt);
           config.current.pitch=follow(config.current.pitch,targetPitch,dt);
+          rotationVelocity=dt>0 ? (config.current.yaw-previousYaw)/dt : 0;
         }
+        bandLag=bandSpring.step(rotationVelocity,dt,orbit && !reduced && playing.current);
         observedYaw=config.current.yaw;observedPitch=config.current.pitch;
         if (playing.current && !reduced && (!down || backgroundGesture)) {
           if (!unfold || (presentation?.current ?? 0)<1) config.current.time += dt*config.current.speed;
@@ -63,7 +70,7 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
           printPhase=smooth(printPhase,nearestUnfoldPhase(printPhase,tuning.seed%1000/100));
         }
         const story=tuning?{time:orbitTime,x:pointerX,y:pointerY,phase:printPhase,spread:tuning.spread,motion:reduced || !playing.current?0:tuning.motion,typeScale:tuning.typeScale}:undefined;
-        try { const signature=JSON.stringify(config.current)+intro+JSON.stringify(waves)+(presentation?.current ?? 0)+JSON.stringify(story); if (signature !== drawn) { renderer.render(config.current,intro,waves,presentation?.current ?? 0,story); drawn=signature; } } catch(e) { fail(e instanceof Error ? e.message : "Renderfehler"); return; }
+        try { const signature=JSON.stringify(config.current)+intro+JSON.stringify(waves)+(presentation?.current ?? 0)+JSON.stringify(story)+bandLag; if (signature !== drawn) { renderer.render(config.current,intro,waves,presentation?.current ?? 0,story,bandLag); drawn=signature; } } catch(e) { fail(e instanceof Error ? e.message : "Renderfehler"); return; }
       }
       raf = requestAnimationFrame(tick);
     };
@@ -91,7 +98,8 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
       const seconds=Math.max(0.008,(e.timeStamp-lastMove)/1000);
       vx=Math.max(-1.6,Math.min(1.6,dx*0.005/seconds));
       vy=Math.max(-0.8,Math.min(0.8,dy*0.003/seconds));
-      targetYaw=Math.max(-3.14,Math.min(3.14,targetYaw+dx*0.005));
+      const yaw=rotateYaw(config.current.yaw,targetYaw,dx*0.005);
+      config.current.yaw=yaw.current;targetYaw=yaw.target;observedYaw=yaw.current;
       targetPitch=Math.max(-1,Math.min(1,targetPitch+dy*0.003));
       if (!orbit || reduced) {config.current.yaw=targetYaw;config.current.pitch=targetPitch;observedYaw=targetYaw;observedPitch=targetPitch;}
       lastX=e.clientX;lastY=e.clientY;lastMove=e.timeStamp;

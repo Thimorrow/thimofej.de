@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { coast, follow } from '../src/components/type-lab/orbit-motion.ts';
+import { coast, createBandLag, follow, rotateYaw } from '../src/components/type-lab/orbit-motion.ts';
 import { glyphEdges } from '../src/components/type-lab/orbit-geometry.ts';
 import { defaults, validConfig, seedPhase } from '../src/components/type-lab/config.ts';
 
@@ -12,6 +12,71 @@ test('inertial release travels the same distance at 30, 60 and 144 Hz',()=>{
   assert.ok(coast(-1,1).distance<0);
   assert.equal(follow(1,2,0),1);
   assert.ok(follow(1,2,0.1)>1 && follow(1,2,0.1)<2);
+});
+
+test('repeated grabs turn freely in both directions and keep saved angles valid',()=>{
+  for(const direction of [-1,1]) {
+    let current=0.25,target=current,travel=0;
+    for(let grab=0;grab<30;grab++) {
+      target=current;
+      for(let move=0;move<40;move++) {
+        const delta=direction*0.05;
+        const next=rotateYaw(current,target,delta);
+        assert.ok(Math.abs((next.target-next.current)-(target+delta-current))<1e-12);
+        current=follow(next.current,next.target,1/60);target=next.target;
+        travel+=delta;
+      }
+      // Holding at the edge settles; it never keeps spinning on its own.
+      for(let hold=0;hold<120;hold++) current=follow(current,target,1/60);
+      assert.equal(current,target);
+      assert.ok(validConfig({...defaults(1),yaw:current}));
+    }
+    assert.ok(Math.abs(travel)>Math.PI*2*9);
+    const reversed=rotateYaw(current,target,-direction*0.1);
+    assert.equal(Math.sign(reversed.target-reversed.current),-direction);
+  }
+});
+
+test('coasting through the angle seam preserves direction and remaining distance',()=>{
+  for(const direction of [-1,1]) {
+    let current=direction*(Math.PI-0.02),target=current,velocity=direction*1.5,total=0;
+    for(let i=0;i<144;i++) {
+      const step=coast(velocity,1/144);velocity=step.velocity;
+      const next=rotateYaw(current,target,step.distance);
+      assert.ok(Math.abs((next.target-next.current)-(target+step.distance-current))<1e-12);
+      const followed=follow(next.current,next.target,1/144);
+      total+=followed-next.current;current=followed;target=next.target;
+    }
+    assert.equal(Math.sign(total),direction);
+    assert.ok(Math.abs(total)>0.3);
+  }
+});
+
+test('band lag visibly trails a drag, rebounds gently and settles at different refresh rates',()=>{
+  const run=hz=>{
+    const lag=createBandLag();let value=0;
+    for(let i=0;i<hz;i++) value=lag.step(3,1/hz);
+    assert.ok(value < -0.3 && value > -0.4);
+    let rebound=0;
+    for(let i=0;i<hz*2;i++) {value=lag.step(0,1/hz);rebound=Math.max(rebound,value);}
+    assert.ok(rebound>0.02 && rebound<0.08);
+    assert.equal(Math.abs(value),0);
+    return rebound;
+  };
+  assert.ok(Math.abs(run(30)-run(144))<0.002);
+  run(60);
+});
+
+test('band lag survives fast reversals and clears momentum for pause or reduced motion',()=>{
+  const lag=createBandLag();let previous=0;
+  for(let i=0;i<600;i++) {
+    const next=lag.step(i%30<15 ? 20 : -20,1/60);
+    assert.ok(Number.isFinite(next) && Math.abs(next)<0.6);
+    assert.ok(Math.abs(next-previous)<0.15);
+    previous=next;
+  }
+  assert.equal(lag.step(20,1/60,false),0);
+  for(let i=0;i<120;i++) assert.equal(Math.abs(lag.step(0,1/60)),0);
 });
 test('extruded contours are empty for empty masks and close around a single glyph pixel',()=>{
   const blank=new Uint8ClampedArray(3*3*4);
