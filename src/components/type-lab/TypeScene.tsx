@@ -6,9 +6,10 @@ import { advanceWaves, createWave, insideSculpture, type Wave } from "./backgrou
 import type { Config } from "./config";
 import { advancePrintWaves, nearestUnfoldPhase, type UnfoldInput } from './unfold-motion';
 
-export function TypeScene({ config, playing, regenerate, presentation, unfold, onReady }: { unfold?: MutableRefObject<UnfoldInput>; onReady?: (ready:boolean)=>void; presentation?: MutableRefObject<number>; config: MutableRefObject<Config>; playing: MutableRefObject<boolean>; regenerate: () => void }) {
+export function TypeScene({ config, playing, regenerate, presentation, unfold, onReady, locale = "de" }: { locale?: "de" | "en"; unfold?: MutableRefObject<UnfoldInput>; onReady?: (ready:boolean)=>void; presentation?: MutableRefObject<number>; config: MutableRefObject<Config>; playing: MutableRefObject<boolean>; regenerate: () => void }) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const [status,setStatus] = useState("Schrift wird vorbereitet …");
+  const en = locale === "en";
+  const [status,setStatus] = useState(en ? "Preparing the lettering …" : "Schrift wird vorbereitet …");
   const [error,setError] = useState(false);
   useEffect(() => {
     const el = canvas.current!;
@@ -30,7 +31,7 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
     let reduced = media.matches;
     const onReduced = () => { reduced = media.matches; vx=0;vy=0; waves=[]; drawn=""; };
     media.addEventListener("change",onReduced);
-    const fail = (message: string) => { if (!disposed) { cancelAnimationFrame(raf); setError(true); setStatus(message); onReady?.(false); } };
+    const fail = (message: string) => { if (!disposed) { cancelAnimationFrame(raf); setError(true); setStatus(en ? message.replace("Die GPU-Verbindung wurde unterbrochen. Bitte neu laden.", "The GPU connection was interrupted. Please reload.").replace("Die Schrift konnte nicht vorbereitet werden.", "The lettering could not be prepared.").replace("Die Schriftkontur ist zu komplex.", "The lettering outline is too complex.") : message); onReady?.(false); } };
     const tick = (now: number) => {
       if (disposed) return;
       const dt = last ? Math.min((now-last)/1000,0.05) : 0;
@@ -131,8 +132,8 @@ export function TypeScene({ config, playing, regenerate, presentation, unfold, o
     void createTypeRenderer(el,config.current,fail,controller.signal).then(value=>{
       if (disposed) { value.dispose(); return; }
       renderer=value; resize(); setStatus(""); onReady?.(true); raf=requestAnimationFrame(tick);
-    }).catch(e=>fail(`WebGPU ist hier nicht verfügbar: ${e instanceof Error ? e.message : "Bitte einen Browser mit WebGPU verwenden."}`));
+    }).catch(e=>fail(`${en ? "WebGPU is unavailable here" : "WebGPU ist hier nicht verfügbar"}: ${e instanceof Error ? e.message : en ? "Please use a browser with WebGPU." : "Bitte einen Browser mit WebGPU verwenden."}`));
     return () => { disposed=true; controller.abort(); cancelAnimationFrame(raf); observer.disconnect(); document.removeEventListener("visibilitychange",hide); media.removeEventListener("change",onReduced); el.removeEventListener("pointerdown",start); el.removeEventListener("pointermove",move); el.removeEventListener("pointerup",end); el.removeEventListener("pointercancel",end); renderer?.dispose(); };
-  },[config,playing,regenerate,presentation,unfold,onReady]);
-  return <><canvas ref={canvas} aria-label="Räumliche Schrift. Schrift ziehen zum Drehen oder anklicken für eine neue Variation. Auf den Hintergrund klicken für eine Welle." />{status && <div className="type-status" role={error ? "alert" : "status"}><strong>{error ? "Die Szene konnte nicht starten." : "Einen Moment."}</strong><p>{status}</p>{error && <button onClick={()=>location.reload()}>Erneut versuchen</button>}</div>}</>;
+  },[config,playing,regenerate,presentation,unfold,onReady,en]);
+  return <><canvas ref={canvas} aria-label={en ? "Spatial lettering. Drag to rotate or click for a new variation. Click the background for a wave." : "Räumliche Schrift. Schrift ziehen zum Drehen oder anklicken für eine neue Variation. Auf den Hintergrund klicken für eine Welle."} />{status && <div className="type-status" role={error ? "alert" : "status"}><strong>{error ? (en ? "The scene could not start." : "Die Szene konnte nicht starten.") : (en ? "One moment." : "Einen Moment.")}</strong><p>{status}</p>{error && <button onClick={()=>location.reload()}>{en ? "Try again" : "Erneut versuchen"}</button>}</div>}</>;
 }

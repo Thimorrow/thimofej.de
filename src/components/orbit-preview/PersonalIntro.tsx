@@ -3,7 +3,16 @@
 import { useRef, type CSSProperties } from 'react';
 import Image from 'next/image';
 
-export function PersonalIntro() {
+export function PersonalIntro({locale = 'de'}: {locale?: 'de' | 'en'}) {
+  const copy = locale === 'en' ? {
+    title: "I'm Thimofej.", intro: "I'm", portrait: 'Thimofej smiling at the camera, wearing a black cap and a white hoodie.',
+    age: '15 years old.', years: 'years old.', alias: 'Also known online as Thimorrow.',
+    bio: 'I build frontends and explore what’s possible in the browser.', work: 'What I build',
+  } : {
+    title: 'Ich bin Thimofej.', intro: 'Ich bin', portrait: 'Thimofej lächelt in die Kamera, mit schwarzer Kappe und weißem Hoodie.',
+    age: '15 Jahre alt.', years: 'Jahre alt.', alias: 'Im Netz auch Thimorrow.',
+    bio: 'Ich entwickle Frontends und probiere aus, was im Browser möglich ist.', work: 'Was ich baue',
+  };
   const portrait=useRef<HTMLElement>(null);
   const reset=()=>{
     portrait.current?.style.setProperty('--photo-x','0');
@@ -12,12 +21,12 @@ export function PersonalIntro() {
 
   return <section className="play-personal oh-panel" id="ueber-mich" aria-labelledby="personal-title">
     <div className="personal-layout">
-      <h2 className="personal-title" id="personal-title" aria-label="Ich bin Thimofej.">
-        <span className="personal-kicker" aria-hidden="true">Ich bin</span>
+      <h2 className="personal-title" id="personal-title" aria-label={copy.title}>
+        <span className="personal-kicker" aria-hidden="true">{copy.intro}</span>
         <span className="personal-name" aria-hidden="true">{'Thimofej.'.split('').map((letter,index)=><span className="personal-letter" key={index} style={{'--letter':index} as CSSProperties}>{letter}</span>)}</span>
       </h2>
       <div className="personal-photo-mount">
-        <figure ref={portrait} className="personal-portrait" role="img" aria-label="Thimofej lächelt in die Kamera, mit schwarzer Kappe und weißem Hoodie."
+        <figure ref={portrait} className="personal-portrait" role="img" aria-label={copy.portrait}
           onPointerMove={event=>{
             if(event.pointerType!=='mouse' || matchMedia('(prefers-reduced-motion: reduce)').matches || event.currentTarget.closest('[data-paused="true"]')) return;
             const box=event.currentTarget.getBoundingClientRect();
@@ -30,11 +39,11 @@ export function PersonalIntro() {
         </figure>
       </div>
       <p className="personal-age">
-        <span className="personal-accessible">15 Jahre alt.</span>
+        <span className="personal-accessible">{copy.age}</span>
         <span className="personal-age-number" aria-hidden="true"><span className="personal-digit">1</span><span className="personal-digit">5</span></span>
-        <span className="personal-age-label" aria-hidden="true">Jahre alt.</span>
+        <span className="personal-age-label" aria-hidden="true">{copy.years}</span>
       </p>
-      <div className="personal-bio"><p>Im Netz auch Thimorrow.<br/>Ich entwickle Frontends und probiere aus, was im Browser möglich ist.</p><a className="oh-text-link" href="https://github.com/thimorrow">Was ich baue <span aria-hidden="true">↗</span></a></div>
+      <div className="personal-bio"><p>{copy.alias}<br/>{copy.bio}</p><a className="oh-text-link" href="https://github.com/thimorrow">{copy.work} <span aria-hidden="true">↗</span></a></div>
     </div>
   </section>;
 }

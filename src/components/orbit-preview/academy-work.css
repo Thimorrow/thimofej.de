@@ -16,8 +16,8 @@
 .academy-work-ink { position:relative; display:block; clip-path:inset(0 calc(var(--work-title-rest) * 100%) 0 0); }
 .academy-work-note { padding-bottom:12px; }
 .academy-work-note p { margin:0 0 22px; color:#f4e9dc; font:400 clamp(22px,2.4vw,34px)/1.25 var(--font-fraunces),Georgia,serif; letter-spacing:-.025em; }
-.academy-work-link { display:flex; align-items:center; justify-content:space-between; gap:24px; min-height:48px; border-bottom:1px solid currentColor; font:13px/1.5 var(--font-ibm-plex-mono),monospace; }
-.academy-work-link span { transition:transform 180ms ease-out; }
+.academy-work-link { display:flex; align-items:center; justify-content:space-between; gap:32px; width:fit-content; min-width:220px; max-width:100%; min-height:52px; border-bottom:1px solid color-mix(in srgb,currentColor 45%,transparent); font:16px/1.5 Arial,Helvetica,sans-serif; transition:border-color 160ms ease-out; }
+.academy-work-link span { font-size:24px; transition:transform 180ms ease-out; }
 .academy-work-visual { position:relative; display:block; margin-right:20px; perspective:1400px; }
 .academy-work-visual::before { content:''; position:absolute; inset:20px -20px -20px 20px; border:1px solid color-mix(in srgb,var(--paper) 50%,transparent); }
 .academy-work-sheet { position:relative; color:var(--ink); transform-origin:50% 70%; transform:translate3d(0,calc(var(--work-image-rest) * 48px),0) rotateX(calc(var(--work-image-rest) * 7deg)) rotateZ(calc(var(--work-image-rest) * -2deg)) scale(calc(1 - var(--work-image-rest) * .035)); }
@@ -27,6 +27,7 @@
 .academy-work:focus-within { --work-title-rest:0; --work-image-rest:0; }
 .orbit-home .academy-work :focus-visible { outline-color:var(--paper); outline-offset:8px; }
 @media(hover:hover) and (pointer:fine) {
+  .academy-work-link:hover { border-color:currentColor; }
   .academy-work-link:hover span { transform:translate(3px,-3px); }
 }
 @media(max-width:900px) {
@@ -42,7 +43,7 @@
   .academy-work-by { font-size:24px; margin-left:1px; }
   .academy-work-note { padding:0; }
   .academy-work-note p { font-size:23px; margin:0; }
-  .academy-work-link { font-size:11px; width:220px; margin-top:16px; gap:12px; }
+  .academy-work-link { margin-top:20px; }
   .academy-work-visual { width:100%; margin:0; }
   .academy-work-visual::before { display:none; }
   .academy-work-bottom { margin-top:44px; gap:20px; }

@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Fraunces, Spectral, IBM_Plex_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import AnchorScrollControl from "@/components/AnchorScrollControl";
 import "./globals.css";
 
 const fraunces = Fraunces({ subsets: ["latin"], axes: ["opsz"], variable: "--font-fraunces", display: "swap" });
@@ -41,13 +43,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = (await headers()).get("x-site-locale") === "de" ? "de" : "en";
   return (
-    <html lang="de" className={`${fraunces.variable} ${spectral.variable} ${mono.variable}`}>
+    <html lang={locale} className={`${fraunces.variable} ${spectral.variable} ${mono.variable}`}>
       <body>
         {children}
+        <AnchorScrollControl />
         <Analytics />
         <SpeedInsights />
       </body>

@@ -12,7 +12,16 @@ import { portraitReveal } from './portrait-motion';
 import './orbit-home.css';
 import './prototypes.css';
 
-export function OrbitHome() {
+export function OrbitHome({locale = 'de'}: {locale?: 'de' | 'en'}) {
+  const copy = locale === 'en' ? {
+    skip: 'Skip to introduction', top: 'Thimofej, back to top', navigation: 'Page navigation',
+    about: 'About me', contact: 'Contact', more: 'More about Thimofej', next: 'Explore',
+    play: 'Play animation', pause: 'Pause animation', language: 'Language',
+  } : {
+    skip: 'Zur Vorstellung', top: 'Thimofej, nach oben', navigation: 'Seitennavigation',
+    about: 'Über mich', contact: 'Kontakt', more: 'Mehr über Thimofej', next: 'Weiter',
+    play: 'Animation abspielen', pause: 'Animation pausieren', language: 'Sprache',
+  };
   const root = useRef<HTMLElement>(null);
   const print = useRef({...printDefaults});
   const unfold = useRef<UnfoldInput>({x:0,y:0,tuning:print,waves:[]});
@@ -82,24 +91,29 @@ export function OrbitHome() {
     const anchor=()=>{anchoredSection=location.hash.slice(1);anchorEntered=false;scroll();};
     const preference=()=>{pausedByUser.current=reduced.matches;playing.current=!reduced.matches;setPaused(reduced.matches);el.dataset.paused=String(reduced.matches);update();};
     preference();
-    addEventListener('scroll',scroll,{passive:true});addEventListener('resize',scroll);addEventListener('hashchange',anchor);reduced.addEventListener('change',preference);
-    return ()=>{cancelAnimationFrame(frame);removeEventListener('scroll',scroll);removeEventListener('resize',scroll);removeEventListener('hashchange',anchor);reduced.removeEventListener('change',preference);};
+    addEventListener('anchor-arrive',update);addEventListener('scroll',scroll,{passive:true});addEventListener('resize',scroll);addEventListener('hashchange',anchor);reduced.addEventListener('change',preference);
+    return ()=>{cancelAnimationFrame(frame);removeEventListener('anchor-arrive',update);removeEventListener('scroll',scroll);removeEventListener('resize',scroll);removeEventListener('hashchange',anchor);reduced.removeEventListener('change',preference);};
   }, []);
 
   useEffect(()=>{dispatchEvent(new Event('scroll'));},[sceneReady]);
 
-  return <main ref={root} className="orbit-home" lang="de" id="anfang" data-scene-ready={sceneReady}>
-    <a className="oh-skip" href="#ueber-mich">Zur Vorstellung</a>
-    <div className="oh-scene"><TypeScene config={config} playing={playing} regenerate={regenerate} presentation={presentation} unfold={unfold} onReady={setSceneReady}/></div>
+  return <main ref={root} className="orbit-home" lang={locale} id="anfang" data-scene-ready={sceneReady}>
+    <a className="oh-skip" href="#ueber-mich">{copy.skip}</a>
+    <div className="oh-scene"><TypeScene locale={locale} config={config} playing={playing} regenerate={regenerate} presentation={presentation} unfold={unfold} onReady={setSceneReady}/></div>
     <header className="oh-header">
-      <a className="oh-wordmark" href="#anfang" aria-label="Thimofej, nach oben">thimofej<span aria-hidden="true">.</span></a>
-      <nav aria-label="Seitennavigation"><a href="#ueber-mich">Über mich</a><a href="#kontakt">Kontakt <span aria-hidden="true">↓</span></a></nav>
+      <a className="oh-wordmark" href="#anfang" aria-label={copy.top}>thimofej<span aria-hidden="true">.</span></a>
+      <nav aria-label={copy.navigation}><a href="#ueber-mich">{copy.about}</a><a href="#kontakt">{copy.contact} <span aria-hidden="true">↓</span></a></nav>
+      <nav className="oh-language" aria-label={copy.language}>
+        <a href="/de" hrefLang="de" lang="de" aria-label="Deutsch" aria-current={locale === 'de' ? 'page' : undefined}>DE</a>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- Reload the document so its language changes with the route. */}
+        <a href="/" hrefLang="en" lang="en" aria-label="English" aria-current={locale === 'en' ? 'page' : undefined}>EN</a>
+      </nav>
     </header>
     <section className="oh-hero" aria-labelledby="oh-name">
       <div className="oh-identity"><h1 id="oh-name">Thimofej<br/><span>Zapko.</span></h1></div>
-      <a href="#person" className="oh-scroll" aria-label="Mehr über Thimofej"><span>Weiter</span><span aria-hidden="true">↓</span></a>
+      <a href="#person" className="oh-scroll" aria-label={copy.more}><span>{copy.next}</span><span aria-hidden="true">↓</span></a>
     </section>
-    <Spielraum seed={printDefaults.seed} onPrintPulse={pulsePrint} onPrintPointer={movePrint} interactive={sceneReady && !paused}/>
-    <button className="oh-pause" onClick={()=>{pausedByUser.current=!pausedByUser.current;playing.current=!pausedByUser.current;setPaused(pausedByUser.current);root.current!.dataset.paused=String(pausedByUser.current);dispatchEvent(new Event('scroll'));}} aria-label={paused?'Animation abspielen':'Animation pausieren'} title={paused?'Animation abspielen':'Animation pausieren'}>{paused?'▷':'Ⅱ'}</button>
+    <Spielraum locale={locale} seed={printDefaults.seed} onPrintPulse={pulsePrint} onPrintPointer={movePrint} interactive={sceneReady && !paused}/>
+    <button className="oh-pause" onClick={()=>{pausedByUser.current=!pausedByUser.current;playing.current=!pausedByUser.current;setPaused(pausedByUser.current);root.current!.dataset.paused=String(pausedByUser.current);dispatchEvent(new Event('scroll'));}} aria-label={paused?copy.play:copy.pause} title={paused?copy.play:copy.pause}>{paused?'▷':'Ⅱ'}</button>
   </main>;
 }

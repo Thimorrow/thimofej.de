@@ -5,7 +5,10 @@ import './contact-finale.css';
 
 const row = 'THIMOFEJ · ZAPKO · THIMORROW · '.repeat(7);
 
-export function ContactFinale() {
+export function ContactFinale({locale = 'de'}: {locale?: 'de' | 'en'}) {
+  const copy = locale === 'en'
+    ? {hello: 'Hello.', email: 'Say hello: Email Thimofej', top: 'Back to top'}
+    : {hello: 'Hallo.', email: 'Hallo sagen: E-Mail an Thimofej', top: 'Zurück nach oben'};
   const section = useRef<HTMLElement>(null);
   const word = useRef<HTMLSpanElement>(null);
   const resetLetters = () => {
@@ -18,8 +21,8 @@ export function ContactFinale() {
       {Array.from({length: 15}, (_, index) => <span key={index}>{row}</span>)}
     </div>
     <div className="contact-layout">
-      <h2 id="contact-title" aria-label="Hallo."><a className="contact-hello" href="mailto:thimofej@yesterday-ai.de"
-        aria-label="Hallo sagen: E-Mail an Thimofej"
+      <h2 id="contact-title" aria-label={copy.hello}><a className="contact-hello" href="mailto:thimofej@yesterday-ai.de"
+        aria-label={copy.email}
         onPointerMove={event => {
           if (event.pointerType !== 'mouse' || matchMedia('(prefers-reduced-motion: reduce)').matches || event.currentTarget.closest('[data-paused="true"]')) return;
           const bounds = section.current!.getBoundingClientRect();
@@ -38,14 +41,14 @@ export function ContactFinale() {
         }}
         onPointerLeave={resetLetters}
         onBlur={resetLetters}>
-        <span ref={word} className="contact-word" aria-hidden="true">{[...'Hallo.'].map((letter, index) => <span data-contact-letter className={letter === '.' ? 'contact-letter contact-stop' : 'contact-letter'} key={index}>{letter}</span>)}</span>
+        <span ref={word} className="contact-word" aria-hidden="true">{[...copy.hello].map((letter, index) => <span data-contact-letter className={letter === '.' ? 'contact-letter contact-stop' : 'contact-letter'} key={index}>{letter}</span>)}</span>
         <svg className="finale-arrow" viewBox="0 0 100 100" fill="none" aria-hidden="true"><path d="M18 82 82 18M18 18h64v64" vectorEffect="non-scaling-stroke"/></svg>
       </a></h2>
       <div className="contact-details">
         <a className="finale-email" href="mailto:thimofej@yesterday-ai.de">thimofej@yesterday-ai.de</a>
         <div className="oh-social"><a href="https://github.com/thimorrow">GitHub <span aria-hidden="true">↗</span></a><a href="https://x.com/thimorrowr">X <span aria-hidden="true">↗</span></a></div>
       </div>
-      <footer className="contact-footer"><span>© 2026 Thimofej Zapko</span><a href="#anfang">Zurück nach oben <span aria-hidden="true">↑</span></a></footer>
+      <footer className="contact-footer"><span>© 2026 Thimofej Zapko</span><a href="#anfang">{copy.top} <span aria-hidden="true">↑</span></a></footer>
     </div>
   </section>;
 }

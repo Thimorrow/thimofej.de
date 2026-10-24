@@ -6,13 +6,13 @@ import { printRows } from './print-config';
 import { PersonalIntro } from './PersonalIntro';
 import { ContactFinale } from './ContactFinale';
 
-export function Spielraum({seed, onPrintPulse, onPrintPointer, interactive}: {seed: number; onPrintPulse: (x:number,y:number) => void; interactive: boolean; onPrintPointer:(x:number,y:number)=>void}) {
+export function Spielraum({seed, onPrintPulse, onPrintPointer, interactive, locale = 'de'}: {locale?: 'de' | 'en'; seed: number; onPrintPulse: (x:number,y:number) => void; interactive: boolean; onPrintPointer:(x:number,y:number)=>void}) {
   const field = useRef<HTMLButtonElement>(null);
   return <div className="oh-content oh-spielraum">
     <section className="play-print oh-panel" id="person" aria-labelledby="play-title">
       <div className="play-print-stage">
-      <h2 id="play-title" className="personal-accessible">Schriftspiel</h2>
-      <button ref={field} className="play-field" aria-label={interactive ? "THIMORROW: Textwelle auslösen" : "THIMORROW"} disabled={!interactive} onClick={event=>{
+      <h2 id="play-title" className="personal-accessible">{locale === 'en' ? 'Type playground' : 'Schriftspiel'}</h2>
+      <button ref={field} className="play-field" aria-label={interactive ? (locale === 'en' ? "THIMORROW: Trigger a text wave" : "THIMORROW: Textwelle auslösen") : "THIMORROW"} disabled={!interactive} onClick={event=>{
         // The artwork covers the viewport, independently of the button's inset.
         const box=event.currentTarget.getBoundingClientRect();
         const x=event.detail===0 ? box.left+box.width/2 : event.clientX;
@@ -28,8 +28,8 @@ export function Spielraum({seed, onPrintPulse, onPrintPointer, interactive}: {se
       </button>
       </div>
     </section>
-    <PersonalIntro/>
-    <AcademyWork/>
-    <ContactFinale/>
+    <PersonalIntro locale={locale}/>
+    <AcademyWork locale={locale}/>
+    <ContactFinale locale={locale}/>
   </div>;
 }

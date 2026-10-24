@@ -1,5 +1,11 @@
 # Orbit-Labor: akzeptierter Zwischenstand
 
+## Academy veröffentlicht (24. Oktober 2026)
+
+Auf „Mach push und live“ als `16b87206049cf55dc9cd0416f799951267e57d2a` mit bestehender Nutzeridentität auf `codex/feat/vgpu-homepage` gesichert und gepusht. Kein Merge nach `main`. Vercel-Produktion `dpl_GyHvPvJnx9JCU4NK4fnFcjsrPjXC` ist `READY`, bestätigt genau diesen Commit und ist ohne Aliasfehler `thimofej.de` und `www.thimofej.de` zugeordnet. Produktionsbuild rund 19 Sekunden. Deployment: https://thimofej-nkmhskq89-zapkothimofej-2616s-projects.vercel.app.
+
+Direkt auf https://thimofej.de geprüft: Desktop-Homepage mit sichtbarem Loop und geschriebenem Beispieltext, Pause hält den Fortschritt stabil, Projektlink führt zur Detailseite. Dort bei 390×844 vollständiger Durchlauf bis zum Ergebnis, automatisches Dokument-Scrollen und Neustart im Katalog. Kein horizontaler Überlauf in beiden geprüften Ansichten; keine aufgezeichneten Browserfehler im instrumentierten Homepage-Lauf. Vercel lieferte im abgefragten 10-Minuten-Fenster keine Error-/Fatal-Logs für das Deployment. Die folgenden lokalen Nicht-veröffentlicht-Angaben dokumentieren den vorherigen Prüfstand und sind für diese Veröffentlichung überholt.
+
 ## Academy-Überarbeitung und automatischer Loop (24. Oktober 2026, lokal)
 
 Auftrag: Academy auf Homepage und Detailseite verbessern; zusätzliche Nutzeranweisung, die Demo selbstständig als Loop laufen zu lassen.
@@ -317,3 +323,25 @@ Abschließende Produktionsprüfung nach Entfernung der Titelreise: nativer Seite
 Letzte Nutzerkorrektur: Der frühere Hover-Effekt pro Buchstabe im „Hallo“ soll ausdrücklich zurück. Im neuen Kontaktaufbau wiederhergestellt: einzelne Buchstaben heben und neigen sich nach Mausnähe, mit weicher Rückkehr beim Verlassen. Rasterreaktion und neue Komposition bleiben. Pause, Touch und reduzierte Bewegung erhalten die ruhige Fassung. Im lokalen Browser drei Mauspositionen mit unterschiedlichen Buchstabenbewegungen, Rückkehr und reduzierte Bewegung geprüft; TypeScript und betroffenes ESLint erfolgreich.
 
 Anschließender Nutzerauftrag: „push“. Die geprüfte Ausarbeitung einschließlich wiederhergestelltem Buchstaben-Hover wird auf dem bestehenden Branch `codex/feat/vgpu-homepage` gesichert. Commit und Push sind beauftragt; Merge und eine gesonderte Produktionsfreigabe sind daraus nicht abgeleitet.
+
+
+## Englisch-Unterstützung (24. Oktober 2026, lokal geprüft)
+
+Auftrag: englische Website ergänzen. Umfang: Homepage und Academy-Projektbeschreibung unter `/en` bzw. `/en/projects/academy`, DE/EN-Wechsel, lokalisierte Metadaten und Dokumentensprache. Deutsche Adressen bleiben bestehen. Die Academy-Produktoberfläche bleibt als deutschsprachige Referenzdemo gekennzeichnet. Keine Veröffentlichung beauftragt.
+
+Akzeptanz: englische Inhalte serverseitig vorhanden; deutsche und englische Links führen zur passenden Sprachfassung; beide Dokumentensprachen und Suchmaschinen-Verweise stimmen; Desktop und schmale Mobilansicht ohne Überlauf; Pause, Fokus und Sprunglinks funktionieren. Vorhandene lokale Academy-Arbeit erhalten.
+
+Arbeitsaufteilung: zuerst Routing und bestehende Komponenten prüfen; dann ein Implementierungsagent für die zusammengehörigen Homepage-Komponenten, Hauptagent für Routen und Projektbeschreibung. Geteilte Dateien werden nicht gleichzeitig bearbeitet. Anschließend gemeinsame Typ-, Lint-, Test-, Build- und Browserprüfung.
+
+Ergebnis: Homepage und Academy-Projektbeschreibung teilen ihre Komponenten zwischen Deutsch und Englisch. Native DE/EN-Links laden das Dokument mit der korrekten Sprache neu. Ein URL-basierter Proxy setzt die Sprache serverseitig für das HTML; keine automatische Umleitung nach Browsersprache. Dadurch werden die Seiten aktuell dynamisch auf dem Server gerendert statt vollständig vorab erzeugt. Keine neue Abhängigkeit. Canonical-, hreflang-, Open-Graph-, Profil- und Sitemap-Angaben für beide Fassungen ergänzt. Canvas-, Lade- und Fehlertexte lokalisiert; deutsche Produktdemo mit eigenem `lang="de"` und englischer Kennzeichnung erhalten.
+
+Prüfstand: betroffenes ESLint ohne Warnungen, TypeScript, alle 46 aktuell vorhandenen Tests und Produktionsbuild erfolgreich. 16 bestehende CSS-Warnungen aus `academy/catalog/catalog.css` bleiben. `node scripts/check-localization.mjs` prüft die tatsächlich ausgelieferten vier Sprachseiten und Sitemap, einschließlich manipulierter Sprachheader; erfolgreich sowohl am Entwicklungsserver als auch mit `SITE_URL=http://localhost:3187` am lokalen Produktionsbuild. Produktions-WebGPU-Szene bereit und ohne Desktop-Überlauf bestätigt.
+
+Browser: 1512/1440 Pixel Desktop, 390 und 320 Pixel Mobilansicht; englische Vorstellung, Projektseite und Kontakt angesehen. Kein horizontaler Überlauf in den geprüften Ansichten. Homepage-Sprachwechsel in beide Richtungen, Projekt-Sprachwechsel, englischer Projekt-Rücklink, Pause, sichtbarer Tastaturfokus, reduzierte Bewegung und simulierter WebGPU-Ausfall mit englischem Fehlerhinweis und weiterhin vorhandenem Kontakt geprüft. Kurze Wartefehler beim direkt auf eine Navigation folgenden zweiten automatisierten Klick durch erneute Prüfung an vollständig geladener Seite aufgelöst. Vorhandene bzw. parallel entstandene Academy- und Scroll-Änderungen erhalten. Kein Commit, Push oder Deployment. Echtes Handy und Nutzerabnahme offen. Lokale Vorschau unter http://localhost:3000/en.
+
+
+### Englisch als Standard (24. Oktober 2026, lokal geprüft)
+
+Nutzerkorrektur „Mach es standard“: Englisch unter `/` und `/projects/academy`, Deutsch unter `/de` und `/de/projects/academy`. Bisherige `/en`-Adressen leiten dauerhaft auf die englischen Standardadressen weiter. Sprachschalter, Rücklinks, Dokumentensprache, Metadaten und Sitemap entsprechend anpassen. Deutsche Produktdemo und Labor bleiben deutsch. Keine Veröffentlichungsfreigabe. Akzeptanz: englischer Erstaufruf, deutsche Fassung weiterhin erreichbar, korrekte Sprachwechsel und Weiterleitungen.
+
+Umgesetzt und geprüft: Root und Projektseite liefern Englisch; `/de` und `/de/projects/academy` Deutsch. Sprachschalter, Rücklinks, Dokumentensprache, Profil-URL und Suchmaschinenverweise aktualisiert. Beide bisherigen `/en`-Routen liefern 308-Weiterleitungen. Laufende HTML-Prüfung für alle vier Sprachseiten, Sitemap und beide Weiterleitungen erfolgreich. Browser bestätigt englischen Root-Erstaufruf, deutschen Homepage-Schalter und Projekt-Sprachwechsel mit passenden Rücklinks; Mobilansicht 390px ohne Überlauf. Betroffenes ESLint, TypeScript, alle 46 Tests und Produktionsbuild erfolgreich; bekannte 16 Academy-CSS-Warnungen bleiben. Keine Veröffentlichung, kein Commit oder Push.
