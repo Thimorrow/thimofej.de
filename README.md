@@ -18,7 +18,7 @@ The homepage uses vgpu for the cinematic particle intro, chapter morphs, bloom, 
 
 ## Google Search
 
-The homepage includes Thimofej Zapko's name in its title and server-rendered heading, a canonical URL, and linked `WebSite`, `ProfilePage`, and `Person` structured data. The site name is consistently "Thimofej Zapko"; the structured data connects it with "Thimofej" and "Thimorrow", and the visible copy explains the Thimorrow alias. `robots.txt` allows crawling and points to the sitemap. The sitemap lists the homepage and Academy project; `/writing` is omitted while it has no articles. Only add `lastModified` when an actual content update date is available.
+The homepage includes Thimofej Zapko's name in its title and server-rendered heading, a canonical URL, and linked `WebSite`, `ProfilePage`, and `Person` structured data. The site name is consistently "Thimofej Zapko"; the structured data connects it with "Thimofej" and "Thimorrow", and the visible copy explains the Thimorrow alias. `robots.txt` allows crawling and points to the sitemap. The sitemap lists the homepage and Academy project. The empty `/writing` route has been removed and returns the custom 404 page. Only add `lastModified` when an actual content update date is available.
 
 Keep `public/google47519819701820bd.html` in every deployment: Search Console ownership was verified through this file. The root layout also contains the HTML-tag verification code.
 
