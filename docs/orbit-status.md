@@ -1,5 +1,11 @@
 # Orbit-Labor: akzeptierter Zwischenstand
 
+## Neues Link-Vorschaubild (25. Oktober 2026, lokal)
+
+Auftrag: neues Bild für geteilte Website-Links. `src/app/opengraph-image.png` und `twitter-image.png` ersetzen das frühere dunkle Würfelmotiv durch die vorhandene mandarinfarbene Gestaltung: großer Name in Fraunces, Berufsangabe, Domain und echte Orbit-Skulptur aus der lokalen WebGPU-Szene. 1200×630 Pixel, jeweils 184389 Bytes; keine Änderung an der Homepage-Szene. Alternativtexte aktualisiert. `assets/social-card.svg` ist die ungenutzte historische Vorlage des früheren Motivs, nicht die Quelle des aktuellen Bildes.
+
+Bei der Prüfung fehlte `og:image` auf der deutschen Homepage und beiden Academy-Projektseiten. Dort explizite Bildverweise mit Versionsparameter ergänzt. `scripts/check-localization.mjs` prüft jetzt auch vorhandene und erreichbare PNG-Vorschaubilder für alle vier Sprachseiten. Bildkomposition im Browser visuell geprüft; lokale Auslieferung, Sprachprüfung, TypeScript, betroffenes ESLint, alle 51 Tests und Produktionsbuild erfolgreich. Die 16 bestehenden Academy-CSS-Warnungen bleiben. Kein Commit, Push oder Deployment. Gestaltung noch nicht vom Nutzer abgenommen; tatsächliche Vorschau in Messenger-Diensten nach Veröffentlichung offen.
+
 ## Academy veröffentlicht (24. Oktober 2026)
 
 Auf „Mach push und live“ als `16b87206049cf55dc9cd0416f799951267e57d2a` mit bestehender Nutzeridentität auf `codex/feat/vgpu-homepage` gesichert und gepusht. Kein Merge nach `main`. Vercel-Produktion `dpl_GyHvPvJnx9JCU4NK4fnFcjsrPjXC` ist `READY`, bestätigt genau diesen Commit und ist ohne Aliasfehler `thimofej.de` und `www.thimofej.de` zugeordnet. Produktionsbuild rund 19 Sekunden. Deployment: https://thimofej-nkmhskq89-zapkothimofej-2616s-projects.vercel.app.

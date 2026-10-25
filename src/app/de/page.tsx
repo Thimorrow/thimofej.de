@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     siteName: "Thimofej Zapko",
     locale: "de_DE",
     url: "/de",
+    images: [{ url: "/opengraph-image.png?v=20261025", width: 1200, height: 630, alt: "Thimofej Zapko. AI engineer & frontend developer." }],
   },
 };
 
