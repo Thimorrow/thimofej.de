@@ -9,7 +9,7 @@
   overflow: clip;
   background: var(--paper);
   color: var(--ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
   font-synthesis: none;
 }
 
@@ -29,7 +29,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font: 600 34px/1 var(--font-fraunces), Georgia, serif;
+  font:400 34px/1 var(--font-display), Georgia, serif;
   letter-spacing: -.06em;
   transition: opacity 150ms ease-out;
 }
@@ -55,7 +55,7 @@
   display: flex;
   align-items: baseline;
   justify-content: center;
-  font: 450 clamp(230px, 32vw, 470px)/.86 var(--font-fraunces), Georgia, serif;
+  font:400 clamp(230px, 32vw, 470px)/.86 var(--font-display), Georgia, serif;
   letter-spacing: -.075em;
   font-variant-numeric: lining-nums;
   font-optical-sizing: auto;
@@ -102,10 +102,10 @@
   padding-top: 28px;
   border-top: 1px solid color-mix(in srgb, var(--ink) 24%, transparent);
 }
-.label { margin: 0 0 18px; font: 12px/1.4 var(--font-ibm-plex-mono), monospace; }
+.label { margin: 0 0 18px; font: 12px/1.4 var(--font-mono), monospace; }
 .message h1 {
   margin: 0;
-  font: 450 clamp(42px, 5.2vw, 82px)/.98 var(--font-fraunces), Georgia, serif;
+  font:400 clamp(42px, 5.2vw, 82px)/.98 var(--font-display), Georgia, serif;
   letter-spacing: -.06em;
 }
 .message h1 > span { padding-left: .18em; font-weight: 400; }

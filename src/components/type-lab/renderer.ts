@@ -10,15 +10,14 @@ import { unfoldTone } from './unfold-motion';
 
 type Story = {waves:Wave[];time:number;x:number;y:number;phase:number;spread:number;motion:number;typeScale:number};
 
-let fontReady: Promise<FontFace> | undefined;
-
 export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Config, fail: (message: string) => void, signal: AbortSignal) {
   let gpu: Gpu | undefined;
   try {
+    const fonts = getComputedStyle(document.documentElement);
+    const font = fonts.getPropertyValue("--font-body").trim() || "sans-serif";
+    const mono = fonts.getPropertyValue("--font-mono").trim() || "monospace";
+    await Promise.all([document.fonts.load(`850 100px ${font}`), document.fonts.load(`400 60px ${mono}`)]);
     await document.fonts.ready;
-    fontReady ??= new FontFace("TypeLabSans", 'url("/type-lab/inter.woff2")', {weight:"100 900"}).load().then(face=>{document.fonts.add(face);return face;}).catch(error=>{fontReady=undefined;throw error;});
-    await fontReady;
-    const font = '"TypeLabSans", sans-serif';
     signal.throwIfAborted();
     gpu = await init({ label: "Spatial type lab · vgpu", powerPreference: "high-performance" });
     signal.throwIfAborted();
@@ -71,7 +70,6 @@ export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Conf
     const characterAtlas=document.createElement("canvas");characterAtlas.width=17*64;characterAtlas.height=64;
     const charContext=characterAtlas.getContext("2d")!;
     charContext.fillStyle="black";charContext.fillRect(0,0,17*64,64);
-    const mono=getComputedStyle(document.documentElement).getPropertyValue("--font-ibm-plex-mono").trim() || "monospace";
     charContext.font=`400 60px ${mono}`;charContext.fillStyle="white";charContext.textAlign="center";charContext.textBaseline="middle";
     [..."THIMOFEJZAPKRW·/<"].forEach((letter,i)=>charContext.fillText(letter,i*64+32,32));
     const alphabet=texture(context,{kind:"2d",size:[17*64,64],format:"rgba8unorm",usage:["texture_binding","copy_dst","render_attachment"]});

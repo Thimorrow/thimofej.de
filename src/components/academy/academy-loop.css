@@ -1,6 +1,6 @@
 /* The same product surface, with a deterministic, hands-free presentation. */
 .academy-loop { border-radius:12px; }
-.academy-loop-toolbar { position:relative; display:flex; justify-content:space-between; align-items:center; gap:16px; min-height:60px; padding:8px 20px; background:#f4e9dc; color:#241a16; font:12px/1.5 var(--font-ibm-plex-mono),monospace; }
+.academy-loop-toolbar { position:relative; display:flex; justify-content:space-between; align-items:center; gap:16px; min-height:60px; padding:8px 20px; background:#f4e9dc; color:#241a16; font:12px/1.5 var(--font-mono),monospace; }
 .academy-loop-phase { display:flex; align-items:center; gap:14px; }
 .academy-loop-phase>span { color:#765b4c; font-variant-numeric:tabular-nums; }
 .academy-loop-toolbar button { display:flex; align-items:center; justify-content:center; gap:12px; min-height:44px; min-width:88px; border:0; background:transparent; cursor:pointer; }

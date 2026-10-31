@@ -6,22 +6,14 @@ import { SHEET, creaseAngle, creaseLayout, type Crease } from "./folio-geometry"
 import { ATLAS, typesetSheet } from "./folio-type";
 
 const WALL_Z = -3.3;
-const FAMILY = "TypeLabSans";
-
-/** FontFaceSet.check() answers true for families it has never seen, so look for the face itself. */
-async function ensureFont() {
-  await document.fonts.ready;
-  const present = [...document.fonts].some(face => face.family.replace(/["']/g, "") === FAMILY && face.status === "loaded");
-  if (present) return;
-  const face = new FontFace(FAMILY, 'url("/type-lab/inter.woff2")', { weight: "100 900" });
-  await face.load();
-  document.fonts.add(face);
-}
-
 export async function createFolioRenderer(canvas: HTMLCanvasElement, config: Config, fail: (message: string) => void, signal: AbortSignal) {
   let gpu: Gpu | undefined;
   try {
-    try { await ensureFont(); } catch { /* A missing woff2 falls back to the system sans; the scene still runs. */ }
+    const font = getComputedStyle(document.documentElement).getPropertyValue("--font-body").trim() || "sans-serif";
+    try {
+      await document.fonts.load(`850 100px ${font}`);
+      await document.fonts.ready;
+    } catch { /* A missing woff2 falls back to the system sans; the scene still runs. */ }
     signal.throwIfAborted();
     gpu = await init({ label: "Folio · vgpu", powerPreference: "high-performance" });
     signal.throwIfAborted();
@@ -39,7 +31,7 @@ export async function createFolioRenderer(canvas: HTMLCanvasElement, config: Con
     const letters = texture(context, { kind: "2d", size: [ATLAS.width, ATLAS.height], format: "rgba8unorm", usage: ["texture_binding", "copy_dst", "render_attachment"] });
     let lastText = "";
     const writeText = (text: string) => {
-      typesetSheet(ctx, text, `"${FAMILY}", sans-serif`);
+      typesetSheet(ctx, text, font);
       context.gpu.queue.copyExternalImageToTexture({ source: atlas }, { texture: letters.gpu }, [ATLAS.width, ATLAS.height]);
       lastText = text;
     };
