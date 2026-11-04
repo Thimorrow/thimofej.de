@@ -1,0 +1,19 @@
+Interactive browser demo adapted from the local native Lilt app.
+Native geometry, SVG icons, colours and motion curves come from its source.
+The browser version uses local audio samples and in-memory file objects;
+it does not connect to native applications or upload selected files.
+Familjen Grotesk is distributed under the SIL Open Font License;
+see Familjen-Grotesk-OFL.txt in this directory.
+
+Lilt app and design attribution:
+https://github.com/Thimorrow/Lilt
+https://vayun.net/studies/lilt/
+The wordmark uses the same SVG path data as Lilt's native Settings sidebar.
+
+MacBook Pro M5 14-inch Space Black device bezel:
+Apple Design Resources, https://developer.apple.com/design/resources/
+https://devimages-cdn.apple.com/design/resources/download/Bezel-MacBook-Pro-M5.dmg
+Copyright Apple Inc. Used under the Apple Design Resources License, accepted
+with the project owner's explicit permission on 2026-11-04.
+The original device PNG is preserved unchanged; app content is placed behind
+the transparent screen area.

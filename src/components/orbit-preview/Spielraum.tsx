@@ -2,6 +2,7 @@
 
 import { useRef, type CSSProperties } from 'react';
 import { AcademyWork } from './AcademyWork';
+import { LiltWork } from './LiltWork';
 import { printRows } from './print-config';
 import { PersonalIntro } from './PersonalIntro';
 import { ContactFinale } from './ContactFinale';
@@ -29,6 +30,7 @@ export function Spielraum({seed, onPrintPulse, onPrintPointer, interactive, loca
       </div>
     </section>
     <PersonalIntro locale={locale}/>
+    <LiltWork locale={locale}/>
     <AcademyWork locale={locale}/>
     <ContactFinale locale={locale}/>
   </div>;

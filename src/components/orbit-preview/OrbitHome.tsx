@@ -51,9 +51,11 @@ export function OrbitHome({locale = 'de'}: {locale?: 'de' | 'en'}) {
       section,
       reveals: (section.id==='academy'
         ? [['.academy-work-heading','--work-title-reveal'],['.academy-work-visual','--work-image-reveal']]
-        : section.id==='ueber-mich'
-          ? [['.personal-photo-mount','--portrait-reveal'],['.personal-title','--name-reveal'],['.personal-age','--age-reveal']]
-          : []).map(([selector,property])=>({node:section.querySelector<HTMLElement>(selector),property})),
+        : section.id==='lilt'
+          ? [['.lilt-work-stage','--lilt-device-reveal'],['.lilt-work-details','--lilt-copy-reveal']]
+          : section.id==='ueber-mich'
+            ? [['.personal-photo-mount','--portrait-reveal'],['.personal-title','--name-reveal'],['.personal-age','--age-reveal']]
+            : []).map(([selector,property])=>({node:section.querySelector<HTMLElement>(selector),property})),
     }));
     let frame=0;
     let anchoredSection=location.hash.slice(1);
@@ -70,7 +72,7 @@ export function OrbitHome({locale = 'de'}: {locale?: 'de' | 'en'}) {
           else if(anchorEntered) anchoredSection='';
         }
         return {section,bounds,reveals:reveals.map(({node,property})=>({
-          property,value:still || (anchor && anchorEntered) || !node ? 1 : portraitReveal(node.getBoundingClientRect().top,innerHeight,section.id==='ueber-mich' ? .55 : .28),
+          property,value:still || (anchor && anchorEntered) || !node ? 1 : portraitReveal(node.getBoundingClientRect().top,innerHeight,section.id==='ueber-mich' || section.id==='lilt' ? .55 : .28),
         }))};
       });
       const distance=Math.max(1,innerHeight*0.95);
