@@ -7,7 +7,7 @@ Diese persönliche Website soll eigenständig, hochwertig und mit **Love for the
 - Vor Arbeit an Orbit, dem Zeichenfeld oder der Seitenvorschau `docs/orbit-status.md` lesen. Für exakte akzeptierte Hintergrundwerte `docs/orbit-background-accepted-2026-10-23.json` und `src/components/type-lab/background-tuning.ts` prüfen. Historische Versuche in `docs/orbit-direction.md` nicht mit aktuellen Entscheidungen verwechseln.
 - `/lab/type` ist das akzeptierte Labor. Am 23. Oktober 2026 hat der Nutzer mit „mach es zur neuen Homepage“ die Übernahme der aktuellen Spielraum-Fassung nach `/` ausdrücklich beauftragt. `/lab/home` bleibt als nicht indexierte Vorschau derselben Komponente erreichbar. Diese Übernahme ersetzt die frühere Vorgabe, die Homepage getrennt zu erhalten. Commit, Push, Merge und Veröffentlichung weiterhin nach dem jeweils erteilten Auftrag behandeln.
 - Akzeptierte Einstellungen und gestalterische Entscheidungen bewahren. Eine neue Korrektur ergänzt den laufenden Auftrag; sie setzt nicht alle bisherigen Entscheidungen zurück. Varianten nur bauen, wenn noch eine Entscheidung offen ist oder der Nutzer sie verlangt.
-- Orbit und Zeichenfeld verwenden vgpu/WebGPU. Keine neue Rendering- oder Animationsbibliothek ohne konkreten Bedarf. Vorhandene andere Bereiche nicht nebenbei migrieren.
+- Orbit, Zeichenfeld und Partikel verwenden Three.js/WebGL. Der Nutzer hat am 4. November 2026 die Rückkehr von vgpu beauftragt. Keine neue Rendering- oder Animationsbibliothek ohne konkreten Bedarf. Vorhandene andere Bereiche nicht nebenbei migrieren.
 - Die Regler im Labor verwenden DialKit im Dark Mode. Zufall für ruhige Welle und Klickwelle bleibt getrennt; Raster und Zusammenspiel werden dabei nicht mitgewürfelt. Keine Herzformen. Graphit-Auswahl und sichtbare Orbit-Beschriftung nicht ungefragt zurückbringen.
 
 ## Love for the craft: beobachtbare Anforderungen
@@ -20,7 +20,7 @@ Vor einer wesentlichen UI-Änderung benennen, welche konkrete Wirkung verbessert
 - **Bewegung:** Das Wow bleibt ein Gestaltungsziel. Auslöser, Start, Ausbreitung, Nachlauf und Endzustand als einen zusammenhängenden Ablauf gestalten. Keine willkürlichen Effekte stapeln. Wiederholte Eingaben, Unterbrechungen und Rückwärts-Scrollen prüfen; reduzierte Bewegung respektieren. Performance im laufenden Browser beurteilen, nicht aus dem Quellcode versprechen.
 - **Referenzen:** Bei „genau wie im Video“ das konkrete Video ansehen und relevante Phasen vergleichen. Mehrere Klicks von einem Nachimpuls unterscheiden. Beobachtungen, Schätzungen und unbekannte Details getrennt benennen. Ohne Nachweis keine identische Umsetzung behaupten.
 - **Texte:** Kurze, persönliche und sachlich belegte Inhalte. Keine generischen Werbesätze, erfundenen Leistungen oder austauschbaren KI-Floskeln. Überflüssige Taglines, Hilfstexte und doppelte Labels streichen; notwendige Feldlabels, zugängliche Namen, Fehler- und Rechtstexte sowie entscheidungsrelevante Informationen erhalten. Wenn ein Layout Erklärung braucht, zuerst das Layout prüfen.
-- **Details und Zustände:** Lade-, Fehler- und Fallbackzustände mitgestalten. Layoutsprünge, Überläufe, unruhige Schrift und störende Standardbedienelemente gezielt prüfen. Fehlendes WebGPU darf persönliche Inhalte und Kontaktmöglichkeiten nicht unzugänglich machen.
+- **Details und Zustände:** Lade-, Fehler- und Fallbackzustände mitgestalten. Layoutsprünge, Überläufe, unruhige Schrift und störende Standardbedienelemente gezielt prüfen. Fehlendes WebGL darf persönliche Inhalte und Kontaktmöglichkeiten nicht unzugänglich machen.
 - **Abschluss:** Die eigene Umsetzung im Browser kritisch mit dem Ziel vergleichen und sichtbare Probleme innerhalb des Auftrags beheben. Ein kompilierender Prototyp ist kein Nachweis für gestalterische Qualität. „Implementiert“, „im Browser geprüft“ und „vom Nutzer akzeptiert“ ausdrücklich unterscheiden. Offene gestalterische Fragen ehrlich nennen, nicht mit „fertig“ verdecken.
 
 ## Kommunikation und Eigenständigkeit
@@ -63,7 +63,7 @@ Befehle aus dem Projektverzeichnis ausführen; `package.json` bleibt die Quelle 
 | Vorhandene Tests | `npm test` |
 | Produktionsbuild prüfen, wenn für den Auftrag relevant | `npm run build` |
 
-`next dev`-Erfolg ersetzt keinen Produktionsbuild. GPU-Shader zusätzlich im WebGPU-fähigen Browser prüfen; TypeScript testet deren Darstellung nicht. Bei reinen Dokumentationsänderungen Referenzen und Regelabdeckung statisch prüfen statt sachfremde Anwendungstests auszuführen.
+`next dev`-Erfolg ersetzt keinen Produktionsbuild. GPU-Shader zusätzlich im WebGL-fähigen Browser prüfen; TypeScript testet deren Darstellung nicht. Bei reinen Dokumentationsänderungen Referenzen und Regelabdeckung statisch prüfen statt sachfremde Anwendungstests auszuführen.
 
 ## Git und Autorenschaft
 

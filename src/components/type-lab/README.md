@@ -1,6 +1,6 @@
 # Orbit laboratory
 
-Open `/lab/type`. Orbit is the selected direction. This isolated route is not imported by the homepage. vgpu/WebGPU renders extruded typographic rings with studio lighting and an optional moving character field.
+Open `/lab/type` for the laboratory. The homepage and `/lab/home` share the Orbit scene, including its scroll unfolding. Three.js/WebGL renders the extruded typographic rings, studio lighting and moving character field. WebGPU is not required.
 
 ## Controls
 
@@ -10,19 +10,20 @@ Drag the sculpture to rotate, click it for a new seed, and press the background 
 
 ## Files
 
-- `renderer.ts`, `orbit.wgsl`: curved glyph fronts/backs, contour walls and material lighting.
+- `renderer.ts`, `orbit-shaders.ts`: curved glyph fronts/backs, contour walls, material lighting and the character-field passes.
 - `orbit-geometry.ts`: subpixel contour extraction from the full-resolution glyph mask.
 - `orbit-motion.ts`, `TypeScene.tsx`: frame-rate independent release motion, interaction and lifecycle.
-- `orbit-field.wgsl`, `orbit-backdrop.wgsl`: personal character field and studio/flow alternatives.
 - `config.ts`: shared validation, defaults and reproducible seed phase transitions.
 
-Reduced motion disables automatic movement. Hidden tabs do not draw. DPR is capped. No generated images, three.js renderer, or live deployment is involved. Lighting and the soft grounding shadow are art-directed approximations.
+Reduced motion disables automatic movement. Hidden tabs do not draw. DPR is capped. Canvas glyph atlases retain the loaded Geist fonts. Lighting and the soft grounding shadow are art-directed approximations. If WebGL fails, the homepage keeps its HTML lettering, personal information and contact links.
 
 ## Archived directions
 
-Folio source (`folio*`) was authored by Claude Code Fable High, integrated and visually checked before the user selected Orbit. It is no longer imported by the lab. Echo is documented in `docs/echo-idea.md`. `type.wgsl` and `picker.css` are retained reference files from the initial exploration, not live imports.
+Folio geometry, typesetting and WGSL files remain reference material from before the user selected Orbit. The unused vgpu Folio renderer was removed during the WebGL migration; its implementation remains in Git history. Echo is documented in `docs/echo-idea.md`. `type.wgsl` and `picker.css` are also reference files, not live imports.
 
 ## Verification
+
+The WebGL migration was compared with the original renderer side by side at fixed configuration, time, click age and five unfolding phases. Shader compilation and browser checks are separate from TypeScript and unit tests. `scripts/check-webgl-shaders.mjs` compiles and links the active Orbit and filmflight shader programs in a browser.
 
 Historical checks before removal of the tuning panel: both colorways, lighting/material controls, pointer rotation and release, new seeds, pause/replay, save/restore, mobile layout, reduced motion and missing-WebGPU handling. DialKit sliders, keyboard adjustment, save and panel reopening were checked. TypeScript, scoped ESLint, project tests and production build passed. Browser GPU compilation was verified; standalone CLI GPU validation had no adapter in the sandbox. No claim of CI or production verification.
 

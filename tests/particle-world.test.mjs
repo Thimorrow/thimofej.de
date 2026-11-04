@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { prepareShader } from '@vgpu/wgsl/prepare';
+import { createParticleGeometry } from '../src/components/canvas/particle-renderer.ts';
 import { createParticleWorld, packParticleWorld } from '../src/components/canvas/particle-world.ts';
 
 function random() {
@@ -11,8 +10,6 @@ function random() {
     return state / 4294967296;
   };
 }
-
-const shader = name => prepareShader(readFileSync(new URL(`../src/components/canvas/${name}.wgsl`, import.meta.url), 'utf8'));
 
 test('both quality levels retain every flight scene and only morph the hero particles', () => {
   for (const count of [34000, 170000]) {
@@ -41,29 +38,27 @@ test('both quality levels retain every flight scene and only morph the hero part
   }
 });
 
-test('uploaded positions, chapter shapes, scene timing and colors match the actual WGSL memory layout', () => {
+test('instanced quads upload every chapter, reveal time and color without changing particle data', () => {
   const world = createParticleWorld(1000, random());
+  const geometry = createParticleGeometry(world);
   const packed = packParticleWorld(world);
-  const layout = shader('world').reflection.bindings.find(binding => binding.name === 'particles').layout;
-  assert.equal(packed.byteLength, world.count * layout.stride);
-  const bytes = new DataView(packed.buffer);
-  const member = name => layout.element.members.find(member => member.name === name).offset;
-  for (const index of [0, world.heroCount - 1, world.heroCount, 500, world.count - 1]) {
-    const offset = index * layout.stride;
-    for (const [name, data] of [['home', world.position], ['work', world.forms[0]], ['elsewhere', world.forms[1]], ['contact', world.forms[2]], ['colorSeed', world.colors]]) {
-      for (let axis = 0; axis < 3; axis++) {
-        assert.equal(bytes.getFloat32(offset + member(name) + axis * 4, true), data[index * 3 + axis]);
-      }
+  assert.equal(geometry.instanceCount, world.count);
+  assert.equal(geometry.getAttribute('position').count, 6);
+  assert.equal(geometry.getAttribute('position').itemSize, 2);
+  assert.equal(packed.byteLength, world.count * 80);
+  for (const [name, data] of [['home', world.position], ['work', world.forms[0]], ['elsewhere', world.forms[1]], ['contact', world.forms[2]], ['colorSeed', world.colors]]) {
+    const attribute = geometry.getAttribute(name);
+    assert.equal(attribute.count, world.count);
+    assert.equal(attribute.itemSize, 4);
+    for (const index of [0, world.heroCount - 1, world.heroCount, 500, world.count - 1]) {
+      assert.deepEqual([attribute.getX(index), attribute.getY(index), attribute.getZ(index)], Array.from(data.subarray(index * 3, index * 3 + 3)));
     }
-    assert.equal(bytes.getFloat32(offset + member('home') + 12, true), world.reveal[index]);
-    assert.equal(bytes.getFloat32(offset + member('colorSeed') + 12, true), world.seed[index]);
   }
-});
-
-test('the world and every post-processing pass prepare as WebGPU shaders', () => {
-  for (const name of ['world', 'bloom', 'present']) {
-    const prepared = shader(name);
-    assert.ok(prepared.reflection.entryPoints.some(entry => entry.stage === 'fragment'));
-    if (name === 'world') assert.ok(prepared.reflection.entryPoints.some(entry => entry.stage === 'vertex'));
+  for (const index of [0, world.heroCount, world.count - 1]) {
+    assert.equal(geometry.getAttribute('home').getW(index), world.reveal[index]);
+    assert.equal(geometry.getAttribute('colorSeed').getW(index), world.seed[index]);
   }
+  geometry.instanceCount = world.heroCount;
+  assert.equal(geometry.getAttribute('home').count, world.count, 'cutting to the hero keeps the complete replay world available');
+  geometry.dispose();
 });

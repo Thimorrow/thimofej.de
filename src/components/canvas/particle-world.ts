@@ -595,7 +595,7 @@ export function createParticleWorld(count: number, rnd: () => number = Math.rand
   return { count, heroCount: N_TZ, position: pos, forms: [f1, f4, f5], colors, seed, reveal };
 }
 
-/** Interleaved storage layout shared with the WGSL Particle struct (80 bytes). */
+/** Five vec4 instance attributes: home/reveal, three chapter shapes and color/seed. */
 export function packParticleWorld(world: ParticleWorld) {
   const packed = new Float32Array(world.count * 20);
   for (let i = 0; i < world.count; i++) {

@@ -1,5 +1,3 @@
-export type Backend = "vgpu" | "three";
-
 export type ParticleFrame = {
   time: number;
   spread: number;
@@ -13,7 +11,7 @@ export type ParticleRenderer = {
   dispose(): void;
 };
 
-/** Both renderers get exactly the same seeded cloud, including depth and color. */
+/** Seeded initials with stable depth and color across density changes. */
 export function createParticleData(count: number) {
   const data = new Float32Array(count * 4);
   let seed = 260123;
@@ -47,8 +45,7 @@ export function createParticleData(count: number) {
   return data;
 }
 
-// Same motion and palette as the WGSL shader; this is a small comparison
-// scene, not the homepage's flight, bloom chain, or a full-site benchmark.
+// This study has its own motion and palette, separate from the cinematic world.
 export const VERTEX_SHADER = /* glsl */ `
 attribute float seed;
 uniform float uTime;

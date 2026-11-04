@@ -1,5 +1,5 @@
 // Module-level scroll state. The smooth-scroll ScrollTrigger writes here every
-// frame; the WebGPU scene reads it in its render loop WITHOUT causing
+// frame; the WebGL scene reads it in its render loop WITHOUT causing
 // React re-renders. Intentionally a plain mutable object — see PLAN.md §5.
 export const scrollProgress = { progress: 0, velocity: 0, morphTarget: 0 };
 

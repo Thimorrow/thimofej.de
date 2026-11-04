@@ -1,9 +1,7 @@
 import { backgroundDefaults } from "./background-tuning";
-import { draw, frame, init, sampler, surface, texture, storage, target as offscreenTarget, type Gpu } from "vgpu";
+import { BufferAttribute, BufferGeometry, Camera, CanvasTexture, DoubleSide, GLSL3, InstancedBufferGeometry, LinearFilter, Mesh, NoBlending, RawShaderMaterial, Scene, WebGLRenderer, WebGLRenderTarget } from "three";
 import type { Wave } from "./background-wave";
-import orbitShader from "./orbit.wgsl";
-import fieldShader from "./orbit-field.wgsl";
-import backdropShader from "./orbit-backdrop.wgsl";
+import { orbitVertex, orbitFragment, fullscreenVertex, backdropFragment, fieldFragment } from "./orbit-shaders";
 import { glyphEdges } from "./orbit-geometry";
 import { palettes, seedPhase, type Config } from "./config";
 import { unfoldTone } from './unfold-motion';
@@ -11,7 +9,21 @@ import { unfoldTone } from './unfold-motion';
 type Story = {waves:Wave[];time:number;x:number;y:number;phase:number;spread:number;motion:number;typeScale:number};
 
 export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Config, fail: (message: string) => void, signal: AbortSignal) {
-  let gpu: Gpu | undefined;
+  let renderer: WebGLRenderer | undefined;
+  const resources: { dispose(): void }[] = [];
+  let disposed = false;
+  const lost = (event: Event) => {
+    event.preventDefault();
+    if (!disposed) fail("Die GPU-Verbindung wurde unterbrochen. Bitte neu laden.");
+  };
+  const dispose = () => {
+    if (disposed) return;
+    disposed = true;
+    signal.removeEventListener("abort", dispose);
+    canvas.removeEventListener("webglcontextlost", lost);
+    for (const resource of resources) resource.dispose();
+    renderer?.dispose();
+  };
   try {
     const fonts = getComputedStyle(document.documentElement);
     const font = fonts.getPropertyValue("--font-body").trim() || "sans-serif";
@@ -19,19 +31,46 @@ export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Conf
     await Promise.all([document.fonts.load(`850 100px ${font}`), document.fonts.load(`400 60px ${mono}`)]);
     await document.fonts.ready;
     signal.throwIfAborted();
-    gpu = await init({ label: "Spatial type lab · vgpu", powerPreference: "high-performance" });
-    signal.throwIfAborted();
-    const context = gpu;
-    signal.addEventListener("abort",()=>context.dispose(),{once:true});
-    context.onError(error => fail(error.message));
-    void context.lost.then(() => { if (!context.disposed) fail("Die GPU-Verbindung wurde unterbrochen. Bitte neu laden."); });
-    const target = surface(context, canvas, { autoResize: false, size: [1,1], dpr: 1, depth: true, msaa: 4 });
+    renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
+    const context = renderer;
+    context.autoClear = false;
+    context.debug.onShaderError = () => { throw new Error("Die Grafik konnte nicht vorbereitet werden."); };
+    canvas.dataset.renderer = "three-webgl";
+    canvas.addEventListener("webglcontextlost", lost);
+    signal.addEventListener("abort", dispose, { once: true });
+    const camera = new Camera();
+    const scene = new Scene();
+    const fieldScene = new Scene();
+    const track = <T extends { dispose(): void }>(resource: T): T => { resources.push(resource); return resource; };
+    const canvasTexture = (source: HTMLCanvasElement) => {
+      const result = track(new CanvasTexture(source));
+      result.flipY = false;
+      result.minFilter = result.magFilter = LinearFilter;
+      result.generateMipmaps = false;
+      return result;
+    };
+    const geometry = (vertices: number) => {
+      const result = track(new InstancedBufferGeometry());
+      result.setAttribute("position", new BufferAttribute(new Float32Array(vertices * 3), 3));
+      result.setAttribute("glyphEdge", new BufferAttribute(new Float32Array(vertices * 4), 4));
+      result.setDrawRange(0, vertices);
+      result.instanceCount = 6;
+      return result;
+    };
+    const textGeometry = geometry(192 * 12 * 6);
+    const wallGeometry = geometry(0);
+    const fullscreenGeometry = track(new BufferGeometry());
+    fullscreenGeometry.setAttribute("position", new BufferAttribute(new Float32Array(9), 3));
+    const fullscreen = (material: RawShaderMaterial) => {
+      const mesh = new Mesh(fullscreenGeometry, material);
+      mesh.frustumCulled = false;
+      return mesh;
+    };
     const atlas = document.createElement("canvas");
     atlas.width = 2048; atlas.height = 384;
     const ctx = atlas.getContext("2d");
     if (!ctx) throw new Error("Die Schrift konnte nicht vorbereitet werden.");
-    const glyphs = texture(context, { kind: "2d", size: [2048,384], format: "rgba8unorm", usage: ["texture_binding","copy_dst","render_attachment"] });
-    const edgeBuffer=storage(context,4*1024*1024,"read");
+    const glyphs = canvasTexture(atlas);
     let edgeVertices=0;
     let lastText = "";
     const writeText = (text: string) => {
@@ -44,15 +83,15 @@ export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Conf
       const measured = ctx.measureText(text);
       ctx.fillStyle = "white";
       ctx.fillText(text,1024,192+(measured.actualBoundingBoxAscent-measured.actualBoundingBoxDescent)/2);
-      context.gpu.queue.copyExternalImageToTexture({source: atlas}, {texture:glyphs.gpu}, [2048,384]);
-      if (edgeBuffer) {
-        const outline=document.createElement("canvas"); outline.width=2048; outline.height=384;
-        const outlineContext=outline.getContext("2d")!;
-        outlineContext.drawImage(atlas,0,0,2048,384);
-        const data=glyphEdges(outlineContext.getImageData(0,0,2048,384).data,2048,384);
+      glyphs.needsUpdate = true;
+      {
+        const data=glyphEdges(ctx.getImageData(0,0,2048,384).data,2048,384);
         if (data.byteLength>4*1024*1024) throw new Error("Die Schriftkontur ist zu komplex.");
-        if(data.length) edgeBuffer.write(data);
         edgeVertices=data.length/4;
+        wallGeometry.dispose();
+        wallGeometry.setAttribute("position", new BufferAttribute(new Float32Array(edgeVertices * 3), 3));
+        wallGeometry.setAttribute("glyphEdge", new BufferAttribute(data, 4));
+        wallGeometry.setDrawRange(0, edgeVertices);
       }
       lastText = text;
     };
@@ -65,17 +104,16 @@ export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Conf
     storyContext.font=`850 ${storySize}px ${font}`;storyContext.textAlign='center';storyContext.textBaseline='alphabetic';
     const storyMetrics=storyContext.measureText('THIMORROW');
     storyContext.fillStyle='white';storyContext.fillText('THIMORROW',1024,192+(storyMetrics.actualBoundingBoxAscent-storyMetrics.actualBoundingBoxDescent)/2);
-    const storyLetters=texture(context,{kind:'2d',size:[2048,384],format:'rgba8unorm',usage:['texture_binding','copy_dst','render_attachment']});
-    context.gpu.queue.copyExternalImageToTexture({source:storyAtlas},{texture:storyLetters.gpu},[2048,384]);
+    const storyLetters=canvasTexture(storyAtlas);
     const characterAtlas=document.createElement("canvas");characterAtlas.width=17*64;characterAtlas.height=64;
     const charContext=characterAtlas.getContext("2d")!;
     charContext.fillStyle="black";charContext.fillRect(0,0,17*64,64);
     charContext.font=`400 60px ${mono}`;charContext.fillStyle="white";charContext.textAlign="center";charContext.textBaseline="middle";
     [..."THIMOFEJZAPKRW·/<"].forEach((letter,i)=>charContext.fillText(letter,i*64+32,32));
-    const alphabet=texture(context,{kind:"2d",size:[17*64,64],format:"rgba8unorm",usage:["texture_binding","copy_dst","render_attachment"]});
-    context.gpu.queue.copyExternalImageToTexture({source:characterAtlas},{texture:alphabet.gpu},[17*64,64]);
-    const characterField=offscreenTarget(context,{size:[1,1],format:"rgba8unorm"});
-    const fieldDraw=draw(context,{shader:fieldShader,vertices:3,depth:false,set:{field:{view:[1,0,0,0],shape:[1,0.58,0.65,0]}}});
+    const alphabet=canvasTexture(characterAtlas);
+    const characterField=track(new WebGLRenderTarget(1,1,{minFilter:LinearFilter,magFilter:LinearFilter,depthBuffer:false}));
+    const fieldDraw=track(new RawShaderMaterial({glslVersion:GLSL3,vertexShader:fullscreenVertex,fragmentShader:fieldFragment,depthTest:false,depthWrite:false,blending:NoBlending,uniforms:{field:{value:{view:[1,0,0,0],shape:[1,0.58,0.65,0]}}}}));
+    fieldScene.add(fullscreen(fieldDraw));
 
     let aspect = 1, cssWidth=1;
     const uniforms = (c: Config, intro: number, wall = 0, presentation = 0, story?:Story, bandLag=0) => {
@@ -93,34 +131,51 @@ export async function createTypeRenderer(canvas: HTMLCanvasElement, config: Conf
         pulseRebound:[t.reboundDelay,t.reboundDistance,t.reboundStrength,t.reboundDuration],
         pulseForce:[t.clickKick,t.refraction,0,0], material:[c.roughness ?? 0.38,c.light ?? 0,c.thickness ?? 0.045,story?1:0], view: [aspect,presentation,c.mode,wall], motion: [(story?.time ?? c.time)+(c.phase ?? 0),c.yaw,c.pitch,intro], shape: [c.depth,c.bend,c.scale,seedPhase(c)], ink: [...ink,1], paper: [...palette.background,1], story:[story?.x??0,story?.y??0,story?.phase??0,story?.spread??0], storyStyle:[story?.motion??0,story?.typeScale??1,bandLag,0] };
     };
-    const bindings={letters:glyphs,storyLetters,linearSampler:sampler(context,{minFilter:"linear",magFilter:"linear"}),edges:edgeBuffer};
-    const textDraw=draw(context,{shader:orbitShader,vertices:192*12*6,instances:6,multisample:{alphaToCoverage:true},frontFace:"cw",set:{settings:uniforms(config,1),...bindings}});
-    const walls=draw(context,{shader:orbitShader,vertices:edgeVertices,instances:6,multisample:{alphaToCoverage:true},set:{settings:uniforms(config,1,1),...bindings}});
+    const material = (wall: number) => track(new RawShaderMaterial({
+      glslVersion: GLSL3, vertexShader: orbitVertex, fragmentShader: orbitFragment,
+      side: DoubleSide, alphaToCoverage: true, blending: NoBlending,
+      uniforms: { settings: { value: uniforms(config,1,wall) }, letters: { value: glyphs }, storyLetters: { value: storyLetters } },
+    }));
+    const textDraw=material(0), walls=material(1);
+    const textMesh=new Mesh(textGeometry,textDraw), wallMesh=new Mesh(wallGeometry,walls);
+    textMesh.frustumCulled=wallMesh.frustumCulled=false;
+    textMesh.renderOrder=1;wallMesh.renderOrder=2;
+    scene.add(textMesh,wallMesh);
     const tuningUniforms = (c: Config) => {
       const t={...backgroundDefaults,...c.tuning};
       return { raster:[t.rasterOpacity,t.gridSize,t.ambientOpacity,t.ambientSoftness], ambient:[t.centerQuiet,t.clickOpacity,t.clickSpeed,t.clickWidth], click:[t.clickWiden,t.clickLifetime,t.clickDecay,t.clickWarp], detail:[t.clickArcs,t.clickEcho,t.clickKick,t.refraction], interaction:[t.blur,t.suppression,t.recovery,0], rebound:[t.reboundDelay,t.reboundDistance,t.reboundStrength,t.reboundDuration] };
     };
-    const backdrop=draw(context,{shader:backdropShader,vertices:3,depth:false,set:{characterField,alphabet,linearSampler:sampler(context,{minFilter:"linear",magFilter:"linear"}),background:{...tuningUniforms(config),color:[...palettes[config.palette].background,1],view:[1,0,0,0],wave0:[0,0,-1,0],wave1:[0,0,-1,0],wave2:[0,0,-1,0],wave3:[0,0,-1,0]}}});
-    await Promise.all([textDraw.compile(target),walls.compile(target),backdrop.compile(target),fieldDraw.compile(characterField)]);
+    const backdrop=track(new RawShaderMaterial({glslVersion:GLSL3,vertexShader:fullscreenVertex,fragmentShader:backdropFragment,depthTest:false,depthWrite:false,blending:NoBlending,uniforms:{characterField:{value:characterField.texture},alphabet:{value:alphabet},background:{value:{...tuningUniforms(config),color:[...palettes[config.palette].background,1],view:[1,0,0,0],wave0:[0,0,-1,0],wave1:[0,0,-1,0],wave2:[0,0,-1,0],wave3:[0,0,-1,0]}}}}));
+    const backgroundMesh=fullscreen(backdrop);backgroundMesh.renderOrder=0;scene.add(backgroundMesh);
+    context.compile(scene,camera);
+    context.compile(fieldScene,camera);
     signal.throwIfAborted();
     return {
-      resize(width: number,height: number) { const dpr = Math.min(devicePixelRatio,1.75); aspect = width/height; cssWidth=width; characterField.resize([Math.max(1,Math.ceil(width/7)),Math.max(1,Math.ceil(height/10))]); target.resize([Math.max(1,Math.round(width*dpr)),Math.max(1,Math.round(height*dpr))]); },
+      resize(width: number,height: number) {
+        width=Math.max(1,width);height=Math.max(1,height);
+        const dpr=Math.min(devicePixelRatio,1.75);aspect=width/height;cssWidth=width;
+        characterField.setSize(Math.max(1,Math.ceil(width/7)),Math.max(1,Math.ceil(height/10)));
+        context.setPixelRatio(dpr);context.setSize(width,height,false);
+      },
       render(c: Config,intro = 1,waves: Wave[] = [],presentation = 0,story?:Story,bandLag=0) {
         if (lastText !== c.text) writeText(c.text);
-        target.clearColor = [...palettes[c.palette].background,1];
-        textDraw.set({settings: uniforms(c,intro,0,presentation,story,bandLag)});
-        walls.set({settings:uniforms(c,intro,1,presentation,story,bandLag)});
+
+        textDraw.uniforms.settings.value=uniforms(c,intro,0,presentation,story,bandLag);
+        walls.uniforms.settings.value=uniforms(c,intro,1,presentation,story,bandLag);
         const wave = (i: number) => waves[i] ? [waves[i].x,waves[i].y,waves[i].age,waves[i].variation] : [0,0,-1,0];
         const tuning={...backgroundDefaults,...c.tuning};
         const tone=story?unfoldTone(presentation):0;
         const color=palettes[c.palette].background.map((value,i)=>value+([.141,.102,.086][i]-value)*tone);
         const backgroundUniforms=tuningUniforms(c);backgroundUniforms.raster[0]*=1-tone;
-        backdrop.set({background:{...backgroundUniforms,color:[...color,(c.backgroundStrength ?? 1)*(1-tone)],view:[aspect,(c.time+(c.phase ?? 0))*tuning.ambientSpeed,c.background ?? 0,cssWidth],wave0:wave(0),wave1:wave(1),wave2:wave(2),wave3:wave(3)}});
-        fieldDraw.set({field:{view:[aspect,(c.time+(c.phase ?? 0))*3*tuning.ambientSpeed,0,0],shape:[tuning.ambientScale,tuning.ambientThickness,tuning.ambientMerge,0]}});
+        backdrop.uniforms.background.value={...backgroundUniforms,color:[...color,(c.backgroundStrength ?? 1)*(1-tone)],view:[aspect,(c.time+(c.phase ?? 0))*tuning.ambientSpeed,c.background ?? 0,cssWidth],wave0:wave(0),wave1:wave(1),wave2:wave(2),wave3:wave(3)};
+        fieldDraw.uniforms.field.value={view:[aspect,(c.time+(c.phase ?? 0))*3*tuning.ambientSpeed,0,0],shape:[tuning.ambientScale,tuning.ambientThickness,tuning.ambientMerge,0]};
         const instances=story?18:6;
-        frame(context,f=>{if(c.background===2 && tone<1) f.pass(characterField,fieldDraw);f.pass(target,pass=>{pass.draw(backdrop);pass.draw(textDraw,{instances});if(edgeVertices) pass.draw(walls,{vertices:edgeVertices,instances});});});
+        textGeometry.instanceCount=wallGeometry.instanceCount=instances;
+        wallMesh.visible=edgeVertices>0;
+        if(c.background===2 && tone<1){context.setRenderTarget(characterField);context.clear();context.render(fieldScene,camera);}
+        context.setRenderTarget(null);context.clear();context.render(scene,camera);
       },
-      dispose() { context.dispose(); },
+      dispose,
     };
-  } catch(error) { gpu?.dispose(); throw error; }
+  } catch(error) { dispose(); throw error; }
 }

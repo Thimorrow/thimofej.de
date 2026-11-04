@@ -4,14 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import type { Backend, ParticleFrame, ParticleRenderer } from "./particle-data";
+import type { ParticleFrame, ParticleRenderer } from "./particle-data";
 import styles from "./ParticleLab.module.css";
 
 const COUNTS = [12000, 40000, 100000];
 type Status = { kind: "loading" | "ready" | "error"; message: string };
 
-function ParticleStage({ backend, count, paused, dispersed, onStatus, onFps }: {
-  backend: Backend; count: number; paused: boolean; dispersed: boolean;
+function ParticleStage({ count, paused, dispersed, onStatus, onFps }: {
+  count: number; paused: boolean; dispersed: boolean;
   onStatus: (status: Status) => void; onFps: (fps: number | null) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
@@ -118,13 +118,13 @@ function ParticleStage({ backend, count, paused, dispersed, onStatus, onFps }: {
     document.addEventListener("visibilitychange", visibility);
     async function start() {
       try {
-        const graphics = backend === "vgpu" ? await import("./render-vgpu") : await import("./render-three");
+        const graphics = await import("./render-three");
         if (cancelled) return;
         const created = await graphics.createRenderer(element, count, fail);
         if (cancelled || failed) { created.dispose(); return; }
         renderer = created;
         resize();
-        if (!failed) onStatus({ kind: "ready", message: backend === "vgpu" ? "vgpu · WebGPU aktiv" : "Three.js · WebGL aktiv" });
+        if (!failed) onStatus({ kind: "ready", message: "Three.js · WebGL aktiv" });
       } catch (error) { fail(error); }
     }
     void start();
@@ -140,14 +140,13 @@ function ParticleStage({ backend, count, paused, dispersed, onStatus, onFps }: {
       renderer?.dispose();
       element.remove();
     };
-  }, [backend, count, onStatus, onFps]);
+  }, [count, onStatus, onFps]);
 
   return <div ref={container} aria-hidden="true" />;
 }
 
 export function ParticleLab() {
   const reduce = useReducedMotion();
-  const [backend, setBackend] = useState<Backend>("vgpu");
   const [count, setCount] = useState(40000);
   const [pauseOverride, setPauseOverride] = useState<boolean | null>(null);
   const [dispersed, setDispersed] = useState(false);
@@ -156,12 +155,6 @@ export function ParticleLab() {
   const paused = pauseOverride ?? reduce;
   const updateStatus = useCallback((value: Status) => setStatus(value), []);
   const updateFps = useCallback((value: number | null) => setFps(value), []);
-  const changeBackend = (value: Backend) => {
-    if (value === backend) return;
-    setStatus({ kind: "loading", message: "Grafik startet …" });
-    setFps(null);
-    setBackend(value);
-  };
   const changeCount = (value: number) => {
     if (value === count) return;
     setStatus({ kind: "loading", message: "Grafik startet …" });
@@ -178,23 +171,22 @@ export function ParticleLab() {
       </nav>
 
       <div className={styles.intro}>
-        <p className={styles.eyebrow}><span /> Ein Experiment mit Vercel vgpu</p>
+        <p className={styles.eyebrow}><span /> Three.js · WebGL</p>
         <h1>Same initials.<br className={styles.mobileBreak} /> New energy<span>.</span></h1>
         <p className={styles.description}>Maus bewegen. Partikel auflösen. Den Unterschied spüren.</p>
       </div>
 
-      <div className={styles.stage} data-status={status.kind} data-backend={backend}>
+      <div className={styles.stage} data-status={status.kind} data-backend="three">
         <div className={styles.crosshair} aria-hidden="true" />
         <div className={styles.stageInfo} aria-hidden="true"><span>TZ / particle study</span><span>01 — interactive</span></div>
         <div className={styles.poster} aria-hidden="true">
           <Image src="/poster/hero-monogram.svg" alt="" width={620} height={620} unoptimized priority />
         </div>
-        {status.kind !== "error" && <ParticleStage key={`${backend}-${count}`} backend={backend} count={count} paused={paused} dispersed={dispersed} onStatus={updateStatus} onFps={updateFps} />}
+        {status.kind !== "error" && <ParticleStage key={count} count={count} paused={paused} dispersed={dispersed} onStatus={updateStatus} onFps={updateFps} />}
         {status.kind === "error" && (
           <div className={styles.error} role="alert">
-            <p>{backend === "vgpu" ? "WebGPU ist hier gerade nicht verfügbar." : "Die Grafik konnte nicht starten."}</p>
-            <p>{backend === "vgpu" ? "Versuch die Three.js-Variante oder öffne die Vorschau in einem aktuellen Browser mit WebGPU-Unterstützung." : status.message}</p>
-            {backend === "vgpu" && <button type="button" onClick={() => changeBackend("three")}>Three.js ansehen →</button>}
+            <p>Die Grafik konnte nicht starten.</p>
+            <p>{status.message}</p>
           </div>
         )}
         <div className={styles.stageFoot}>
@@ -204,13 +196,6 @@ export function ParticleLab() {
       </div>
 
       <div className={styles.controls}>
-        <fieldset className={styles.controlGroup}>
-          <legend>Technik vergleichen</legend>
-          <div className={styles.segmented}>
-            <button type="button" aria-pressed={backend === "vgpu"} onClick={() => changeBackend("vgpu")}>vgpu <span>WebGPU</span></button>
-            <button type="button" aria-pressed={backend === "three"} onClick={() => changeBackend("three")}>Three.js <span>WebGL</span></button>
-          </div>
-        </fieldset>
         <fieldset className={styles.controlGroup}>
           <legend>Partikel</legend>
           <div className={styles.densities}>{COUNTS.map((value) => <button key={value} type="button" aria-pressed={count === value} onClick={() => changeCount(value)}>{(value / 1000).toFixed(0)}.000</button>)}</div>
@@ -222,8 +207,8 @@ export function ParticleLab() {
       </div>
 
       <footer className={styles.footer}>
-        <p>Gleiche Form, gleiche Partikelzahl, zwei Grafiktechniken. Die Three.js-Ansicht ist eine Vergleichsszene; das komplette Intro der Startseite läuft hier nicht.</p>
-        <span>Technikvergleich · Startseite mit vgpu</span>
+        <p>Interaktive Partikelstudie mit Three.js und WebGL.</p>
+        <span>TZ / particle study</span>
       </footer>
     </main>
   );

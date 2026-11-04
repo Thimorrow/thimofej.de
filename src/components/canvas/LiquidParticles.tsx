@@ -7,7 +7,7 @@ import { createParticleWorld } from "./particle-world";
 import { createParticleScene, type ParticleScene } from "./particle-scene";
 import { createParticleRenderer, type ParticleRenderer } from "./particle-renderer";
 
-type DebugWindow = Window & { __intro?: ParticleScene["intro"]; __particleScene?: ParticleScene; __particleGpu?: ParticleRenderer["gpu"] };
+type DebugWindow = Window & { __intro?: ParticleScene["intro"]; __particleScene?: ParticleScene; __particleRenderer?: ParticleRenderer["renderer"] };
 
 export default function LiquidParticles() {
   const host = useRef<HTMLDivElement>(null);
@@ -18,7 +18,7 @@ export default function LiquidParticles() {
     // Strict Mode and hot reload each own a fresh, disposable canvas context.
     const canvas = document.createElement("canvas");
     canvas.className = "block h-full w-full";
-    canvas.dataset.renderer = "vgpu";
+    canvas.dataset.renderer = "three-webgl";
     host.current.append(canvas);
     let disposed = false;
     let failed = false;
@@ -37,7 +37,7 @@ export default function LiquidParticles() {
       scene?.dispose();
       renderer?.dispose();
       document.documentElement.classList.remove("canvas-ready");
-      setFailure(error instanceof Error ? error : new Error("WebGPU unavailable"));
+      setFailure(error instanceof Error ? error : new Error("WebGL unavailable"));
     };
     const render = (now: number) => {
       animation = 0;
@@ -83,7 +83,7 @@ export default function LiquidParticles() {
         if (process.env.NODE_ENV !== "production") {
           debug.__intro = scene.intro;
           debug.__particleScene = scene;
-          debug.__particleGpu = renderer.gpu;
+          debug.__particleRenderer = renderer.renderer;
         }
         detachActivity = subscribeCanvasActivity(onIntroDone, document, updateActivity);
       } catch (error) { fail(error); }
@@ -101,7 +101,7 @@ export default function LiquidParticles() {
       if (debug.__particleScene === scene) {
         delete debug.__intro;
         delete debug.__particleScene;
-        delete debug.__particleGpu;
+        delete debug.__particleRenderer;
       }
     };
   }, []);

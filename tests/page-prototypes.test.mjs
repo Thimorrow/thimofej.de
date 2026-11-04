@@ -3,8 +3,6 @@ import assert from 'node:assert/strict';
 import { printDefaults, printRows, validPrintConfig } from '../src/components/orbit-preview/print-config.ts';
 import { unfoldProgress, unfoldTone } from '../src/components/type-lab/unfold-motion.ts';
 import { portraitReveal } from '../src/components/orbit-preview/portrait-motion.ts';
-import { readFileSync } from 'node:fs';
-import { prepareShader } from '@vgpu/wgsl/prepare';
 
 test('a saved print reproduces every row; different seeds create different compositions',()=>{
   const saved=JSON.parse(JSON.stringify(printDefaults));
@@ -39,16 +37,6 @@ test('the scroll story has a stable reading interval and reverses without state'
   assert.equal(unfoldTone(0),0);
   assert.equal(unfoldTone(1),1);
   assert.equal(unfoldTone(2),1);
-});
-
-test('the shared GPU shader exposes the separate identity texture and complete presentation controls',()=>{
-  const shader=prepareShader(readFileSync(new URL('../src/components/type-lab/orbit.wgsl',import.meta.url),'utf8'));
-  assert.ok(shader.reflection.entryPoints.some(entry=>entry.stage==='vertex'));
-  assert.ok(shader.reflection.entryPoints.some(entry=>entry.stage==='fragment'));
-  const names=shader.reflection.bindings.map(binding=>binding.name);
-  assert.ok(names.includes('letters')&&names.includes('storyLetters')&&names.includes('edges'));
-  const settings=shader.reflection.bindings.find(binding=>binding.name==='settings');
-  assert.ok(settings.layout.members.some(member=>member.name==='storyStyle'));
 });
 
 test('section elements wait until visible and reverse consistently without hiding anchor visits',()=>{

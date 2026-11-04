@@ -1,77 +1,129 @@
-import { draw, effect, frame, init, sampler, storage, surface, target, type Gpu } from "vgpu";
-import worldShader from "./world.wgsl";
-import bloomShader from "./bloom.wgsl";
-import presentShader from "./present.wgsl";
-import { packParticleWorld, type ParticleWorld } from "./particle-world";
+import * as THREE from "three";
+import { packParticleWorld, type ParticleWorld } from "./particle-world.ts";
+import { WORLD_VERTEX, WORLD_FRAGMENT, FULLSCREEN_VERTEX, BLOOM_FRAGMENT, PRESENT_FRAGMENT } from "./particle-shaders.ts";
 import type { ParticleScene } from "./particle-scene";
 
-/** WebGPU owns drawing and post-processing; Three.js supplies camera math only. */
+export function createParticleGeometry(world: ParticleWorld) {
+  const geometry = new THREE.InstancedBufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute([-0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5], 2));
+  const particles = new THREE.InstancedInterleavedBuffer(packParticleWorld(world), 20);
+  for (const [index, name] of ["home", "work", "elsewhere", "contact", "colorSeed"].entries()) {
+    geometry.setAttribute(name, new THREE.InterleavedBufferAttribute(particles, 4, index * 4));
+  }
+  geometry.instanceCount = world.count;
+  return geometry;
+}
+
 export async function createParticleRenderer(canvas: HTMLCanvasElement, world: ParticleWorld, lowEnd: boolean, onError: (error: Error) => void) {
-  let gpu: Gpu | undefined;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: lowEnd ? "low-power" : "high-performance" });
+  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+  renderer.toneMapping = THREE.NoToneMapping;
+  renderer.autoClear = false;
+  renderer.debug.onShaderError = (gl, program) => onError(new Error(gl.getProgramInfoLog(program) || "Die Grafik konnte nicht vorbereitet werden."));
+  const clear = new THREE.Color().setRGB(0.0021247, 0.0030353, 0.0060488, THREE.LinearSRGBColorSpace);
+  const sceneTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false });
+  const bloomX = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false });
+  const bloomY = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false });
+  const geometry = createParticleGeometry(world);
+  const uniforms = {
+    uModel: { value: new THREE.Matrix4() }, uView: { value: new THREE.Matrix4() }, uProjection: { value: new THREE.Matrix4() },
+    animation: { value: new THREE.Vector4() }, mouse: { value: new THREE.Vector4() }, style: { value: new THREE.Vector4(1, 1, 1, 1) },
+    colorA: { value: new THREE.Vector4() }, colorB: { value: new THREE.Vector4() },
+  };
+  const material = new THREE.RawShaderMaterial({
+    glslVersion: THREE.GLSL3, vertexShader: WORLD_VERTEX, fragmentShader: WORLD_FRAGMENT, uniforms,
+    transparent: true, blending: THREE.CustomBlending, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneFactor,
+    blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneFactor, depthTest: false, depthWrite: false,
+  });
+  const worldScene = new THREE.Scene();
+  const cloud = new THREE.Mesh(geometry, material);
+  cloud.frustumCulled = false;
+  worldScene.add(cloud);
+  const camera = new THREE.Camera();
+  const quad = new THREE.BufferGeometry();
+  quad.setAttribute("position", new THREE.Float32BufferAttribute([-1, -1, 3, -1, -1, 3], 2));
+  const blurX = new THREE.RawShaderMaterial({
+    glslVersion: THREE.GLSL3, vertexShader: FULLSCREEN_VERTEX, fragmentShader: BLOOM_FRAGMENT, depthTest: false, depthWrite: false,
+    uniforms: { source: { value: sceneTarget.texture }, blurParams: { value: new THREE.Vector4(1, 0, 1, 0) } },
+  });
+  const blurY = new THREE.RawShaderMaterial({
+    glslVersion: THREE.GLSL3, vertexShader: FULLSCREEN_VERTEX, fragmentShader: BLOOM_FRAGMENT, depthTest: false, depthWrite: false,
+    uniforms: { source: { value: bloomX.texture }, blurParams: { value: new THREE.Vector4(0, 1, 0, 0) } },
+  });
+  const present = new THREE.RawShaderMaterial({
+    glslVersion: THREE.GLSL3, vertexShader: FULLSCREEN_VERTEX, fragmentShader: PRESENT_FRAGMENT, depthTest: false, depthWrite: false,
+    uniforms: { source: { value: sceneTarget.texture }, glow: { value: bloomY.texture }, settings: { value: new THREE.Vector4(0, lowEnd ? 0.14 : 0.18, 1, 1) } },
+  });
+  const screen = new THREE.Scene();
+  const screenMesh = new THREE.Mesh(quad, present);
+  screenMesh.frustumCulled = false;
+  screen.add(screenMesh);
+  let disposed = false;
+  const lost = (event: Event) => {
+    event.preventDefault();
+    if (!disposed) onError(new Error("Die Verbindung zur Grafikkarte wurde unterbrochen."));
+  };
+  canvas.addEventListener("webglcontextlost", lost);
+  const dispose = () => {
+    if (disposed) return;
+    disposed = true;
+    canvas.removeEventListener("webglcontextlost", lost);
+    geometry.dispose();
+    quad.dispose();
+    for (const pass of [material, blurX, blurY, present]) pass.dispose();
+    for (const target of [sceneTarget, bloomX, bloomY]) target.dispose();
+    renderer.dispose();
+    renderer.forceContextLoss();
+  };
   try {
-    gpu = await init({ powerPreference: lowEnd ? "low-power" : "high-performance", label: "Thimorrow particle world" });
-    const context = gpu;
-    context.onError(onError);
-    void context.lost.then(() => {
-      if (!context.disposed) onError(new Error("WebGPU device lost"));
-    });
-    const screen = surface(context, canvas, { autoResize: false, size: [1, 1], dpr: 1 });
-    const sceneTarget = target(context, { size: [1, 1], format: "rgba16float", clearColor: [0.0021247, 0.0030353, 0.0060488, 1] });
-    const bloomX = target(context, { size: [1, 1], format: "rgba16float" });
-    const bloomY = target(context, { size: [1, 1], format: "rgba16float" });
-    const linearSampler = sampler(context, { magFilter: "linear", minFilter: "linear", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" });
-    const packed = packParticleWorld(world);
-    const particles = storage(context, packed.byteLength, "read");
-    particles.write(packed);
-    const cloud = draw(context, {
-      shader: worldShader, vertices: 6, instances: world.count, label: "world particles",
-      blend: { color: { src: "src-alpha", dst: "one" }, alpha: { src: "one", dst: "one" } },
-      set: { particles },
-    });
-    const blurX = effect(context, bloomShader, { label: "bloom horizontal", set: { source: sceneTarget, linearSampler, blurParams: [1, 0, 1, 0] } });
-    const blurY = effect(context, bloomShader, { label: "bloom vertical", set: { source: bloomX, linearSampler, blurParams: [0, 1, 0, 0] } });
-    const present = effect(context, presentShader, { label: "grain and vignette", set: { source: sceneTarget, glow: bloomY, linearSampler, settings: [0, lowEnd ? 0.14 : 0.18, 1, 1] } });
-    await Promise.all([cloud.compile(sceneTarget), blurX.compile(bloomX), blurY.compile(bloomY), present.compile(screen)]);
+    await renderer.compileAsync(worldScene, camera);
+    for (const pass of [blurX, blurY, present]) {
+      screenMesh.material = pass;
+      await renderer.compileAsync(screen, camera);
+    }
     let width = 1;
     let height = 1;
     return {
-      gpu: context,
+      renderer,
       resize(cssWidth: number, cssHeight: number, dpr: number) {
-        const scale = Math.min(dpr, context.gpu.limits.maxTextureDimension2D / Math.max(1, cssWidth, cssHeight));
+        const scale = Math.min(dpr, renderer.capabilities.maxTextureSize / Math.max(1, cssWidth, cssHeight));
         width = Math.max(1, Math.round(cssWidth * scale));
         height = Math.max(1, Math.round(cssHeight * scale));
-        screen.resize([width, height]);
-        sceneTarget.resize([width, height]);
+        renderer.setSize(width, height, false);
+        sceneTarget.setSize(width, height);
         const bloomWidth = Math.max(1, Math.ceil(width / 4));
         const bloomHeight = Math.max(1, Math.ceil(height / 4));
-        bloomX.resize([bloomWidth, bloomHeight]);
-        bloomY.resize([bloomWidth, bloomHeight]);
-        blurX.set({ blurParams: [1 / bloomWidth, 0, 1, 0] });
-        blurY.set({ blurParams: [0, 1 / bloomHeight, 0, 0] });
-        present.set({ settings: [0, lowEnd ? 0.14 : 0.18, width, height] });
+        bloomX.setSize(bloomWidth, bloomHeight);
+        bloomY.setSize(bloomWidth, bloomHeight);
+        blurX.uniforms.blurParams.value.set(1 / bloomWidth, 0, 1, 0);
+        blurY.uniforms.blurParams.value.set(0, 1 / bloomHeight, 0, 0);
+        present.uniforms.settings.value.set(0, lowEnd ? 0.14 : 0.18, width, height);
       },
       render(scene: ParticleScene) {
         const u = scene.uniforms;
-        cloud.set({ scene: {
-          model: scene.object.matrixWorld.elements,
-          view: scene.camera.matrixWorldInverse.elements,
-          projection: scene.camera.projectionMatrix.elements,
-          animation: [u.uTime.value, u.uMorph.value, u.uIntroAmt.value, u.uU.value],
-          mouse: [...u.uMouse.value.toArray(), u.uMouseActive.value],
-          style: [u.uSize.value, u.uOpacity.value, width, height],
-          colorA: [...u.uColorA.value.toArray(), 1], colorB: [...u.uColorB.value.toArray(), 1],
-        } });
-        frame(context, (current) => {
-          current.pass(sceneTarget, (pass) => pass.draw(cloud, { instances: scene.drawCount }));
-          current.pass(bloomX, blurX);
-          current.pass(bloomY, blurY);
-          current.pass(screen, present);
-        });
+        uniforms.uModel.value.copy(scene.object.matrixWorld);
+        uniforms.uView.value.copy(scene.camera.matrixWorldInverse);
+        uniforms.uProjection.value.copy(scene.camera.projectionMatrix);
+        uniforms.animation.value.set(u.uTime.value, u.uMorph.value, u.uIntroAmt.value, u.uU.value);
+        uniforms.mouse.value.set(u.uMouse.value.x, u.uMouse.value.y, u.uMouse.value.z, u.uMouseActive.value);
+        uniforms.style.value.set(u.uSize.value, u.uOpacity.value, width, height);
+        uniforms.colorA.value.set(u.uColorA.value.r, u.uColorA.value.g, u.uColorA.value.b, 1);
+        uniforms.colorB.value.set(u.uColorB.value.r, u.uColorB.value.g, u.uColorB.value.b, 1);
+        geometry.instanceCount = scene.drawCount;
+        renderer.setRenderTarget(sceneTarget);
+        renderer.setClearColor(clear, 1);
+        renderer.clear();
+        renderer.render(worldScene, camera);
+        for (const [pass, target] of [[blurX, bloomX], [blurY, bloomY], [present, null]] as const) {
+          screenMesh.material = pass;
+          renderer.setRenderTarget(target);
+          renderer.render(screen, camera);
+        }
       },
-      dispose() { context.dispose(); },
+      dispose,
     };
   } catch (error) {
-    gpu?.dispose();
+    dispose();
     throw error;
   }
 }
